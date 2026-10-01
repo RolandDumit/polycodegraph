@@ -18,7 +18,7 @@ class SwiftReferencesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             content = "func load() { fetch() }\nfunc fetch() {}\n"
-            (root / "Use.swift").write_text(content, encoding="utf-8")
+            (root / "Use.swift").write_bytes(content.encode("utf-8"))
             graph = Graph(
                 {
                     "root": temporary,
