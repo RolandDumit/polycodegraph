@@ -31,14 +31,14 @@ void main() {
       r'''{"python_path":"tools/python","rust_analyzer_path":"tools/rust-analyzer.exe","python_search_paths":["src"],"rust_cfg":["feature=\"offline\""],"rust_sysroot_src":"sdk/library"}''',
     );
     final config = GraphConfig.load(root.path);
-    expect(config.pythonPath, p.join(root.path, 'tools/python'));
+    expect(config.pythonPath, p.join(root.path, 'tools', 'python'));
     expect(
       config.rustAnalyzerPath,
-      p.join(root.path, 'tools/rust-analyzer.exe'),
+      p.join(root.path, 'tools', 'rust-analyzer.exe'),
     );
     expect(config.pythonSearchPaths, [p.join(root.path, 'src')]);
     expect(config.rustCfg, ['feature="offline"']);
-    expect(config.rustSysrootSrc, p.join(root.path, 'sdk/library'));
+    expect(config.rustSysrootSrc, p.join(root.path, 'sdk', 'library'));
     for (final invalid in [
       '{"python_path":42}',
       '{"rust_analyzer_path":false}',
