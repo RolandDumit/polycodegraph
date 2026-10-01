@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import sys
 import tempfile
 import time
 from collections.abc import Iterator
@@ -39,6 +41,11 @@ def dictionaries(value: Any) -> Iterator[Json]:
             yield from dictionaries(child)
 
 
+def decl_usr(value: Any) -> str:
+    """Only compiler-emitted USRs can bind a reference; textual dumps cannot."""
+    return str(value.get("decl_usr", "")) if isinstance(value, dict) else ""
+
+
 class SwiftGraph:
     """Use compiler USRs exclusively to bind targets and conformances."""
 
@@ -72,6 +79,33 @@ class SwiftGraph:
                     "-module-cache-path",
                     temporary,
                 ]
+                module = dict(module)
+                if not module.get("sdk"):
+                    sdk = os.environ.get("SDKROOT", "")
+                    if not sdk and sys.platform == "darwin":
+                        sdk_code, sdk_output, _ = run(
+                            ["/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-path"],
+                            self.graph.root,
+                            max(0.1, deadline - time.monotonic()),
+                        )
+                        if sdk_code == 0:
+                            sdk = sdk_output.strip()
+                    if sdk:
+                        module["sdk"] = sdk
+                driver_args = [self.options.get("swiftc_path", "swiftc"), "-print-target-info"]
+                for key, flag in (("sdk", "-sdk"), ("target", "-target")):
+                    if module.get(key):
+                        driver_args += [flag, path(self.graph, module[key]) if key == "sdk" else module[key]]
+                info_code, info_output, info_errors = run(
+                    driver_args, self.graph.root, max(0.1, deadline - time.monotonic())
+                )
+                if info_code != 0:
+                    raise ValueError("Cannot discover Swift runtime paths: " + info_errors)
+                runtime = json.loads(info_output).get("paths", {})
+                if runtime.get("runtimeResourcePath"):
+                    args += ["-resource-dir", runtime["runtimeResourcePath"]]
+                for directory in runtime.get("runtimeLibraryImportPaths", []):
+                    args += ["-I", directory]
                 for key, flag in (("sdk", "-sdk"), ("target", "-target"), ("bridging_header", "-import-objc-header")):
                     if module.get(key):
                         args += [flag, path(self.graph, module[key]) if key != "target" else module[key]]
@@ -155,14 +189,14 @@ class SwiftGraph:
             start = byte_offset(source, location.get("start", 0))
             owner = self.graph.owner(source, start)
             decl = value.get("decl", {})
-            target = self.symbols.get(decl.get("decl_usr", ""))
+            target = self.symbols.get(decl_usr(decl))
             if target and location and not value.get("implicit"):
                 self.graph.edge(source, owner, target["id"], "references", start)
             if value.get("_kind") == "call_expr" and location:
                 callee = value.get("fn", {})
                 while isinstance(callee, dict) and "fn" in callee:
                     callee = callee["fn"]
-                usr = callee.get("decl", {}).get("decl_usr", "") if isinstance(callee, dict) else ""
+                usr = decl_usr(callee.get("decl")) if isinstance(callee, dict) else ""
                 called = self.symbols.get(usr)
                 if called:
                     self.graph.edge(source, owner, called["id"], "calls", start)

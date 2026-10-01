@@ -48,6 +48,10 @@ Future<void> main(List<String> args) async {
           'Prepare Swift, Kotlin and Objective-C adapters first.',
         );
       }
+      await runTool(semanticPython, [
+        '-I',
+        'providers/semantic/test_mobile_contract.py',
+      ]);
       environment['POLYCODEGRAPH_REQUIRE_MOBILE'] = '1';
     }
     if (args.contains('--ios')) environment['POLYCODEGRAPH_REQUIRE_IOS'] = '1';

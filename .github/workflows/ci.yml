@@ -85,6 +85,9 @@ jobs:
           swift-version: swift-6.2-release
           swift-build: 6.2-RELEASE
           cache: true
+      - name: Select extracted Swift toolchain on Linux
+        if: runner.os == 'Linux'
+        run: echo "$HOME/swift-6.2-RELEASE-ubuntu24.04/usr/bin" >> "$GITHUB_PATH"
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
         with:
           packages: 'platform-tools platforms;android-36'

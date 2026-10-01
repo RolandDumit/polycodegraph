@@ -83,6 +83,9 @@ class ExternalProviders {
         'CGO_ENABLED',
         'GOWORK',
         'GOTOOLCHAIN',
+        'SDKROOT',
+        'DEVELOPER_DIR',
+        'TOOLCHAINS',
       ])
         key: Platform.environment[key] ?? '',
     };
