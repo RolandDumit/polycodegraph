@@ -100,6 +100,7 @@ def main():
     for fixture in [base / "test/fixtures/polyglot", base / "examples/flutter_fixture"]:
         for binary in [a.dart.resolve(), a.rust.resolve()]:
             result = measure(binary, fixture, config)
+            result["engine"] = "dart-v0.4.0" if binary == a.dart.resolve() else "rust"
             print(json.dumps(result), flush=True)
             results.append(result)
     report = {

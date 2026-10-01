@@ -96,6 +96,8 @@ fn relevant(c: &Config, p: &std::path::Path) -> bool {
 
 impl Indexer {
     pub fn new(config: Config) -> Result<Self> {
+        // Create excluded cache storage before watching; discovery/reads follow watcher startup.
+        let store = Store::new(&config)?;
         let watcher = if config.watch {
             watch(&config)
         } else {
@@ -105,7 +107,6 @@ impl Indexer {
             Ok(w) => (Some(w), None),
             Err(e) => (None, config.watch.then(|| e.to_string())),
         };
-        let store = Store::new(&config)?;
         let mut metrics = Metrics::default();
         let old = match store.read() {
             Ok(v) => v,
@@ -165,6 +166,7 @@ impl Indexer {
                     }
                     Err(TryRecvError::Empty) => break,
                     Err(TryRecvError::Disconnected) => {
+                        self.watcher_error = Some("watcher channel disconnected".into());
                         full = true;
                         break;
                     }
@@ -263,7 +265,10 @@ impl Indexer {
         loop {
             match lock.try_lock_exclusive() {
                 Ok(()) => break,
-                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                Err(e)
+                    if e.kind() == std::io::ErrorKind::WouldBlock
+                        || e.raw_os_error() == fs2::lock_contended_error().raw_os_error() =>
+                {
                     tokio::time::sleep(Duration::from_millis(10)).await
                 }
                 Err(e) => return Err(e.into()),

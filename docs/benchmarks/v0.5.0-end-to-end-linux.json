@@ -13,7 +13,8 @@
       "symbols": 41,
       "edges": 108,
       "phases_ms": {},
-      "peak_tree_rss_bytes": 438845440
+      "peak_tree_rss_bytes": 438845440,
+      "engine": "dart-v0.4.0"
     },
     {
       "binary": "polycodegraph",
@@ -33,7 +34,8 @@
         "storage_ms": 1,
         "query_ms": 0
       },
-      "peak_tree_rss_bytes": 433311744
+      "peak_tree_rss_bytes": 433311744,
+      "engine": "rust"
     },
     {
       "binary": "polycodegraph",
@@ -48,7 +50,8 @@
       "symbols": 24,
       "edges": 75,
       "phases_ms": {},
-      "peak_tree_rss_bytes": 509800448
+      "peak_tree_rss_bytes": 509800448,
+      "engine": "dart-v0.4.0"
     },
     {
       "binary": "polycodegraph",
@@ -68,7 +71,8 @@
         "storage_ms": 1,
         "query_ms": 0
       },
-      "peak_tree_rss_bytes": 560234496
+      "peak_tree_rss_bytes": 560234496,
+      "engine": "rust"
     }
   ],
   "note": "Separate cold indexing, update and repeated MCP round trips for 31 seconds (including a 30-second reconciliation). RSS includes live provider descendants; Linux sampled peak, not allocation volume. Shared filesystem caches; no token-savings claim."

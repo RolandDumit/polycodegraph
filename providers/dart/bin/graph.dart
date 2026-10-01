@@ -24,12 +24,15 @@ Future<void> main() async {
             .cast<String>()
             .toSet();
     final contexts = AnalysisContextCollection(
-      includedPaths: [root, ...files.map((f) => config.safePath(f['file']))],
+      includedPaths: [
+        config.root,
+        ...files.map((f) => config.safePath(f['file'])),
+      ],
       sdkPath: config.sdkPath,
       excludedPaths: [
         config.cachePath,
-        p.join(root, 'build'),
-        p.join(root, '.git'),
+        p.join(config.root, 'build'),
+        p.join(config.root, '.git'),
       ],
     );
     try {

@@ -61,7 +61,7 @@ int consume(shared.Box<int> box) {
 }
 ''');
       final config = GraphConfig(root: root.path);
-      final contexts = AnalysisContextCollection(includedPaths: [root.path]);
+      final contexts = AnalysisContextCollection(includedPaths: [config.root]);
       try {
         final path = config.safePath('lib/consumer.dart');
         final unit =
@@ -102,7 +102,7 @@ int consume(shared.Box<int> box) {
       "import 'fallback.dart' if (dart.library.io) 'native.dart'; String platformName() => platform();",
     );
     final config = GraphConfig(root: root.path);
-    final contexts = AnalysisContextCollection(includedPaths: [root.path]);
+    final contexts = AnalysisContextCollection(includedPaths: [config.root]);
     try {
       final path = config.safePath('platform.dart');
       final unit =

@@ -109,3 +109,24 @@ pub struct Snapshot {
     #[serde(default)]
     pub scopes: BTreeMap<String, String>,
 }
+
+/// Preserve Dart's UTF-16 string ordering for stable public pagination.
+pub fn compare_text(a: &str, b: &str) -> std::cmp::Ordering {
+    if a.is_ascii() && b.is_ascii() {
+        a.cmp(b)
+    } else {
+        a.encode_utf16().cmp(b.encode_utf16())
+    }
+}
+#[derive(Eq, PartialEq)]
+pub struct TextOrder(pub String);
+impl Ord for TextOrder {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        compare_text(&self.0, &other.0)
+    }
+}
+impl PartialOrd for TextOrder {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}

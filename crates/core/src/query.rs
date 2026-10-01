@@ -1,6 +1,6 @@
 use crate::{
     config::Config,
-    model::{Edge, Node, Snapshot, hash, language},
+    model::{Edge, Node, Snapshot, TextOrder, compare_text, hash, language},
 };
 use anyhow::{Result, bail};
 use serde_json::{Value, json};
@@ -83,7 +83,13 @@ impl Graph {
                 node_map.insert(n.id.as_str(), (f, i));
             }
         }
-        let positions = node_map.into_values().collect();
+        let mut positions: Vec<_> = node_map.into_values().collect();
+        positions.sort_by(|(a, i), (b, j)| {
+            compare_text(
+                &snapshot.files[&files[*a]].nodes[*i].id,
+                &snapshot.files[&files[*b]].nodes[*j].id,
+            )
+        });
         let nodes = Nodes {
             snapshot: snapshot.clone(),
             files: files.clone(),
@@ -121,7 +127,8 @@ impl Graph {
             }
         }
         drop(seen);
-        positions.sort_by_cached_key(|(f, i)| snapshot.files[&files[*f]].edges[*i].key());
+        positions
+            .sort_by_cached_key(|(f, i)| TextOrder(snapshot.files[&files[*f]].edges[*i].key()));
         let edges = Edges {
             snapshot: snapshot.clone(),
             files,
@@ -232,7 +239,11 @@ impl Graph {
                 2
             }
         };
-        matches.sort_by(|x, y| rank(x).cmp(&rank(y)).then_with(|| x.id.cmp(&y.id)));
+        matches.sort_by(|x, y| {
+            rank(x)
+                .cmp(&rank(y))
+                .then_with(|| compare_text(&x.id, &y.id))
+        });
         self.table(
             c,
             json!(COLUMNS),
@@ -271,7 +282,7 @@ impl Graph {
                 rows.push(row);
             }
         }
-        rows.sort_by_key(|r| dart_join(r, "\t"));
+        rows.sort_by_key(|r| TextOrder(dart_join(r, "\t")));
         let mut cols = COLUMNS.to_vec();
         cols.extend([
             "relation",
@@ -300,7 +311,7 @@ impl Graph {
             cursor += 1;
         }
         let mut found: Vec<_> = queue.into_iter().skip(1).map(|i| &self.nodes[i]).collect();
-        found.sort_by(|a, b| a.id.cmp(&b.id));
+        found.sort_by(|a, b| compare_text(&a.id, &b.id));
         Ok(self.table(
             c,
             json!(COLUMNS),
@@ -338,7 +349,7 @@ impl Graph {
             );
         }
         let mut rows: Vec<_> = found.into_values().collect();
-        rows.sort_by_key(|r| dart_join(r, ""));
+        rows.sort_by_key(|r| TextOrder(dart_join(r, "")));
         Ok(self.table(
             c,
             json!(["file", "relation", "direction"]),
@@ -435,7 +446,7 @@ impl Graph {
         found.sort_by(|x, y| {
             dist[x]
                 .cmp(&dist[y])
-                .then_with(|| self.nodes[*x].id.cmp(&self.nodes[*y].id))
+                .then_with(|| compare_text(&self.nodes[*x].id, &self.nodes[*y].id))
         });
         let files: BTreeSet<_> = found
             .iter()
@@ -523,7 +534,7 @@ impl Graph {
             self.incoming[*ib]
                 .len()
                 .cmp(&self.incoming[*ia].len())
-                .then_with(|| a.id.cmp(&b.id))
+                .then_with(|| compare_text(&a.id, &b.id))
         });
         let directories = counts(self.snapshot.files.keys().map(|f| {
             let parts: Vec<_> = f.split('/').collect();

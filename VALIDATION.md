@@ -4,7 +4,7 @@ Local reference: immutable `v0.4.0`, initially commit `2501034b84fab0ca0c0194d95
 
 ## Local checks (Linux x64, 2026-10-01)
 
-- Rust formatting, Clippy with warnings denied, 27 core/transport/storage/incremental tests.
+- Rust formatting, Clippy with warnings denied, 28 core/transport/storage/incremental tests.
 - Dart provider formatting, analysis with infos denied and three Analyzer tests, including generics/accessors/operators, conditional dependencies and emission with unchanged context.
 - Ruff and strict mypy on the retained Python adapters; Go vet on the retained Go adapter.
 - Differential native MCP: Dart fixture 37 symbols / 99 edges; polyglot 41 / 108; Python/Rust 32 / 81; mobile 75 / 131; actual Flutter 24 / 75. Mixed ten-language repository: 185 / 419.

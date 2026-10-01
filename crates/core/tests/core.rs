@@ -379,3 +379,34 @@ async fn provider_timeout_terminates_descendants() {
     tokio::time::sleep(std::time::Duration::from_millis(1300)).await;
     assert!(!marker.exists(), "timed-out provider descendant survived");
 }
+
+#[test]
+fn unicode_pagination_uses_legacy_utf16_order() {
+    let d = tempfile::tempdir().unwrap();
+    let c = config(&d);
+    let files = ["😀.dart", "Ｚ.dart"]
+        .iter()
+        .map(|file| {
+            (
+                file.to_string(),
+                FileRecord {
+                    file: file.to_string(),
+                    hash: hash("abc"),
+                    nodes: vec![node(file, "example", "function")],
+                    edges: vec![],
+                    dependencies: vec![],
+                    diagnostics: vec![],
+                    unresolved_calls: 0,
+                },
+            )
+        })
+        .collect();
+    let g = Graph::new(Snapshot {
+        files,
+        ..Default::default()
+    });
+    assert_eq!(
+        g.search(&c, &json!({"query":"","limit":1}))["rows"][0][3],
+        "😀.dart"
+    );
+}

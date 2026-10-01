@@ -202,7 +202,7 @@ pub fn scan(c: &Config) -> Result<Scan> {
         }
     }
     track_prepared_context(c, &s.scopes, &mut s.environment)?;
-    s.skipped.sort();
+    s.skipped.sort_by(|a, b| crate::model::compare_text(a, b));
     Ok(s)
 }
 
