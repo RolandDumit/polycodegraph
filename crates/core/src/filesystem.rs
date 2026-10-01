@@ -85,6 +85,7 @@ pub struct Scan {
     pub environment: BTreeMap<String, String>,
     pub skipped: Vec<String>,
     pub scopes: BTreeMap<String, String>,
+    pub directory_stamps: BTreeMap<String, std::time::SystemTime>,
 }
 pub fn scope(c: &Config, file: &str) -> String {
     let l = language(file);
@@ -144,7 +145,9 @@ pub fn scan(c: &Config) -> Result<Scan> {
         })
     {
         let e = e?;
-        if e.depth() == 0 {
+        if e.file_type().is_dir() {
+            s.directory_stamps
+                .insert(relative(&c.root, e.path()), e.metadata()?.modified()?);
             continue;
         }
         let rel = relative(&c.root, e.path());

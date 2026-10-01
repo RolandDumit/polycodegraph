@@ -134,7 +134,7 @@ On Windows, the same Codex configuration uses the `.exe` path (TOML literal stri
 
 ```toml
 [mcp_servers.polycodegraph]
-command = 'C:\Projects\polycodegraph\build\polycodegraph.exe'
+command = 'C:\Projects\polycodegraph\target\release\polycodegraph.exe'
 args = ['serve', '--root', 'C:\Projects\My Flutter App']
 startup_timeout_sec = 20
 tool_timeout_sec = 180

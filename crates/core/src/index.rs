@@ -46,6 +46,7 @@ pub struct Indexer {
     last_reconciled: Option<u64>,
     pub watcher_error: Option<String>,
     config_disk_hash: String,
+    directory_stamps: BTreeMap<String, SystemTime>,
 }
 fn watch(c: &Config) -> Result<Changes> {
     let (tx, receiver) = sync_channel(4096);
@@ -136,6 +137,7 @@ impl Indexer {
             last_reconciled: None,
             watcher_error,
             config_disk_hash,
+            directory_stamps: BTreeMap::new(),
         })
     }
     fn drain(&mut self) -> (BTreeSet<String>, bool) {
@@ -321,8 +323,22 @@ impl Indexer {
                     environment: BTreeMap::new(),
                     skipped: o.skipped.clone(),
                     scopes: o.scopes.clone(),
+                    directory_stamps: self.directory_stamps.clone(),
                 };
                 for f in &dirty {
+                    // FSEvents may deliver pre-scan directory notifications later.
+                    // Directory timestamps only suppress duplicate hints; source freshness uses hashes.
+                    let directory = if f.is_empty() {
+                        self.config.root.clone()
+                    } else {
+                        self.config.root.join(f)
+                    };
+                    if self.directory_stamps.get(f).is_some_and(|stamp| {
+                        fs::symlink_metadata(&directory)
+                            .is_ok_and(|m| m.is_dir() && m.modified().ok().as_ref() == Some(stamp))
+                    }) {
+                        continue;
+                    }
                     let path = match self.config.safe(f) {
                         Ok(path) => path,
                         Err(_) => {
@@ -469,6 +485,7 @@ impl Indexer {
                 && !is_full
                 && old.as_ref().is_some_and(|o| o.skipped == scan.skipped)
             {
+                self.directory_stamps = scan.directory_stamps;
                 if reconcile {
                     self.last_scan = Instant::now();
                     self.last_reconciled =
@@ -499,6 +516,7 @@ impl Indexer {
                 if after.hashes != scan.hashes || after.environment != scan.environment {
                     unstable = true;
                 }
+                scan.directory_stamps = after.directory_stamps;
             }
             if !reconcile {
                 let languages = affected.iter().map(|f| language(f)).collect();
@@ -539,6 +557,7 @@ impl Indexer {
             let t = Instant::now();
             self.store.write_changed(&snapshot, &affected)?;
             self.metrics.storage_ms += t.elapsed().as_secs_f64() * 1000.;
+            self.directory_stamps = scan.directory_stamps;
             self.graph = Some(Graph::new(snapshot));
             self.metrics.graph_builds += 1;
             if reconcile {
@@ -605,6 +624,28 @@ fn cap(v: &mut Value, c: &Config) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn duplicate_directory_notifications_reuse_index() {
+        let d = tempfile::tempdir().unwrap();
+        let mut c = Config::load(d.path(), None).unwrap();
+        fs::create_dir_all(d.path().join("assets")).unwrap();
+        c.providers_path = Some(d.path().join("assets").to_string_lossy().into());
+        let mut i = Indexer::new(c).unwrap();
+        i.refresh(true, false).await.unwrap();
+        let scans = i.metrics.scans;
+        i.update(false, false, BTreeSet::from(["".into(), "assets".into()]))
+            .await
+            .unwrap();
+        assert_eq!(i.metrics.scans, scans);
+        fs::create_dir_all(d.path().join("assets/new-directory")).unwrap();
+        i.update(false, false, BTreeSet::from(["assets".into()]))
+            .await
+            .unwrap();
+        assert!(
+            i.metrics.scans > scans,
+            "actual directory changes must be reconciled"
+        );
+    }
     #[tokio::test]
     async fn overflow_forces_reconciliation() {
         let d = tempfile::tempdir().unwrap();
