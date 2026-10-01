@@ -16,7 +16,7 @@ Regression tests cover watcher overflow/loss recovery, duplicate source events, 
 
 ## Cross-platform acceptance
 
-CI requires core and native semantic/provider smoke checks on Linux, Windows and macOS, Flutter on each host, Android SDK on each host and real UIKit/bridging-header resolution on macOS/Xcode. Package builds and relocation/setup smoke tests cover Linux x64, Windows x64, macOS x64 and ARM64. The workflow uses `v0.4.0` as its compiled oracle and uploads benchmark reports.
+CI requires core and native semantic/provider smoke checks on Linux, Windows and macOS, Flutter on each host, Android SDK on each host and real UIKit/bridging-header resolution on macOS/Xcode. Package builds and relocation/setup smoke tests cover Linux x64, Windows x64, macOS x64 and ARM64, exercising TypeScript plus the bundled native Dart/Go workers. Core tests also run on the Intel macOS package runner. The workflow uses `v0.4.0` as its compiled oracle and uploads benchmark reports.
 
 The complete 20-job cross-platform matrix passed for [bef8832](https://github.com/RolandDumit/polycodegraph/actions/runs/36899205872), including all four packages, Flutter, Android and macOS UIKit. Later commits must also pass their exact CI run before delivery. Local Linux checks do not verify UIKit, Windows or macOS. Package preparation does not publish a GitHub release/tag; that remains a separate step after validation.
 

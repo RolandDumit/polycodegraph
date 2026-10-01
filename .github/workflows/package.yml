@@ -39,6 +39,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
+      - run: cargo test --locked --workspace
+        if: matrix.target == 'macos-x64'
       - run: cargo build --release --locked --workspace
       - run: ./target/release/polycodegraph setup --languages dart,go
       - run: cargo xtask package
