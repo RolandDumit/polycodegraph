@@ -1,0 +1,28 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  dart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.2'
+      - run: dart pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed bin lib test
+      - run: dart analyze --fatal-infos
+      - run: dart test --reporter expanded
+      - run: mkdir -p build && dart compile exe bin/dart_codegraph.dart -o build/dart-codegraph
+      - run: ./build/dart-codegraph --version
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: dart pub get
+      - run: flutter pub get
+        working-directory: examples/flutter_fixture
+      - run: dart test test/flutter_fixture_test.dart --reporter expanded
