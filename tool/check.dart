@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'processes.dart';
 import 'native_smoke.dart';
@@ -40,6 +41,41 @@ Future<void> main(List<String> args) async {
           );
         }
       }
+      final stateFile = File(
+        p.join(repositoryRoot, 'providers/semantic/.installed.json'),
+      );
+      if (!stateFile.existsSync()) {
+        throw ToolFailure('Prepare Python and Rust adapters first.');
+      }
+      final state = jsonDecode(stateFile.readAsStringSync()) as Map;
+      if (state['jedi'] == null || state['rust_analyzer'] == null) {
+        throw ToolFailure('Prepare Python and Rust adapters first.');
+      }
+      if (state['dev_tools'] == true) {
+        await runTool(semanticPython, [
+          '-I',
+          '-m',
+          'ruff',
+          'check',
+          'providers/semantic',
+        ]);
+        await runTool(semanticPython, [
+          '-I',
+          '-m',
+          'ruff',
+          'format',
+          '--check',
+          'providers/semantic',
+        ]);
+        await runTool(semanticPython, [
+          '-I',
+          '-m',
+          'mypy',
+          '--config-file',
+          'providers/semantic/pyproject.toml',
+          'providers/semantic',
+        ]);
+      }
       environment['POLYCODEGRAPH_REQUIRE_PROVIDERS'] = '1';
     }
     await runTool(dartCommand, [
@@ -72,7 +108,7 @@ Future<void> main(List<String> args) async {
         binary,
       ]);
       await runTool(binary, ['--version']);
-      await smokeNative(binary);
+      await smokeNative(binary, providers: args.contains('--providers'));
     }
   } on ToolFailure catch (error) {
     stderr.writeln(error);

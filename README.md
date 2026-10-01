@@ -1,6 +1,6 @@
 # PolyCodeGraph
 
-Semantic code intelligence for **Dart/Flutter, TypeScript, JavaScript, Java and Go**, exposed through a compact **Model Context Protocol (MCP)** server for coding agents and AI harnesses.
+Semantic code intelligence for **Dart/Flutter, TypeScript, JavaScript, Java, Go, Python and Rust**, exposed through a compact **Model Context Protocol (MCP)** server for coding agents and AI harnesses.
 
 Index a repository, explore its symbols and dependencies through compact graph queries, assess the impact of a change, and request only the source snippets you need. Relations use compiler-resolved symbols rather than matching names across files. A mixed repository shares one graph and one MCP API; each language keeps its own semantic resolver.
 
@@ -12,7 +12,7 @@ Index a repository, explore its symbols and dependencies through compact graph q
 
 No embeddings, LLM API key or database service is required. The server runs with Dart. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
 
-**Version 0.2.0.** Local stdio transport. Dart Analyzer 13.3.0; Dart SDK 3.11 or later. The package name is `polycodegraph`; the executable and project name are `polycodegraph`.
+**Version 0.3.0.** Local stdio transport. Dart Analyzer 13.3.0; Dart SDK 3.11 or later. The package name is `polycodegraph`; the executable and project name are `polycodegraph`.
 
 ## Install and run
 
@@ -24,7 +24,7 @@ cd polycodegraph
 dart pub get
 ```
 
-For TypeScript/JavaScript, Java and Go, install Node.js 22+, a full JDK 17+ (matching the source language level) and Go 1.25+, then prepare the adapters:
+Install the runtimes for the languages you use: Node.js 22+ for TypeScript/JavaScript, a full JDK 17+ for Java, Go 1.25+ for Go, and Python 3.11+ for Python/Rust. Prepare the adapters:
 
 ```sh
 dart run tool/setup_providers.dart
@@ -32,9 +32,11 @@ dart run tool/setup_providers.dart
 dart run tool/setup_providers.dart --typescript
 dart run tool/setup_providers.dart --go
 dart run tool/setup_providers.dart --java
+dart run tool/setup_providers.dart --python
+dart run tool/setup_providers.dart --rust
 ```
 
-Java uses JDK compiler APIs directly and needs no extra library. `setup_providers.dart` checks all three runtimes by default; use its flags when you only need some languages. Bash is not required.
+Java uses JDK compiler APIs directly and needs no extra library. `setup_providers.dart` prepares all adapters by default; use its flags when you only need some languages. Bash is not required. Python dependencies are installed into an isolated adapter virtual environment with pinned wheel hashes. Rust setup downloads an official rust-analyzer release (2026-09-28), validates SHA-256, and selects the native Linux/macOS/Windows x86_64 or ARM64 binary. It does not require Cargo/rustup or run indexed build scripts.
 
 From the checkout, index a repository and start the MCP server:
 
@@ -76,7 +78,7 @@ On Windows (PowerShell):
 
 Native binaries and the compiled Go adapter must be built separately for each OS/architecture. The source checkout and `dart run` commands work on all three operating systems.
 
-Keep the `providers/` directory next to the executable or one directory above it (as in `build/polycodegraph`), or set `providers_path` explicitly. A global activation outside the checkout may also need this explicit path. Include its installed TypeScript compiler and built Go adapter when distributing it. Node/JDK/Go remain runtime prerequisites for their respective adapters.
+Keep the `providers/` directory next to the executable or one directory above it (as in `build/polycodegraph`), or set `providers_path` explicitly. A global activation outside the checkout may also need this explicit path. Include its installed TypeScript compiler, built Go adapter, Python adapter environment and native rust-analyzer installation when distributing it. Node/JDK/Go/Python remain runtime prerequisites for their respective adapters. Python virtual environments contain host-specific paths; recreate them on the destination (remove `providers/semantic/.venv` before running setup if the checkout was copied), or configure `python_path` to a prepared native interpreter.
 
 The native executable still needs access to a Dart SDK for analysis. Specify `sdk_path` in configuration when SDK auto-detection is unavailable, especially when the executable is moved outside a Dart installation. For Flutter, point it to `flutter/bin/cache/dart-sdk`.
 
@@ -90,9 +92,9 @@ Linux, macOS and Windows are supported. Development/setup scripts are written in
 | macOS | `build/polycodegraph` | `providers/go/graph` |
 | Windows | `build/polycodegraph.exe` | `providers/go/graph.exe` |
 
-Use a Dart SDK (or Flutter's bundled Dart SDK) on your host. Install Node.js, a **full JDK** and Go for the languages you need. The adapter setup selects the correct executable suffix automatically and launches native programs directly, including npm through Node, so paths with spaces work. `NODE`, `JAVA` and `GO` may point to native executables; Windows `.cmd`, `.bat` and PowerShell launchers are not runtime executables. For custom npm installations, set `NPM_CLI` to `npm-cli.js`.
+Use a Dart SDK (or Flutter's bundled Dart SDK) on your host. Install Node.js, a **full JDK**, Go and Python for the languages you need. The adapter setup selects the correct executable suffix automatically and launches native programs directly, including npm through Node, so paths with spaces work. `NODE`, `JAVA`, `GO`, `PYTHON` and `RUST_ANALYZER` select native tooling for setup/checks; Windows `.cmd`, `.bat` and PowerShell launchers are not runtime executables. For custom npm installations, set `NPM_CLI` to `npm-cli.js`.
 
-Graph IDs/globs always use forward slashes, independent of OS. Windows configuration can use `C:/Projects/My App` paths; alternatively use single-quoted YAML/TOML paths or escape backslashes in JSON. Cache files belong to their original repository root and are rebuilt after moving a checkout; do not transfer a native binary or compiled Go adapter between different OS/architectures.
+Graph IDs/globs always use forward slashes, independent of OS. Windows configuration can use `C:/Projects/My App` paths; alternatively use single-quoted YAML/TOML paths or escape backslashes in JSON. Cache files belong to their original repository root and are rebuilt after moving a checkout; do not transfer a native binary, compiled Go adapter, rust-analyzer binary or Python virtual environment between different OS/architectures.
 
 ## Configuration
 
@@ -111,6 +113,9 @@ include:
   - "**/*.cjs"
   - "**/*.java"
   - "**/*.go"
+  - "**/*.py"
+  - "**/*.pyi"
+  - "**/*.rs"
 exclude:
   - "**/.git/**"
   - "**/.dart_tool/**"
@@ -127,11 +132,16 @@ max_file_bytes: 2097152
 node_path: node
 java_path: java
 go_path: go
+# python_path: /absolute/path/to/prepared/python  # otherwise the adapter venv
+python_search_paths: []  # extra source roots or dependency site-packages
+# rust_analyzer_path: /absolute/path/to/rust-analyzer  # otherwise installed binary
+rust_cfg: []  # extra cfg values, e.g. 'feature="offline"'
+# rust_sysroot_src: /absolute/path/to/rust/library  # optional std/core source tree
 java_classpath: []  # paths to dependency JARs or compiled class directories
 provider_timeout_seconds: 120
 ```
 
-Defaults index repository sources for all five languages, including generated Dart files. Dependency/artifact directories (`node_modules`, `vendor`, `target`, `dist`, `build`) are skipped internally. Includes/excludes are explicit config globs; `.gitignore` is not interpreted. Codegraph's explicit inclusion rules take precedence over analysis_options source exclusions; Analyzer still uses the project's language and diagnostic options. Keeping generated `.g.dart`/`.freezed.dart` files gives the best resolved graph. Excluding them reduces coverage; changes to excluded Dart sources still invalidate the index. `exclude` replaces the configured list; internal `.git`, `.dart_tool`, `build`, and the cache directory are always omitted from source discovery. `.dart_tool/package_config.json` is still tracked for invalidation. Unknown keys and invalid types fail with a useful error.
+Defaults index repository sources for all seven languages, including generated Dart files. Dependency/artifact directories (`node_modules`, `vendor`, `target`, `dist`, `build`, `.venv`, `venv`, `__pycache__`, `.mypy_cache`, `.ruff_cache`, `.pytest_cache`, `.tox`, `.nox`) are skipped internally. Includes/excludes are explicit config globs; `.gitignore` is not interpreted. Codegraph's explicit inclusion rules take precedence over analysis_options source exclusions; Analyzer still uses the project's language and diagnostic options. Keeping generated `.g.dart`/`.freezed.dart` files gives the best resolved graph. Excluding them reduces coverage; changes to excluded Dart sources still invalidate the index. `exclude` replaces the configured list; internal `.git`, `.dart_tool`, `build`, and the cache directory are always omitted from source discovery. `.dart_tool/package_config.json` is still tracked for invalidation. Unknown keys and invalid types fail with a useful error.
 
 Symlinks and sources larger than `max_file_bytes` are omitted and reported under `skipped`. Source reads and cache paths are restricted to the configured repository; symlink paths cannot be read through `snippet`. Dependency edges pointing to an omitted source node are dropped and counted in `dropped_edges`. Configure trusted repositories only.
 
@@ -200,12 +210,32 @@ Allow the project server in Claude Code and inspect it with `/mcp`. For large re
 | JavaScript/JSX/MJS/CJS | TypeScript compiler API | Supports static ES/CommonJS module relationships where the compiler resolves them; typings improve coverage |
 | Java | javac Trees / Elements / Types | JDK 17+; configure dependency JARs/classes with `java_classpath`; overload IDs include erased parameter types |
 | Go | go/packages + go/types | Go 1.25+ and prepared module/workspace dependencies; static interface methods and implicit structural implementations |
+| Python/PYI | Python AST + pinned Jedi 0.20.0 | Python 3.11+; aliases, typed receivers, classes, constructors, methods, fields, properties, async functions and explicit inheritance |
+| Rust | rust-analyzer LSP/HIR | Modules, structs, enums, traits, impl blocks, methods, fields, aliases, constants and statically resolved calls; read-only crate model |
 
 Go loading is read-only and disables module downloads. Java analysis disables annotation processors and does not emit class files. Maven/Gradle build hooks are not executed; provide their resolved classpath. Missing generated sources, unavailable dependencies, unsupported build constraints and compiler errors reduce coverage and appear in diagnostics. Go uses current GOOS/GOARCH/GOFLAGS/build constraints; excluded sources retain a file node and a diagnostic.
 
 `doctor` reports adapter/runtime presence. MCP `status` includes provider health, diagnostic counts and bounded samples (messages capped at 512 characters with explicit truncation); successful presence checks alone do not prove semantic resolution. If an adapter cannot run or times out, its source files receive `provider_unavailable` diagnostics and file nodes; other languages remain queryable. Installing/fixing an adapter invalidates the cached coverage automatically.
 
 Static call targets are used throughout. Go function variables, Java reflection, JavaScript dynamic property access and arbitrary callback flow remain incomplete. An interface call points to its declared method; `implementations` and blast radius expose related implementations conservatively. Go supports structural interfaces without an explicit implements clause. Cross-language RPC/FFI/runtime calls are not inferred from matching names.
+
+### Python and Rust setup and precision
+
+For a project using only these two languages:
+
+```sh
+dart run tool/setup_providers.dart --python --rust
+dart run bin/polycodegraph.dart doctor --root /path/to/project
+dart run bin/polycodegraph.dart index --root /path/to/project
+```
+
+Python declarations come from the Python AST; references and calls use [Jedi static resolution](https://jedi.readthedocs.io/en/latest/docs/api.html). Repository modules are parsed without importing/executing them. Runtime stdlib and adapter-environment packages are available for inference; use `python_search_paths` for other source roots or project dependency site-packages. Syntax support follows the selected Python runtime. Dynamic/ambiguous callbacks are omitted and counted under `unresolved_calls`. Duck-typed/structural Protocol implementations, monkey-patching and arbitrary decorator/runtime dispatch are not inferred. Explicit bases and resolved overridden methods participate in impact analysis.
+
+Rust uses a [rust-analyzer project model](https://rust-analyzer.github.io/book/non_cargo_based_projects.html) built from indexed Cargo package roots, default local features and indexed path dependencies, including dependency aliases/workspace inheritance. Standalone `.rs` sources can be analyzed as separate crates. `rust_cfg` adds explicit build conditions. External registry/git crates are not downloaded/loaded automatically; they produce coverage diagnostics. To describe prepared external crate sources, provide a root `rust-project.json` with `crates`/`deps`, or set `rust_sysroot_src` for std/core sources. When custom features, targets, generated modules or build environments matter, describe them explicitly in that model; the default manifest reader is intentionally conservative.
+
+[Build scripts and procedural macros](https://rust-analyzer.github.io/book/security.html) are disabled. Cargo, indexed `.cargo/config` wrappers, toolchain overrides, project runnables and proc-macro libraries are not executed. The model discards executable fields. Macro-expanded call graphs remain incomplete and are reported. `implementations` resolves Rust trait impls and overriding methods; calls retain their static HIR targets. Source positions, escaped file URIs, Unicode and Windows CRLF are covered by regression tests.
+
+Edits rebuild the affected Python or Rust language scope; additions/deletions, `pyproject.toml`, requirements/lock files, `Cargo.toml`, `Cargo.lock`, `rust-project.json` and provider/runtime changes invalidate the cache. External dependency/source changes without a changed lock/config require `index --force`.
 
 ## MCP tools
 
@@ -326,7 +356,7 @@ dart test test/flutter_fixture_test.dart
 
 That test verifies actual Flutter, flutter_bloc, flutter_riverpod, GetIt, go_router and Freezed annotations, plus impact propagation into the screen file. It skips explicitly when the fixture's package config is absent. The fixture is a small runnable Flutter entry point; platform scaffolding is intentionally omitted. Freezed recognition is tested via annotations; build_runner generation is not required by the fixture.
 
-CI runs Dart validation, a required compiler-backed polyglot job (TypeScript, JavaScript, Java and Go), and a separate real Flutter integration job. `test/fixtures/polyglot/` verifies static calls, unrelated same-name decoys, overloads, references, implementations, dependencies, impact and semantic cache invalidation. Optional language tests skip locally when adapters are unavailable; `--providers` requires them. See [docs/architecture.md](docs/architecture.md) and [docs/protocol.md](docs/protocol.md) for implementation and protocol contracts. See [VALIDATION.md](VALIDATION.md) for the checks performed on this checkout.
+CI runs Dart validation, a required semantic polyglot job (TypeScript, JavaScript, Java, Go, Python and Rust), and a separate real Flutter integration job. `test/fixtures/polyglot/` and `test/fixtures/semantic/` verify static calls, unrelated same-name decoys, overloads, references, implementations, dependencies, impact and semantic cache invalidation. `test/semantic_test.dart` also checks Python callbacks, Rust path dependencies, nonexecution of build hooks, Unicode/CRLF and stale bindings. Native MCP tests index all seven languages. Add `--dev` to adapter setup to include Ruff formatting/lint and strict mypy in provider checks. Optional language tests skip locally when adapters are unavailable; `--providers` requires them. See [docs/architecture.md](docs/architecture.md) and [docs/protocol.md](docs/protocol.md) for implementation and protocol contracts. See [VALIDATION.md](VALIDATION.md) for the checks performed on this checkout.
 
 ## Migration from dart-codegraph
 
@@ -337,6 +367,7 @@ The project, package and executable are now `polycodegraph`; update imports, MCP
 - [Lordymine/codegraph architecture](https://github.com/Lordymine/codegraph/blob/main/docs/ARCHITECTURE.md), the inspiration for compact queries and compiler-backed language adapters. The adapters here are implemented independently.
 - [TypeScript compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API), [Go packages](https://pkg.go.dev/golang.org/x/tools/go/packages), and [javac Trees](https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/com/sun/source/util/Trees.html).
 - [Dart Analyzer](https://pub.dev/packages/analyzer) and its [context collection API](https://pub.dev/documentation/analyzer/13.3.0/dart_analysis_analysis_context_collection/AnalysisContextCollection-class.html).
+- [Jedi API](https://jedi.readthedocs.io/en/latest/docs/api.html), [rust-analyzer project models](https://rust-analyzer.github.io/book/non_cargo_based_projects.html) and [configuration](https://rust-analyzer.github.io/book/configuration.html).
 - MCP [stdio transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports) and [tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
 - [Codex MCP configuration](https://developers.openai.com/codex/mcp/) and [Claude Code MCP](https://code.claude.com/docs/en/mcp).
 

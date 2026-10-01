@@ -203,7 +203,15 @@ List<ToolSpec> _specs(GraphConfig config) {
     'file': text,
     'language': {
       'type': 'string',
-      'enum': ['dart', 'typescript', 'javascript', 'java', 'go'],
+      'enum': [
+        'dart',
+        'typescript',
+        'javascript',
+        'java',
+        'go',
+        'python',
+        'rust',
+      ],
     },
     ...pagination,
   };

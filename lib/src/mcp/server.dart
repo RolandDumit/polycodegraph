@@ -56,7 +56,7 @@ class McpServer {
             'capabilities': {
               'tools': {'listChanged': false},
             },
-            'serverInfo': {'name': 'polycodegraph', 'version': '0.2.0'},
+            'serverInfo': {'name': 'polycodegraph', 'version': '0.3.0'},
             'instructions':
                 'Use get_architecture then search_symbol and callers/implementations/blast_radius. Use ids from compact rows. Read source only through snippet. Static dispatch is incomplete; check status diagnostics.',
           };

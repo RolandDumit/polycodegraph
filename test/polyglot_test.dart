@@ -21,6 +21,8 @@ void main() {
     'typescript_javascript',
     'java',
     'go',
+    'python',
+    'rust',
   ].every((language) => (health[language] as Map)['available'] == true);
   final required =
       Platform.environment['POLYCODEGRAPH_REQUIRE_PROVIDERS'] == '1';
@@ -38,6 +40,7 @@ void main() {
         repo = Directory.systemTemp.createTempSync('polycodegraph mixed ');
         final source = Directory('test/fixtures/polyglot').absolute;
         copyTree(source, repo);
+        copyTree(Directory('test/fixtures/semantic'), repo);
         File(
           p.join(repo.path, 'dart_side.dart'),
         ).writeAsStringSync('class DartIndependent {}');
@@ -56,42 +59,53 @@ void main() {
         if (repo.existsSync()) await repo.delete(recursive: true);
       });
 
-      test('all five languages produce declarations with healthy bindings', () {
-        expect(graph.architecture()['languages'], containsPair('dart', 1));
-        expect(
-          (graph.architecture()['languages'] as Map).keys,
-          containsAll(['dart', 'typescript', 'javascript', 'java', 'go']),
-        );
-        final errors = graph.snapshot.files.values
-            .expand((f) => f.diagnostics)
-            .where((d) => d['severity'] == 'error')
-            .toList();
-        expect(errors, isEmpty, reason: '$errors');
-        expect(
-          graph.search(
-            'MemoryRepository',
-            language: 'typescript',
-            kind: 'class',
-          )['total'],
-          1,
-        );
-        expect(
-          graph.search(
-            'MemoryRepository',
-            language: 'go',
-            kind: 'struct',
-          )['total'],
-          1,
-        );
-        expect(
-          graph.search(
-            'MemoryRepository',
-            language: 'java',
-            kind: 'class',
-          )['total'],
-          1,
-        );
-      });
+      test(
+        'all seven languages produce declarations with healthy bindings',
+        () {
+          expect(graph.architecture()['languages'], containsPair('dart', 1));
+          expect(
+            (graph.architecture()['languages'] as Map).keys,
+            containsAll([
+              'dart',
+              'typescript',
+              'javascript',
+              'java',
+              'go',
+              'python',
+              'rust',
+            ]),
+          );
+          final errors = graph.snapshot.files.values
+              .expand((f) => f.diagnostics)
+              .where((d) => d['severity'] == 'error')
+              .toList();
+          expect(errors, isEmpty, reason: '$errors');
+          expect(
+            graph.search(
+              'MemoryRepository',
+              language: 'typescript',
+              kind: 'class',
+            )['total'],
+            1,
+          );
+          expect(
+            graph.search(
+              'MemoryRepository',
+              language: 'go',
+              kind: 'struct',
+            )['total'],
+            1,
+          );
+          expect(
+            graph.search(
+              'MemoryRepository',
+              language: 'java',
+              kind: 'class',
+            )['total'],
+            1,
+          );
+        },
+      );
       test(
         'TypeScript aliases, interface calls and JavaScript imports resolve',
         () {
@@ -407,7 +421,7 @@ void main() {
     },
     skip: available
         ? false
-        : 'Install semantic adapters with tool/setup-providers.sh',
+        : 'Install semantic adapters with dart run tool/setup_providers.dart',
     timeout: const Timeout(Duration(minutes: 3)),
   );
 

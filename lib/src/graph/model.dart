@@ -5,6 +5,8 @@ String languageFor(String file) {
     'js' || 'jsx' || 'mjs' || 'cjs' => 'javascript',
     'java' => 'java',
     'go' => 'go',
+    'py' || 'pyi' => 'python',
+    'rs' => 'rust',
     _ => 'dart',
   };
 }

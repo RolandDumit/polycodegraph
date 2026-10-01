@@ -4,9 +4,10 @@ import 'dart:io';
 import 'package:cli_util/cli_util.dart' as cli;
 import 'package:path/path.dart' as p;
 import 'processes.dart';
+import '../test/support.dart' show copyTree;
 
 /// Exercise the compiled server, URI escaping, CRLF and paths with spaces.
-Future<void> smokeNative(String binary) async {
+Future<void> smokeNative(String binary, {bool providers = false}) async {
   final root = Directory.systemTemp.createTempSync(
     'polycodegraph native spaces ',
   );
@@ -18,6 +19,11 @@ Future<void> smokeNative(String binary) async {
       jsonEncode({
         'sdk_path': cli.sdkPath ?? (throw ToolFailure('Dart SDK not found')),
         'providers_path': p.join(repositoryRoot, 'providers'),
+        'java_path': Platform.environment['JAVA'] ?? 'java',
+        'go_path': Platform.environment['GO'] ?? 'go',
+        'node_path': Platform.environment['NODE'] ?? 'node',
+        'rust_analyzer_path':
+            Platform.environment['RUST_ANALYZER'] ?? 'rust-analyzer',
       }),
     );
     final source = File(p.join(root.path, 'library with spaces.dart'));
@@ -27,6 +33,16 @@ Future<void> smokeNative(String binary) async {
     File(
       p.join(root.path, 'part with spaces.dart'),
     ).writeAsStringSync('part of fixture;\r\nclass Model {}\r\n');
+    if (providers) {
+      copyTree(
+        Directory(p.join(repositoryRoot, 'test/fixtures/semantic')),
+        root,
+      );
+      copyTree(
+        Directory(p.join(repositoryRoot, 'test/fixtures/polyglot')),
+        root,
+      );
+    }
     process = await Process.start(binary, ['serve', '--root', root.path]);
     process.stderr.transform(utf8.decoder).listen(errors.write);
     responses = StreamIterator(
@@ -80,6 +96,7 @@ Future<void> smokeNative(String binary) async {
     );
     final search = await call('search_symbol', {
       'query': 'MemoryRepository',
+      'language': 'dart',
       'kind': 'class',
     });
     if (search['total'] != 1) {
@@ -97,10 +114,53 @@ Future<void> smokeNative(String binary) async {
     source.writeAsStringSync('// edit\r\n${source.readAsStringSync()}');
     final refreshed = await call('search_symbol', {
       'query': 'MemoryRepository',
+      'language': 'dart',
       'kind': 'class',
     });
     if (refreshed['generation'] == before) {
       throw ToolFailure('Native invalidation failed', 1);
+    }
+    if (providers) {
+      final architecture = await call('get_architecture');
+      final languages = (architecture['languages'] as Map).keys.toSet();
+      if (!languages.containsAll([
+        'dart',
+        'typescript',
+        'javascript',
+        'java',
+        'go',
+        'python',
+        'rust',
+      ])) {
+        throw ToolFailure('Native language coverage failed: $languages', 1);
+      }
+      for (final language in ['python', 'rust']) {
+        final symbols = await call('search_symbol', {
+          'query': 'load',
+          'kind': 'function',
+          'language': language,
+        });
+        final loads = (symbols['rows'] as List)
+            .where((row) => row[2] == 'load')
+            .toList();
+        if (loads.length != 1) {
+          throw ToolFailure('Native $language search failed', 1);
+        }
+        final target = loads.single[0] as String;
+        final callees = await call('callees', {'target': target});
+        if (!(callees['rows'] as List).any(
+          (row) => (row[0] as String).contains('Repository.fetch#method'),
+        )) {
+          throw ToolFailure(
+            'Native $language call binding failed: $callees',
+            1,
+          );
+        }
+        await call('snippet', {'target': target});
+      }
+      stdout.writeln(
+        'Native MCP: all seven languages indexed; Python and Rust calls/snippets passed.',
+      );
     }
     await process.stdin.close();
     if (await process.exitCode.timeout(const Duration(seconds: 30)) != 0) {

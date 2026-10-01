@@ -37,10 +37,13 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: dart pub get --enforce-lockfile
-      - run: dart run tool/setup_providers.dart
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: dart run tool/setup_providers.dart --dev
       - run: go vet ./...
         working-directory: providers/go
-      - run: dart run tool/check.dart --providers
+      - run: dart run tool/check.dart --providers --build
   flutter:
     strategy:
       fail-fast: false

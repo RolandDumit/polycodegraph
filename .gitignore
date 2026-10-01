@@ -7,3 +7,10 @@ node_modules/
 providers/go/graph
 providers/go/graph.exe
 .dart-codegraph/
+
+.venv/
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+providers/semantic/.installed.json
+providers/semantic/.tools/

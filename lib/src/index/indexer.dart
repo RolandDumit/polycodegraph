@@ -101,6 +101,14 @@ class RepositoryIndexer {
                 'vendor',
                 'target',
                 'dist',
+                '.venv',
+                'venv',
+                '__pycache__',
+                '.mypy_cache',
+                '.ruff_cache',
+                '.pytest_cache',
+                '.tox',
+                '.nox',
               }.contains(p.basename(entry.path)) ||
               p.equals(entry.path, config.cachePath)) {
             continue;
@@ -141,6 +149,20 @@ class RepositoryIndexer {
               'settings.gradle',
               'settings.gradle.kts',
               'gradle.properties',
+              'pyproject.toml',
+              'requirements.txt',
+              'requirements.lock',
+              'Pipfile',
+              'Pipfile.lock',
+              'poetry.lock',
+              'uv.lock',
+              'setup.cfg',
+              'setup.py',
+              'Cargo.toml',
+              'Cargo.lock',
+              'rust-project.json',
+              'rust-toolchain',
+              'rust-toolchain.toml',
             }.contains(p.basename(entry.path)) ||
             p.basename(entry.path).startsWith('tsconfig') ||
             p.basename(entry.path) == 'jsconfig.json') {
@@ -156,6 +178,9 @@ class RepositoryIndexer {
           'cjs',
           'java',
           'go',
+          'py',
+          'pyi',
+          'rs',
         }.contains(p.extension(entry.path).replaceFirst('.', ''))) {
           continue;
         }

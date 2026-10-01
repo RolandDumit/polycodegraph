@@ -19,6 +19,14 @@ The package-backed fixture must classify `HomeScreen` as Widget/Screen, `UserCub
 
 `test/fixtures/polyglot/` supplies TypeScript and JavaScript imports, a Java interface with implementing and overloaded methods, and a Go interface with implicit implementation. Integration tests require real compiler adapters, check calls/references/implementations/dependencies and impact, reject unrelated same-name targets, and mutate source to check cache refresh. TypeScript fixtures share a constructor across two tsconfig scopes; Go receiver methods live in a separate file from their type. Missing runtimes are skips only in the optional local suite; `tool/check.dart --providers` requires full coverage.
 
+## Python and Rust
+
+`test/fixtures/semantic/` is copied into the mixed-language fixture and exercised independently. Python `load`/`load_async` resolve to the typed repository contract; alias-based construction/concrete calls resolve to `MemoryRepository`. Constructors, assigned instance fields, property/async tags and explicit override relationships are indexed. An unknown callback creates no call target and increases unresolved coverage. The indexed `json.py` writes a marker if executed; the marker must remain absent.
+
+Rust `load` targets the declared trait method, concrete calls target its impl, and unrelated same-name methods stay disconnected. Trait implementations, modules, structs, enum variants, type aliases, constants and fields are extracted. Local Cargo path dependency aliases resolve across crate boundaries. Cargo's build file, custom rustc wrapper and nonexistent toolchain override must not execute or affect indexing. A root rust-project model discards runnable/proc-macro executable fields.
+
+Renaming contract methods must remove stale calls from unchanged consumers in both languages. Warm caches avoid work; Python/Rust manifests and project-model edits invalidate bindings. Unicode identifiers, percent-escaped filenames, astral characters and CRLF preserve source snippets and resolved calls. Missing runtimes produce file nodes with explicit diagnostics. `--providers` requires these tests; compiled MCP smoke tests cover all seven languages on each CI operating system.
+
 ## Transport and boundaries
 
 `mcp_test.dart` exercises a real stdio subprocess, initialization, tool schemas, validation, framing, cancellation and bounded errors. Config and graph tests verify path traversal/symlink rejection, ambiguity, stable pagination, snippet bounds and source freshness. Preserve these guarantees as providers are added.

@@ -44,6 +44,40 @@ Future<void> runTool(
   if (code != 0) throw ToolFailure('$program failed ($code)', code);
 }
 
+Future<String> captureTool(String program, List<String> args) async {
+  final executable = resolveNativeExecutable(
+    program,
+    directory: repositoryRoot,
+  );
+  if (executable == null) {
+    throw ToolFailure('Native executable not found: $program');
+  }
+  final result = await Process.run(
+    executable,
+    args,
+    workingDirectory: repositoryRoot,
+  );
+  if (result.exitCode != 0) {
+    throw ToolFailure('$program failed: ${result.stderr}', result.exitCode);
+  }
+  return '${result.stdout}';
+}
+
+String get semanticPython => p.join(
+  repositoryRoot,
+  'providers',
+  'semantic',
+  '.venv',
+  Platform.isWindows ? 'Scripts/python.exe' : 'bin/python',
+);
+String get bundledRustAnalyzer => p.join(
+  repositoryRoot,
+  'providers',
+  'semantic',
+  '.tools',
+  Platform.isWindows ? 'rust-analyzer.exe' : 'rust-analyzer',
+);
+
 /// Run npm's JavaScript entrypoint through native Node. No Windows batch shell
 /// is involved, even when paths contain spaces or shell metacharacters.
 String npmCli(String node) {

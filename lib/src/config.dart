@@ -17,9 +17,14 @@ class GraphConfig {
     '**/*.cjs',
     '**/*.java',
     '**/*.go',
+    '**/*.py',
+    '**/*.pyi',
+    '**/*.rs',
   ];
   final String? providersPath;
-  final String nodePath, javaPath, goPath;
+  final String nodePath, javaPath, goPath, rustAnalyzerPath;
+  final String? pythonPath, rustSysrootSrc;
+  final List<String> pythonSearchPaths, rustCfg;
   final List<String> javaClasspath;
   final int providerTimeoutSeconds;
 
@@ -48,6 +53,11 @@ class GraphConfig {
     this.nodePath = 'node',
     this.javaPath = 'java',
     this.goPath = 'go',
+    this.pythonPath,
+    this.pythonSearchPaths = const [],
+    this.rustAnalyzerPath = 'rust-analyzer',
+    this.rustCfg = const [],
+    this.rustSysrootSrc,
     this.javaClasspath = const [],
     this.providerTimeoutSeconds = 120,
     this.sdkPath,
@@ -119,7 +129,12 @@ class GraphConfig {
       'node_path',
       'java_path',
       'go_path',
+      'python_path',
+      'rust_analyzer_path',
+      'rust_sysroot_src',
       'java_classpath',
+      'python_search_paths',
+      'rust_cfg',
       'provider_timeout_seconds',
     };
     for (final key in raw.keys) {
@@ -153,6 +168,9 @@ class GraphConfig {
       'node_path',
       'java_path',
       'go_path',
+      'python_path',
+      'rust_analyzer_path',
+      'rust_sysroot_src',
     ]) {
       if (raw[key] != null && raw[key] is! String) {
         throw FormatException('$key must be a string');
@@ -184,6 +202,18 @@ class GraphConfig {
       nodePath: runtime('node_path', 'node'),
       javaPath: runtime('java_path', 'java'),
       goPath: runtime('go_path', 'go'),
+      pythonPath: raw['python_path'] == null
+          ? null
+          : runtime('python_path', 'python3'),
+      pythonSearchPaths: strings(
+        'python_search_paths',
+        [],
+      ).map((v) => p.normalize(p.join(base, v))).toList(),
+      rustAnalyzerPath: runtime('rust_analyzer_path', 'rust-analyzer'),
+      rustCfg: strings('rust_cfg', []),
+      rustSysrootSrc: raw['rust_sysroot_src'] == null
+          ? null
+          : p.normalize(p.join(base, raw['rust_sysroot_src'] as String)),
       javaClasspath: strings(
         'java_classpath',
         [],
@@ -245,7 +275,12 @@ class GraphConfig {
               goPath,
               javaClasspath,
               providerTimeoutSeconds,
-              'semantic-v1',
+              pythonPath,
+              pythonSearchPaths,
+              rustAnalyzerPath,
+              rustCfg,
+              rustSysrootSrc,
+              'semantic-v2',
             ],
             'runtime': Platform.version,
             'executable': Platform.resolvedExecutable,

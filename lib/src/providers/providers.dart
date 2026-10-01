@@ -31,6 +31,49 @@ class ExternalProviders {
   String? _executable(String name) =>
       resolveNativeExecutable(name, directory: config.root);
 
+  String get pythonExecutable {
+    if (config.pythonPath != null) return config.pythonPath!;
+    final local = p.join(
+      assets,
+      'semantic',
+      '.venv',
+      Platform.isWindows ? 'Scripts/python.exe' : 'bin/python',
+    );
+    return File(local).existsSync()
+        ? local
+        : Platform.isWindows
+        ? 'python'
+        : 'python3';
+  }
+
+  String get rustAnalyzerExecutable {
+    if (config.rustAnalyzerPath != 'rust-analyzer') {
+      return config.rustAnalyzerPath;
+    }
+    final local = p.join(
+      assets,
+      'semantic',
+      '.tools',
+      Platform.isWindows ? 'rust-analyzer.exe' : 'rust-analyzer',
+    );
+    return File(local).existsSync() ? local : config.rustAnalyzerPath;
+  }
+
+  Map<String, dynamic> get semanticSetup {
+    final file = File(p.join(assets, 'semantic', '.installed.json'));
+    try {
+      return file.existsSync()
+          ? Map<String, dynamic>.from(
+              jsonDecode(file.readAsStringSync()) as Map,
+            )
+          : {};
+    } on FormatException {
+      return {};
+    } on TypeError {
+      return {};
+    }
+  }
+
   String get fingerprint {
     final state = <String, String>{
       for (final key in [
@@ -80,6 +123,16 @@ class ExternalProviders {
       'go/main.go',
       'go/go.mod',
       'go/go.sum',
+      'semantic/index.py',
+      'semantic/requirements.lock',
+      'semantic/.installed.json',
+      'semantic/setup_rust_analyzer.py',
+      'semantic/polycodegraph_adapters/__init__.py',
+      'semantic/polycodegraph_adapters/model.py',
+      'semantic/polycodegraph_adapters/lsp.py',
+      'semantic/polycodegraph_adapters/python_graph.py',
+      'semantic/polycodegraph_adapters/rust_graph.py',
+      'semantic/polycodegraph_adapters/rust_project.py',
     ]) {
       final file = File(p.join(assets, name));
       state[name] = file.existsSync()
@@ -90,6 +143,8 @@ class ExternalProviders {
       config.nodePath,
       config.javaPath,
       config.goPath,
+      pythonExecutable,
+      rustAnalyzerExecutable,
       p.join(assets, 'go', Platform.isWindows ? 'graph.exe' : 'graph'),
     ]) {
       final path = _executable(name);
@@ -133,11 +188,29 @@ class ExternalProviders {
       'engine': 'go/packages + go/types',
       'runtime': config.goPath,
     },
+    'python': {
+      'available':
+          _executable(pythonExecutable) != null &&
+          File(p.join(assets, 'semantic/index.py')).existsSync() &&
+          (config.pythonPath != null || semanticSetup['jedi'] != null),
+      'engine': 'Python AST + Jedi 0.20.0',
+      'runtime': pythonExecutable,
+    },
+    'rust': {
+      'available':
+          _executable(pythonExecutable) != null &&
+          _executable(rustAnalyzerExecutable) != null &&
+          File(p.join(assets, 'semantic/index.py')).existsSync(),
+      'engine': 'rust-analyzer LSP + HIR',
+      'runtime': rustAnalyzerExecutable,
+      'build_scripts': false,
+      'proc_macros': false,
+    },
   };
 
   Future<Map<String, FileRecord>> extract(Map<String, String> hashes) async {
     final records = <String, FileRecord>{};
-    for (final language in ['typescript', 'java', 'go']) {
+    for (final language in ['typescript', 'java', 'go', 'python', 'rust']) {
       final files =
           hashes.keys
               .where(
@@ -159,7 +232,17 @@ class ExternalProviders {
           '17',
           p.join(assets, 'java/Graph.java'),
         ],
-        _ => [p.join(assets, 'go', Platform.isWindows ? 'graph.exe' : 'graph')],
+        'go' => [
+          p.join(assets, 'go', Platform.isWindows ? 'graph.exe' : 'graph'),
+        ],
+        _ => [
+          pythonExecutable,
+          '-I',
+          '-X',
+          'utf8',
+          p.join(assets, 'semantic/index.py'),
+          '--$language',
+        ],
       };
       try {
         final output = await _run(
@@ -169,7 +252,18 @@ class ExternalProviders {
             'files': [
               for (final f in files) {'file': f, 'hash': hashes[f]},
             ],
-            'options': {'classpath': config.javaClasspath},
+            'options': {
+              'classpath': config.javaClasspath,
+              'python_search_paths': config.pythonSearchPaths,
+              'rust_analyzer_path':
+                  _executable(rustAnalyzerExecutable) ??
+                  config.rustAnalyzerPath,
+              'rust_cfg': config.rustCfg,
+              'rust_sysroot_src': config.rustSysrootSrc,
+              'adapter_directory': p.join(assets, 'semantic'),
+              'timeout': config.providerTimeoutSeconds,
+              'max_file_bytes': config.maxFileBytes,
+            },
           }),
         );
         final decoded = jsonDecode(output);
