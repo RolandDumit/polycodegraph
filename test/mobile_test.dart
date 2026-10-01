@@ -312,6 +312,7 @@ void main() {
         },
       );
     },
+    timeout: const Timeout(Duration(minutes: 3)),
     skip: available
         ? false
         : 'Prepare mobile providers with --swift --kotlin --objectivec',
