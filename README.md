@@ -20,7 +20,18 @@ No embeddings, LLM API key or database service is required. The server is a nati
 
 ## Install and run
 
-Download the native package for your host from GitHub Releases when a 0.5.x package is published, or build the tagged source. Packages contain the server and provider assets; retain the adjacent `providers/` directory. Provider runtimes remain separate prerequisites.
+Download a prebuilt package from [release v0.5.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.5.0). **Rust is not required to run these packages.**
+
+| System | Download |
+| --- | --- |
+| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-linux-x64.tar.gz) |
+| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-windows-x64.zip) |
+| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-macos-x64.tar.gz) |
+| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-macos-arm64.tar.gz) |
+
+Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/SHA256SUMS) verifies the four archives.
+
+To build from source instead:
 
 ```sh
 git clone https://github.com/RolandDumit/polycodegraph.git
