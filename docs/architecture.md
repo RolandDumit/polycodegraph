@@ -1,40 +1,19 @@
 # Architecture
 
-PolyCodeGraph keeps one Dart CLI/MCP/query/index core and independent semantic adapters. Language discovery uses explicit repository include/exclude globs. `languageFor` distinguishes Dart, TypeScript/TSX, JavaScript/JSX/MJS/CJS, Java, Go, Python, Rust, Swift, Objective-C and Kotlin. Matching names never create cross-language call edges.
+Rust core modules separate configuration, filesystem discovery, semantic providers, index orchestration, SQLite persistence, graph queries and MCP. The Cargo workspace has core, CLI and xtask packages. Existing language engines are retained; Dart Analyzer is a JSON subprocess provider rather than the hosting runtime.
 
-## Semantic providers
+## Index and query lifetime
 
-- `lib/src/analysis/`: the Dart Analyzer provider, using resolved compilation units and canonical elements. Optional Flutter tags remain in this layer.
-- `providers/typescript/`: a pinned TypeScript compiler API adapter. It discovers nearest tsconfig/jsconfig scopes, creates compiler Programs, indexes declarations, and resolves references, signatures, heritage, overrides and static modules. TS/JS share compiler scopes.
-- `providers/java/Graph.java`: a dependency-free JDK source launcher using javac Trees, Elements and Types. It parses/analyzes the indexed Java units together, with configured classpath, disabled annotation processors and no emission. Erased parameter types disambiguate overloaded member IDs.
-- `providers/go/`: a built adapter using go/packages and go/types. It discovers module scopes, honors build constraints, resolves identifier/selection targets and infers structural interface implementations with types.Implements. Calls remain static targets; function-variable and runtime callback flow are not expanded. Go module loading is read-only and disables network downloads.
-- `providers/semantic/`: isolated Python driver with shared record/coordinate handling. Python uses `ast` plus pinned Jedi definitions/inference. Rust uses a bounded LSP session with rust-analyzer HIR and syntax-tree targets, including Unicode/CRLF conversion. A read-only TOML/JSON crate model handles local package/path dependencies without invoking Cargo, rustc wrappers, build scripts or procedural macros. Explicit project models can describe prepared external crate sources; executable fields are discarded.
-- `providers/kotlin/GraphPlugin.kt`: trusted Kotlin K2 IR extractor; original symbol objects, resolved call symbols, supertypes and override chains bind graph identities. Compiles source into temporary output without running it. Compiler/plugin assets are prepared by setup; Gradle, KAPT/KSP and project plugins are never invoked.
-- Mobile helpers in `providers/semantic/`: Swift 6.2+ JSON ASTs are collected for each primary file in an explicit module and bound by USR; libclang parses Objective-C translation units and canonical cursor/override targets. `polycodegraph.mobile.json` is a read-only whitelist of scopes, SDK paths and prepared dependencies. Custom executable/argument/plugin fields are rejected. SwiftPM manifests are never evaluated.
-- `lib/src/providers/`: subprocess orchestration, deadlines, output limits, runtime/asset fingerprints and per-file diagnostic fallback. Helpers are invoked as argument lists. Their stdout is internal JSON, never forwarded directly to MCP stdout.
+A repository starts its watcher before reading/indexing cache. A serialized index owner drains bounded events, reconciles hashes periodically and expands semantic scopes/dependency closures. Provider context contains all needed source identities; emit_files identifies records to publish. Resolution may remain wider than the published scope.
 
-The shared [provider contract](providers.md) uses the existing graph records. Provider results must cover every requested file exactly once, with expected hashes and repository-local symbol locations. Failed/unavailable adapters retain source file nodes with explicit error diagnostics; they cannot make successful language coverage look complete. `doctor` reports runtime/asset presence; `status` exposes coverage and diagnostic samples.
+SQLite schema 3 stores metadata, records, scopes, symbols, edges, dependencies and diagnostics with source/target/name indexes. An advisory file lock protects writers and SQLite transactions publish generations. Reads use a coherent transaction. Corrupt caches are preserved and rebuilt.
 
-## Indexing and persistence
+An immutable snapshot is shared by node/edge views; numeric positions and incoming/outgoing indexes avoid duplicating complete symbol/edge payloads. Queries reuse these structures for the same generation. Changing a generation reconstructs derived indexes after successful publication. There is no HTTP/distributed service.
 
-`RepositoryIndexer` discovers source files, computes source and build-environment hashes, and expands invalidation. Dart changes traverse cached file dependencies. A TS or JS change rebuilds the shared TS/JS language scope across the root; Java, Go, Python, Rust, Swift, Objective-C and Kotlin rebuild their corresponding language across the root. This deliberately conservative first implementation handles implicit package membership and structural contracts. More granular project/module scope reuse is a future optimization and must preserve the semantic invalidation tests.
+## Coverage and boundaries
 
-Additions/deletions, build manifests/lock/config files, excluded source changes and provider runtime/asset changes trigger a full rebuild. The fingerprint includes configured Java classpath content, Go build environment, Python search paths, Rust cfg/sysroot configuration, semantic adapter versions and native runtimes. Changes to external Dart path dependencies, Go module-cache contents or Node dependencies without a changed lock/config require `index --force`; related editable packages should live under the indexed root. Config changes and incompatible schemas also rebuild.
+Dart uses Analyzer; TS/JS compiler API; Java javac; Go go/packages/go/types; Python AST/Jedi; Rust rust-analyzer; Swift JSON AST/USRs; Objective-C libclang; Kotlin K2 IR. Calls require semantic evidence. Naming tags and conservative impact are discovery aids, not runtime guarantees. Existing omissions remain documented in README.
 
-Fresh Analyzer contexts and compiler Programs prevent stale bindings. A second source/environment scan before publication rejects mixed source revisions, retrying up to three times. `IndexStore` stores a schema-2 JSON snapshot with flushed temporary writes and atomic replacement under an OS advisory lock. Same-process queues serialize writers too. Failed publication leaves the previous snapshot intact. A unavailable provider publishes an explicitly incomplete snapshot, rather than silently retaining stale symbols from that language.
+The watcher is an optimization, not infallible change detection: 30-second source/environment hash reconciliation, error/overflow recovery and explicit index scans preserve a recovery path. watch:false scans every query. SDK and external artifact changes outside tracked inputs require forced indexing.
 
-## Graph and protocol
-
-`GraphQuery` assembles symbol maps and sorted bidirectional adjacency. Edges whose endpoints are not indexed are dropped and counted. Compact tables are deterministically sorted and paginated. Impact traversal follows reverse call/reference/type/module edges, expands type members and follows overrides back to dispatch contracts. Every result reports a predecessor/reason and distance; bounded depth and incomplete diagnostics remain visible. Snippets check source hashes and obey line/character budgets.
-
-`ToolRegistry` owns strict MCP schemas and dispatch. `McpServer` handles initialization, tools, ping and bounded newline JSON-RPC stdio framing. Source and subprocess budgets are separate from MCP transport limits. Tools cannot switch repository roots. MCP stdout contains only protocol messages. See [protocol.md](protocol.md).
-
-## Development harness
-
-[../AGENTS.md](../AGENTS.md) is the development contract. [../CONTRIBUTING.md](../CONTRIBUTING.md) and the shared `tool/check.dart` connect local checks to the same CI paths. [fixture-contracts.md](fixture-contracts.md) documents meaningful positive/negative semantic cases. `harness-AGENTS.md` remains the adaptable consumer template.
-
-## Operational limits
-
-Snapshots and queries fit in process memory. Cold analysis and hashing grow with repository size; classpath hashing also reads configured JAR/class content. Adapters have a configurable deadline and 64 MiB response cap; failure is visible as reduced coverage. JSON storage and adjacency rebuilding favor inspectability over database-scale throughput. There is no watcher, HTTP transport, distributed locking, historical store or embedding search. Cooperating processes can share a local filesystem cache that supports locking and atomic rename.
-
-Static resolution cannot fully model dynamic dispatch, reflection, missing generated code, callback flow, cross-language RPC or FFI. External SDK/package symbols are not expanded into the repository graph. Optional Flutter naming/annotation tags are discovery hints. No production-scale token or performance benchmark is claimed.
+Provider process groups/job objects have deadlines and bounded stdout/stderr. Initial failures create file nodes with coverage diagnostics; failed subsequent updates retain the prior committed generation. Source and context inputs are validated before transactional publication. No indexed project code or build hooks execute.

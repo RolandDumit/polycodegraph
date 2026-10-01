@@ -18,8 +18,11 @@ type InputFile struct {
 	Hash string `json:"hash"`
 }
 type Input struct {
-	Root  string      `json:"root"`
-	Files []InputFile `json:"files"`
+	Root    string      `json:"root"`
+	Files   []InputFile `json:"files"`
+	Options struct {
+		EmitFiles []string `json:"emit_files"`
+	} `json:"options"`
 }
 type Node struct {
 	ID     string   `json:"id"`
@@ -419,7 +422,16 @@ func run() error {
 			b, _ := json.Marshal(rec.Edges[j])
 			return string(a) < string(b)
 		})
-		output = append(output, rec)
+		if input.Options.EmitFiles == nil {
+			output = append(output, rec)
+		} else {
+			for _, emitted := range input.Options.EmitFiles {
+				if emitted == rec.File {
+					output = append(output, rec)
+					break
+				}
+			}
+		}
 	}
 	return json.NewEncoder(os.Stdout).Encode(output)
 }

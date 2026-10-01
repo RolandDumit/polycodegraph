@@ -1,25 +1,13 @@
-# Contributing
+# Development
 
-Use Dart 3.11+ (CI pins 3.13.2). Resolve the root package with `dart pub get`. For all language providers, install Node.js 22+, Go 1.25+, a full JDK 17+, Python 3.11+, and a native Swift 6.2+ toolchain, then run:
+Install pinned Rust 1.99.0 with rustfmt/clippy. Build with `cargo build --release --locked`; run `cargo xtask check`.
 
-```sh
-dart run tool/setup_providers.dart --dev
-dart run tool/check.dart --providers --mobile --build
-```
+Prepare adapters with the native CLI's `setup --languages dart,typescript,javascript,java,go,python,rust,swift,objectivec,kotlin --dev` after installing their host runtimes. Use only the languages relevant to your change. The setup scripts never prepare indexed target projects.
 
-The setup script installs only the pinned TypeScript compiler dependency with package scripts disabled, and builds the Go adapter from its locked module dependencies. Java uses the standard compiler API and needs no external library. Python uses pinned Jedi/Parso wheels in an isolated virtual environment. Rust setup verifies a pinned official rust-analyzer binary for the host; `RUST_ANALYZER` can select an existing native installation. It needs Python for the LSP driver and does not invoke Cargo or indexed build hooks. `--dev` installs pinned Ruff/mypy for provider lint, formatting and strict type checks; these run under `--providers` when prepared. These tools analyze project source; they do not run project applications. The graph server never installs dependencies automatically.
+Dart Analyzer development: `cd providers/dart`, `dart pub get --enforce-lockfile`, `dart format --output=none --set-exit-if-changed bin lib test`, `dart analyze --fatal-infos`, `dart test`.
 
-`dart run tool/check.dart` checks Dart formatting, static analysis and the test suite. `--providers` requires the original Dart/TS/JS/Java/Go/Python/Rust adapters; `--mobile` requires Swift/Objective-C/Kotlin and their integration tests. `--ios` requires the real UIKit/bridging-header case on macOS/Xcode; `--android` requires a prepared Android platform under `ANDROID_HOME`. Both SDK tests otherwise skip explicitly. Unavailable-provider integration cases explicitly skip unless their required flag is supplied. `--build` also compiles and smoke-tests the native CLI. Optional Flutter coverage requires:
+Native validation: `python tool/smoke.py --group dart`, `--group polyglot`, `--group mobile`, `--group flutter`. Flutter requires prepared examples/flutter_fixture dependencies. Use `--baseline` with the v0.4.0 compiled server for differential checks. `tool/sdk_smoke.py` covers real Android and macOS UIKit dependencies.
 
-```sh
-cd examples/flutter_fixture
-flutter pub get
-cd ../..
-dart run tool/check.dart --flutter
-```
+`cargo xtask package` builds the host distribution in dist/polycodegraph; run setup for Dart/Go before packaging to include native adapters. Packages exclude virtual environments, node_modules and downloaded Kotlin/rust-analyzer assets; setup prepares them on the destination. Publish only after tests and platform package smoke checks.
 
-`--flutter` fails if the fixture is unconfigured. You can combine flags. `DART`, `NODE`, `JAVA`, `GO`, `PYTHON`, `RUST_ANALYZER` and `SWIFTC` select local executables for the check/setup scripts. For the running server, use config `node_path`, `java_path`, `go_path`, `python_path`, `rust_analyzer_path`, `swiftc_path`, `libclang_path`, `mobile_project_path` and `providers_path`. The native binary is distributed with the `providers/` directory, including the installed TypeScript dependency and built Go adapter.
-
-Follow [AGENTS.md](AGENTS.md). Add a minimal fixture with expected semantic relationships when changing resolution. Test both intended edges and unrelated same-name decoys. For invalidation, change a declaration without editing its consumer and verify that stale bindings disappear. Avoid asserting only node counts.
-
-CI runs each of the Dart/native MCP, semantic adapter, mobile/native MCP/Android SDK, and real Flutter jobs on Linux, macOS and Windows. All setup/check commands work without Bash. Native builds use `.exe` on Windows. Keep each language's required runtime and coverage limits documented. The macOS mobile job also requires UIKit and Swift/Objective-C bridging against Xcode. Kotlin extraction uses this repository's trusted IR plugin, compiled by pinned Kotlin 2.3.10; no Gradle, KAPT/KSP or project plugins run. Swift and Clang receive only structured SDK/module data. Do not describe optional or skipped tests as passing semantic verification.
+See docs/benchmarks/README.md for reproducible performance comparisons. Benchmark compilation uses the v0.4.0 package configuration; no legacy core is carried in current production source.

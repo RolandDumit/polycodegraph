@@ -1,23 +1,25 @@
-# Validation record
+# Validation of the Rust migration (0.5.0)
 
-PolyCodeGraph 0.4.0 was verified locally on 2026-10-01 at `~/Projects/Personal/polycodegraph`, Linux x86_64, with Dart 3.13.2 / Flutter 3.47.2, Node 26.7.0 / TypeScript 6.0.2, Go 1.27.1, OpenJDK 25.0.3, Python 3.14.7 / Jedi 0.20.0 / Parso 0.8.7, and rust-analyzer 0.3.3065 (official 2026-09-28 release), Swift 6.2, Kotlin K2 2.3.10, libclang 18.1.1 and a real Android platform JAR.
+Local reference: immutable `v0.4.0`, initially commit `2501034b84fab0ca0c0194d95be74a7660bb8a56`. Both servers use the retained semantic adapters; the comparison checks the new orchestration/storage/query/transport against the old core. Stable IDs, complete fixture searches, architecture/diagnostics, callers, callees, references, implementations, neighbors, dependencies, affected_by_change, blast_radius and snippets are compared for every fixture symbol. Only generation is normalized; initialize version and new metadata are checked separately.
 
-| Check | Result |
-| --- | --- |
-| Pinned TypeScript setup and Go module verification/build | Passed |
-| Python isolated environment, hash-verified runtime wheels and rust-analyzer release | Passed |
-| Ruff lint/format and strict mypy | Passed |
-| `dart run tool/check.dart --providers --mobile --android --flutter --build` | Formatting, static analysis, **54 tests passed; the macOS-only UIKit test skipped locally**, native compilation and version passed |
-| Native stdio MCP | All ten languages indexed; typed Python/Rust calls and snippets, Dart query/part relations, refresh and EOF passed |
+## Local checks (Linux x64, 2026-10-01)
 
-The combined native MCP fixture exercises Dart, TypeScript, JavaScript, Java, Go, Python, Rust, Swift, Objective-C and Kotlin together. Mobile semantic cases cover compiler identities, overloads, overrides, header imports, stable IDs after leading comments, missing runtimes, Unicode/CRLF, read-only target models and contract edits. Android analysis uses the actual installed SDK; UIKit verification is required on the macOS CI runner, not claimed from Linux. Semantic fixtures check alias imports, typed interface/trait calls, constructors, same-name decoys, fields, references, implementations, dependencies and impact. Contract renames remove stale bindings from unchanged consumers. Warm caches avoid work; language manifests, project models, configuration and provider assets participate in invalidation.
+- Rust formatting, Clippy with warnings denied, 27 core/transport/storage/incremental tests.
+- Dart provider formatting, analysis with infos denied and three Analyzer tests, including generics/accessors/operators, conditional dependencies and emission with unchanged context.
+- Ruff and strict mypy on the retained Python adapters; Go vet on the retained Go adapter.
+- Differential native MCP: Dart fixture 37 symbols / 99 edges; polyglot 41 / 108; Python/Rust 32 / 81; mobile 75 / 131; actual Flutter 24 / 75. Mixed ten-language repository: 185 / 419.
+- Actual Android SDK classpath: 5 symbols / 6 edges; TypeScript server with no Dart SDK on PATH.
+- Relocated native Linux package, including selective provider setup and adjacent-asset discovery, tested in paths containing spaces.
+- Release synthetic benchmark: 100,000 symbols / 500,000 relations, repeated queries plus reconciliation, and separate persistence measurements. End-to-end fixture timing includes provider process memory. See docs/benchmarks.
 
-Python/Rust tests also cover dynamic-call diagnostics, local Cargo path dependencies and aliases, Cargo default features, Unicode/percent-escaped paths, astral characters, CRLF and snippets. Indexed Python source, Cargo build scripts, rustc wrappers, nonexistent toolchain overrides, proc-macro libraries and project runnables must not execute. Missing adapters preserve file nodes with explicit coverage diagnostics. Strict runtime-path/list configuration validation is covered.
+Regression tests cover watcher overflow/loss recovery, duplicate source events, atomic replacement, rename/delete, independent scopes and dependency invalidation, source changes during analysis, concurrent writers, failed provider updates, interrupted SQLite publication, cache corruption at startup/during service, sidecar symlinks, external prepared context edits, Unicode/CRLF snippets, stale source, bounds/timeouts/output overflow, descendant termination, cancellation/duplicate IDs/queue limits, framing, lifecycle and EOF draining. A no-change index reuses its graph and performs no extraction; warm queries between reconciliations perform no full scans.
 
-The Flutter fixture resolves actual flutter, flutter_bloc, flutter_riverpod, get_it, go_router and freezed_annotation packages. Framework classification and impact into the screen are asserted without mock Flutter types. Existing Dart and transport checks cover parts, accessors, operators, generics, aliases, conditional imports, stable IDs, pagination, snippet limits/freshness, path confinement, cache recovery, dependency invalidation, concurrent writers, initialization, framing, cancellation and EOF.
+## Cross-platform acceptance
 
-CI has a twelve-job matrix, adding mobile/native MCP and real Android SDK checks on all hosts and real UIKit/bridging on macOS: Dart/native MCP, mandatory polyglot/native MCP and real Flutter on **Linux, macOS and Windows**. The polyglot jobs prepare the seven original-language adapters; mobile jobs prepare the three mobile adapters and require language integration tests; core-only jobs explicitly skip unavailable optional adapters. The previous Python/Rust revision passed all nine jobs ([run](https://github.com/RolandDumit/polycodegraph/actions/runs/36857337134)); results for the current revision are available in [Actions](https://github.com/RolandDumit/polycodegraph/actions/workflows/ci.yml).
+CI requires core and native semantic/provider smoke checks on Linux, Windows and macOS, Flutter on each host, Android SDK on each host and real UIKit/bridging-header resolution on macOS/Xcode. Package builds and relocation/setup smoke tests cover Linux x64, Windows x64, macOS x64 and ARM64. The workflow uses `v0.4.0` as its compiled oracle and uploads benchmark reports.
 
-Static targets do not fully recover dynamic dispatch, reflection, arbitrary callbacks or cross-language RPC/FFI. Python dependencies may need explicit search paths. External Rust crates, custom features/targets, generated modules and macro expansion require a prepared project model and remain visible as reduced coverage. External dependency changes without changed locks/configuration require forced indexing. No production-scale throughput or token-saving benchmark is claimed.
+Remote CI results must be checked for the exact commit before calling cross-platform acceptance complete. Local Linux checks do not verify UIKit, Windows or macOS. Package preparation does not publish a GitHub release/tag; that remains a separate step after validation.
 
-Dependency caches, generated indexes, Python environments, native tooling and binaries stay out of Git. Native deployment requires provider assets, host-specific runtimes and a Dart SDK for Dart/Flutter analysis. Recreate environments/binaries for the destination host.
+## Limits
+
+Watcher loss can leave stale data until the 30-second reconciliation. Use an explicit index scan for sensitive work, or watch:false for per-query verification. External artifacts beyond declared/tracked source contexts still need forced indexing after preparation. Provider analysis can read wider semantic context than the records emitted; scope tests guarantee isolated publication, not compiler incremental compilation. Dynamic/runtime and omitted cross-language relationships remain incomplete. The benchmark does not demonstrate token savings, a universal speed ratio or a memory reduction.

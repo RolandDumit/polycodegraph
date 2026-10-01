@@ -16,3 +16,9 @@ providers/semantic/.installed.json
 providers/semantic/.tools/
 
 providers/kotlin/.tools/
+
+/target/
+/dist/
+providers/dart/build/
+
+/work/

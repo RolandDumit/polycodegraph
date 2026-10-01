@@ -429,4 +429,5 @@ for (const rec of records.values()) {
   ].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), "en"));
   rec.nodes.sort((a, b) => a.id.localeCompare(b.id, "en"));
 }
-process.stdout.write(JSON.stringify([...records.values()]));
+const emitted = new Set(input.options?.emit_files ?? input.files.map((f) => f.file));
+process.stdout.write(JSON.stringify([...records.values()].filter((r) => emitted.has(r.file))));

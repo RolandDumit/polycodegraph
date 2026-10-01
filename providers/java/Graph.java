@@ -530,7 +530,10 @@ class Graph {
       );
       list(rec.get("edges")).sort(Comparator.comparing(Json::write));
     }
-    System.out.print(Json.write(new ArrayList<>(records.values())));
+    var emitted = obj(input.get("options")).get("emit_files");
+    var output = new ArrayList<>(records.values());
+    if (emitted instanceof List<?> selected) output.removeIf(r -> !selected.contains(r.get("file")));
+    System.out.print(Json.write(output));
   }
 
   // Minimal JSON codec avoids a provider dependency; only standard JSON is accepted.

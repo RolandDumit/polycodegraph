@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "engine": "dart-v0.4.0",
+      "symbols": 100000,
+      "edges": 500000,
+      "samples": 9,
+      "median_ms": 3353.757,
+      "p95_ms": 3394.067,
+      "mean_ms": 3346.540444444445,
+      "max_ms": 3394.067,
+      "reconciliations": 9,
+      "source_bytes": 1048586,
+      "workload": "in-memory graph query including per-query SHA-256 reconciliation; excludes provider analysis and database startup",
+      "peak_tree_rss_bytes": 249028608
+    },
+    {
+      "engine": "rust",
+      "symbols": 100000,
+      "edges": 500000,
+      "build_ms": 446.79722300000003,
+      "samples": 310,
+      "median_ms": 0.014367,
+      "p95_ms": 0.0323,
+      "mean_ms": 0.020452796774193552,
+      "max_ms": 0.6229509999999999,
+      "reconciliations": 2,
+      "source_bytes": 1048586,
+      "workload": "in-memory graph query including periodic SHA-256 reconciliation; excludes provider analysis and database startup",
+      "peak_tree_rss_bytes": 355926016
+    }
+  ],
+  "persistence": [
+    {
+      "engine": "dart-json",
+      "symbols": 100000,
+      "edges": 500000,
+      "write_ms": 839.055,
+      "read_ms": 714.489,
+      "bytes": 96044851,
+      "workload": "separate cold persistence; no providers or queries",
+      "peak_tree_rss_bytes": 667656192
+    },
+    {
+      "engine": "rust-sqlite",
+      "symbols": 100000,
+      "edges": 500000,
+      "write_ms": 1391.675551,
+      "read_ms": 138.376634,
+      "bytes": 399331328,
+      "workload": "separate cold persistence; no providers or queries",
+      "peak_tree_rss_bytes": 600756224
+    }
+  ],
+  "machine": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
+  "cpu": "AMD Ryzen 9 9900X 12-Core Processor",
+  "median_speedup": 233434.74629358947,
+  "criterion_met": true,
+  "platform": "posix",
+  "note": "Synthetic graph workload; not a token-savings or end-to-end provider benchmark. RSS sampling is Linux-only."
+}

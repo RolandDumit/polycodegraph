@@ -1,0 +1,13 @@
+name: polycodegraph_dart_provider
+version: 0.5.0
+description: Dart Analyzer semantic extraction provider for the PolyCodeGraph Rust core.
+repository: https://github.com/RolandDumit/polycodegraph
+issue_tracker: https://github.com/RolandDumit/polycodegraph/issues
+environment:
+  sdk: '>=3.11.0 <4.0.0'
+dependencies:
+  analyzer: 13.3.0
+  path: ^1.9.1
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.30.0

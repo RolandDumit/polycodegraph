@@ -1,7 +1,9 @@
 name: CI
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  dart:
+  core:
     strategy:
       fail-fast: false
       matrix:
@@ -9,19 +11,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          sdk: '3.13.2'
-      - run: dart pub get --enforce-lockfile
-      - run: dart run tool/check.dart --build
-  polyglot:
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: cargo xtask check
+  integration:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        group: [dart, polyglot]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: '3.13.2'
@@ -36,14 +45,35 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - run: dart pub get --enforce-lockfile
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
-      - run: dart run tool/setup_providers.dart --typescript --java --go --python --rust --dev
+      - run: cargo build --release --locked --workspace
+      - run: ./target/release/polycodegraph setup --languages dart,typescript,javascript,java,go,python,rust --dev
+      - run: python tool/baseline.py
+      - run: python tool/smoke.py --group ${{ matrix.group }} --baseline work/baseline/polycodegraph --config work/sdk-config.json
+        if: runner.os != 'Windows'
+      - run: python tool/smoke.py --group ${{ matrix.group }} --baseline work/baseline/polycodegraph.exe --config work/sdk-config.json
+        if: runner.os == 'Windows'
+      - run: dart analyze
+        working-directory: providers/dart
+        if: matrix.group == 'dart'
+      - run: dart test
+        working-directory: providers/dart
+        if: matrix.group == 'dart'
       - run: go vet ./...
         working-directory: providers/go
-      - run: dart run tool/check.dart --providers --build
+        if: matrix.group == 'polyglot'
+      - run: python tool/no_dart_smoke.py --binary target/release/polycodegraph
+        if: matrix.group == 'polyglot' && runner.os != 'Windows'
+      - run: python tool/no_dart_smoke.py --binary target/release/polycodegraph.exe
+        if: matrix.group == 'polyglot' && runner.os == 'Windows'
+      - run: .venv/bin/python -m ruff check .
+        working-directory: providers/semantic
+        if: matrix.group == 'polyglot' && runner.os != 'Windows'
+      - run: .venv/bin/python -m mypy .
+        working-directory: providers/semantic
+        if: matrix.group == 'polyglot' && runner.os != 'Windows'
   flutter:
     strategy:
       fail-fast: false
@@ -52,15 +82,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-      - run: dart pub get
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: cargo build --release --locked --workspace
+      - run: ./target/release/polycodegraph setup --languages dart
       - run: flutter pub get
         working-directory: examples/flutter_fixture
-      - run: dart run tool/check.dart --flutter
-
+      - run: python tool/baseline.py
+      - run: python tool/smoke.py --group flutter --baseline work/baseline/polycodegraph --config work/sdk-config.json
+        if: runner.os != 'Windows'
+      - run: python tool/smoke.py --group flutter --baseline work/baseline/polycodegraph.exe --config work/sdk-config.json
+        if: runner.os == 'Windows'
   mobile:
     strategy:
       fail-fast: false
@@ -69,6 +109,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: '3.13.2'
@@ -92,9 +135,38 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-36'
           log-accepted-android-sdk-licenses: false
-      - run: dart pub get --enforce-lockfile
-      - run: dart run tool/setup_providers.dart --swift --objectivec --kotlin --dev
-      - run: dart run tool/check.dart --mobile --android --build
-        if: runner.os != 'macOS'
-      - run: dart run tool/check.dart --mobile --android --ios --build
+      - run: cargo build --release --locked --workspace
+      - run: ./target/release/polycodegraph setup --languages swift,objectivec,kotlin --dev
+      - run: python tool/baseline.py
+      - run: python tool/smoke.py --group mobile --baseline work/baseline/polycodegraph --config work/sdk-config.json
+        if: runner.os != 'Windows'
+      - run: python tool/smoke.py --group mobile --baseline work/baseline/polycodegraph.exe --config work/sdk-config.json
+        if: runner.os == 'Windows'
+      - run: python tool/sdk_smoke.py --binary target/release/polycodegraph --android
+        if: runner.os != 'Windows'
+      - run: python tool/sdk_smoke.py --binary target/release/polycodegraph.exe --android
+        if: runner.os == 'Windows'
+      - run: python tool/sdk_smoke.py --binary target/release/polycodegraph --ios
         if: runner.os == 'macOS'
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.2'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: python tool/baseline.py
+      - run: cargo build --release --locked -p polycodegraph-core --example benchmark
+      - run: python tool/benchmark.py --rust target/release/examples/benchmark --dart work/baseline/benchmark_dart --output work/benchmark.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: query-benchmark
+          path: work/benchmark.json
+  packages:
+    uses: ./.github/workflows/package.yml

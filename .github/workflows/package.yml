@@ -1,0 +1,54 @@
+name: Native packages
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+          - os: windows-latest
+            target: windows-x64
+          - os: macos-15-intel
+            target: macos-x64
+          - os: macos-latest
+            target: macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.0'
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.2'
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.1'
+          cache-dependency-path: providers/go/go.sum
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: cargo build --release --locked --workspace
+      - run: ./target/release/polycodegraph setup --languages dart,go
+      - run: cargo xtask package
+      - run: python tool/package_smoke.py
+      - name: Archive native package with executable permissions
+        shell: python
+        run: |
+          import shutil
+          shutil.make_archive('polycodegraph-0.5.0-${{ matrix.target }}', 'zip' if '${{ runner.os }}' == 'Windows' else 'gztar', 'dist', 'polycodegraph')
+      - uses: actions/upload-artifact@v6
+        with:
+          name: polycodegraph-${{ matrix.target }}
+          path: polycodegraph-0.5.0-${{ matrix.target }}.*

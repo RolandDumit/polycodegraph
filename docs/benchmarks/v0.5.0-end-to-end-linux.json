@@ -1,0 +1,75 @@
+{
+  "results": [
+    {
+      "binary": "polycodegraph",
+      "fixture": "polyglot",
+      "first_index_ms": 1473.4256270021433,
+      "median_ms": 2.1514480031328276,
+      "p95_ms": 2.442179000354372,
+      "samples": 304,
+      "duration_seconds": 31,
+      "update_ms": 19.705284998053685,
+      "reindexed": 3,
+      "symbols": 41,
+      "edges": 108,
+      "phases_ms": {},
+      "peak_tree_rss_bytes": 438845440
+    },
+    {
+      "binary": "polycodegraph",
+      "fixture": "polyglot",
+      "first_index_ms": 1507.8681070008315,
+      "median_ms": 0.2403679973213002,
+      "p95_ms": 0.3319590032333508,
+      "samples": 310,
+      "duration_seconds": 31,
+      "update_ms": 256.0426910058595,
+      "reindexed": 3,
+      "symbols": 41,
+      "edges": 108,
+      "phases_ms": {
+        "scan_ms": 94,
+        "extraction_ms": 1480,
+        "storage_ms": 1,
+        "query_ms": 0
+      },
+      "peak_tree_rss_bytes": 433311744
+    },
+    {
+      "binary": "polycodegraph",
+      "fixture": "flutter_fixture",
+      "first_index_ms": 2811.2122070015175,
+      "median_ms": 1.8285189871676266,
+      "p95_ms": 2.1220749913481995,
+      "samples": 305,
+      "duration_seconds": 31,
+      "update_ms": 2850.2087369997753,
+      "reindexed": 2,
+      "symbols": 24,
+      "edges": 75,
+      "phases_ms": {},
+      "peak_tree_rss_bytes": 509800448
+    },
+    {
+      "binary": "polycodegraph",
+      "fixture": "flutter_fixture",
+      "first_index_ms": 2995.074881007895,
+      "median_ms": 0.2432830078760162,
+      "p95_ms": 0.3800570120802149,
+      "samples": 309,
+      "duration_seconds": 31,
+      "update_ms": 3166.456813996774,
+      "reindexed": 2,
+      "symbols": 24,
+      "edges": 75,
+      "phases_ms": {
+        "scan_ms": 95,
+        "extraction_ms": 5877,
+        "storage_ms": 1,
+        "query_ms": 0
+      },
+      "peak_tree_rss_bytes": 560234496
+    }
+  ],
+  "note": "Separate cold indexing, update and repeated MCP round trips for 31 seconds (including a 30-second reconciliation). RSS includes live provider descendants; Linux sampled peak, not allocation volume. Shared filesystem caches; no token-savings claim."
+}

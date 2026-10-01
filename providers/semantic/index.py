@@ -37,6 +37,9 @@ def main() -> None:
             records = provider(graph, request.get("options", {})).extract()
     else:
         raise ValueError("Expected a supported semantic language")
+    emitted = request.get("options", {}).get("emit_files")
+    if emitted is not None:
+        records = [record for record in records if record["file"] in emitted]
     sys.stdout.write(json.dumps(records, ensure_ascii=False, separators=(",", ":")))
 
 

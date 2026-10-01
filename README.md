@@ -14,92 +14,39 @@ Index a repository, explore its symbols and dependencies through compact graph q
 - **Optional Flutter discovery:** Widget/Screen, Bloc/Cubit, Riverpod providers, repositories, use cases, routes, GetIt registrations and Freezed annotations.
 - **Local workflow:** stdio MCP for Codex/Claude Code, CLI commands, YAML/JSON configuration and an adaptable AGENTS.md harness.
 
-No embeddings, LLM API key or database service is required. The server runs with Dart. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
+No embeddings, LLM API key or database service is required. The server is a native Rust executable. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
 
-**Version 0.4.0.** Local stdio transport. Dart Analyzer 13.3.0; Dart SDK 3.11 or later. The package name is `polycodegraph`; the executable and project name are `polycodegraph`.
+**Version 0.5.0.** Rust core, local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
 
 ## Install and run
 
-Clone the repository and install its dependencies:
+Download the native package for your host from GitHub Releases when a 0.5.x package is published, or build the tagged source. Packages contain the server and provider assets; retain the adjacent `providers/` directory. Provider runtimes remain separate prerequisites.
 
 ```sh
 git clone https://github.com/RolandDumit/polycodegraph.git
 cd polycodegraph
-dart pub get
+cargo build --release --locked
 ```
 
-Install the runtimes for the languages you use: Node.js 22+ for TypeScript/JavaScript, a full JDK 17+ for Java, Go 1.25+ for Go, and Python 3.11+ for Python/Rust/mobile adapters. Swift analysis requires a native Swift 6.2+ toolchain; Kotlin requires the JDK. Prepare the adapters:
+Use `target/release/polycodegraph` on Linux/macOS or `target/release/polycodegraph.exe` on Windows. Rust 1.99.0 is pinned for source builds, which also need GCC/Clang, Xcode CLI tools or Windows MSVC Build Tools for bundled SQLite; end users of native packages do not need Rust. **Non-Dart projects do not need Dart.** Dart/Flutter analysis requires Dart SDK 3.11+ (or Flutter's bundled SDK). Other requirements: Node.js 22+ for TS/JS, full JDK 17+ for Java/Kotlin, Go 1.25+ for Go and Python 3.11+ for Python/Rust/mobile adapters. Swift requires a native Swift 6.2+ toolchain. UIKit analysis requires macOS/Xcode; Android requires a prepared SDK/classpath.
+
+Prepare only selected adapters; without `--languages`, setup discovers languages included in the target project's configuration:
 
 ```sh
-dart run tool/setup_providers.dart
-# Or prepare only the adapter you need (same commands on all three systems):
-dart run tool/setup_providers.dart --typescript
-dart run tool/setup_providers.dart --go
-dart run tool/setup_providers.dart --java
-dart run tool/setup_providers.dart --python
-dart run tool/setup_providers.dart --rust
-dart run tool/setup_providers.dart --swift --objectivec --kotlin
-```
-
-Java uses JDK compiler APIs directly and needs no extra library. `setup_providers.dart` prepares all adapters by default; use its flags when you only need some languages. Bash is not required. Python dependencies are installed into an isolated adapter virtual environment with pinned wheel hashes. Rust setup downloads an official rust-analyzer release (2026-09-28), validates SHA-256, and selects the native Linux/macOS/Windows x86_64 or ARM64 binary. It does not require Cargo/rustup or run indexed build scripts.
-
-From the checkout, index a repository and start the MCP server:
-
-```sh
-dart run bin/polycodegraph.dart --help
-dart run bin/polycodegraph.dart doctor --root /path/to/project
-dart run bin/polycodegraph.dart init --root /path/to/project
-dart run bin/polycodegraph.dart index --root /path/to/project
-dart run bin/polycodegraph.dart status --root /path/to/project
-dart run bin/polycodegraph.dart serve --root /path/to/project
-```
-
-Prepare the indexed project dependencies yourself: `dart pub get`, `flutter pub get`, the usual Node package setup, or `go mod download`. For Dart/Flutter, this resolves package imports and provides Flutter's SDK/embedder mappings. The server never runs package managers or code generation on your behalf.
-
-Install a local checkout as a CLI (this project has not been published to pub.dev):
-
-```sh
-dart pub global activate --source path /absolute/path/to/polycodegraph
+polycodegraph setup --root /path/to/project --languages dart
+polycodegraph setup --root /path/to/project --languages typescript,javascript
+polycodegraph setup --root /path/to/project --languages swift,objectivec,kotlin
+polycodegraph doctor --root /path/to/project
+polycodegraph init --root /path/to/project
 polycodegraph index --root /path/to/project
+polycodegraph serve --root /path/to/project
 ```
 
-Add your pub cache's `bin` directory to `PATH`. To compile and verify a native executable for the current operating system/architecture:
+Replace `polycodegraph` with its executable path until installed on PATH. `setup` builds the Dart/Go adapters and prepares pinned Python, rust-analyzer and Kotlin assets. For nonstandard npm installations set `NPM_CLI` to `npm-cli.js`. `--dev` prepares Ruff/mypy for adapter development. Setup operates on trusted tool assets; indexing never installs target dependencies or executes target build hooks. Resolve those dependencies normally (`flutter pub get`, Node package setup, etc.) before indexing.
 
-```sh
-dart run tool/check.dart --build
-```
+Linux x64, Windows x64 and macOS x64/ARM64 package workflows build native artifacts. CI checks the core and real providers on Linux/macOS/Windows. SDK/toolchain requirements and virtual environments are host-specific: recreate adapter environments on a different machine. Set `sdk_path` if Dart SDK discovery is unavailable.
 
-This builds `build/polycodegraph` on Linux/macOS and `build/polycodegraph.exe` on Windows, and verifies real MCP queries against the compiled server. Run it on Linux/macOS:
-
-```sh
-./build/polycodegraph serve --root /path/to/project
-```
-
-On Windows (PowerShell):
-
-```powershell
-& .\build\polycodegraph.exe serve --root "C:/Projects/My Flutter App"
-```
-
-Native binaries and the compiled Go adapter must be built separately for each OS/architecture. The source checkout and `dart run` commands work on all three operating systems.
-
-Keep the `providers/` directory next to the executable or one directory above it (as in `build/polycodegraph`), or set `providers_path` explicitly. A global activation outside the checkout may also need this explicit path. Include its installed TypeScript compiler, built Go adapter, Python adapter environment and native rust-analyzer installation when distributing it. Node/JDK/Go/Python remain runtime prerequisites for their respective adapters. Python virtual environments contain host-specific paths; recreate them on the destination (remove `providers/semantic/.venv` before running setup if the checkout was copied), or configure `python_path` to a prepared native interpreter. Kotlin distribution assets and the graph plugin must also accompany the executable.
-
-The native executable still needs access to a Dart SDK for analysis. Specify `sdk_path` in configuration when SDK auto-detection is unavailable, especially when the executable is moved outside a Dart installation. For Flutter, point it to `flutter/bin/cache/dart-sdk`.
-
-## Operating system support
-
-Linux, macOS and Windows are supported. Development/setup scripts are written in Dart and work in a normal terminal or PowerShell; Bash, WSL and a Unix shell are optional. CI runs Dart/MCP/native-binary checks, mandatory multi-language integration tests and a real Flutter fixture on all three systems.
-
-| Platform | Native server | Go adapter |
-| --- | --- | --- |
-| Linux | `build/polycodegraph` | `providers/go/graph` |
-| macOS | `build/polycodegraph` | `providers/go/graph` |
-| Windows | `build/polycodegraph.exe` | `providers/go/graph.exe` |
-
-Use a Dart SDK (or Flutter's bundled Dart SDK) on your host. Install Node.js, a **full JDK**, Go and Python for the languages you need. The adapter setup selects the correct executable suffix automatically and launches native programs directly, including npm through Node, so paths with spaces work. `NODE`, `JAVA`, `GO`, `PYTHON`, `RUST_ANALYZER` and `SWIFTC` select native tooling for setup/checks; Windows `.cmd`, `.bat` and PowerShell launchers are not runtime executables. For custom npm installations, set `NPM_CLI` to `npm-cli.js`.
-
-Graph IDs/globs always use forward slashes, independent of OS. Windows configuration can use `C:/Projects/My App` paths; alternatively use single-quoted YAML/TOML paths or escape backslashes in JSON. Cache files belong to their original repository root and are rebuilt after moving a checkout; do not transfer a native binary, compiled Go adapter, rust-analyzer binary or Python virtual environment between different OS/architectures.
+Read [migration from 0.4](docs/migration-0.5.md) when updating an existing harness. The CLI is now Rust; `dart run bin/polycodegraph.dart` and Dart global activation are replaced by the native executable.
 
 ## Configuration
 
@@ -132,6 +79,9 @@ exclude:
   - "**/build/**"
   - "**/.polycodegraph/**"
 cache: .polycodegraph
+watch: true
+watch_debounce_ms: 200
+reconcile_interval_seconds: 30
 flutter: true
 max_results: 200
 max_snippet_lines: 120
@@ -166,16 +116,16 @@ Use the executable's absolute path. In `~/.codex/config.toml` (or your project's
 
 ```toml
 [mcp_servers.polycodegraph]
-command = "/absolute/path/to/polycodegraph/build/polycodegraph"
+command = "/absolute/path/to/polycodegraph/target/release/polycodegraph"
 args = ["serve", "--root", "/absolute/path/to/flutter-project"]
 startup_timeout_sec = 20
 tool_timeout_sec = 180
 ```
 
-Alternatively, after local global activation:
+Alternatively, register the native executable:
 
 ```sh
-codex mcp add polycodegraph -- polycodegraph serve --root /absolute/path/to/project
+codex mcp add polycodegraph -- /absolute/path/polycodegraph serve --root /absolute/path/to/project
 ```
 
 Use `codex mcp list` to verify registration. The executable must be available in the environment that launches Codex. Model and reasoning effort belong to the host agent settings; this MCP server does not select or invoke an LLM.
@@ -194,18 +144,18 @@ tool_timeout_sec = 180
 
 ```sh
 claude mcp add --transport stdio --scope project polycodegraph -- \
-  /absolute/path/to/polycodegraph/build/polycodegraph serve \
+  /absolute/path/to/polycodegraph/target/release/polycodegraph serve \
   --root /absolute/path/to/flutter-project
 ```
 
-Equivalent `.mcp.json` (on Windows, use `C:/Projects/polycodegraph/build/polycodegraph.exe` and your project root):
+Equivalent `.mcp.json` (on Windows, use `C:/Projects/polycodegraph/target/release/polycodegraph.exe` and your project root):
 
 ```json
 {
   "mcpServers": {
     "polycodegraph": {
       "type": "stdio",
-      "command": "/absolute/path/to/polycodegraph/build/polycodegraph",
+      "command": "/absolute/path/to/polycodegraph/target/release/polycodegraph",
       "args": ["serve", "--root", "/absolute/path/to/flutter-project"]
     }
   }
@@ -240,7 +190,7 @@ Static call targets are used throughout. Go function variables, Java reflection,
 Prepare mobile adapters with a native Swift 6.2+ toolchain, JDK 17+ and Python 3.11+ installed:
 
 ```sh
-dart run tool/setup_providers.dart --swift --objectivec --kotlin
+polycodegraph setup --languages swift,objectivec,kotlin
 ```
 
 Setup installs SHA-256-pinned libclang wheels, downloads the hash-verified official Kotlin 2.3.10 compiler distribution, and builds this repository's trusted graph plugin. It never runs downloaded shell launchers. The running server does not install tools, invoke Gradle/Xcode/SwiftPM, evaluate `Package.swift` or `.kts`, or load project compiler plugins, KAPT or KSP. Kotlin creates temporary compiler output to obtain resolved IR; it does not execute it. Custom Swift macro plugin paths are not supplied.
@@ -288,9 +238,9 @@ Swift JSON AST is a compiler interface without a guaranteed stable format; runti
 For a project using only these two languages:
 
 ```sh
-dart run tool/setup_providers.dart --python --rust
-dart run bin/polycodegraph.dart doctor --root /path/to/project
-dart run bin/polycodegraph.dart index --root /path/to/project
+polycodegraph setup --languages python,rust
+polycodegraph doctor --root /path/to/project
+polycodegraph index --root /path/to/project
 ```
 
 Python declarations come from the Python AST; references and calls use [Jedi static resolution](https://jedi.readthedocs.io/en/latest/docs/api.html). Repository modules are parsed without importing/executing them. Runtime stdlib and adapter-environment packages are available for inference; use `python_search_paths` for other source roots or project dependency site-packages. Syntax support follows the selected Python runtime. Dynamic/ambiguous callbacks are omitted and counted under `unresolved_calls`. Duck-typed/structural Protocol implementations, monkey-patching and arbitrary decorator/runtime dispatch are not inferred. Explicit bases and resolved overridden methods participate in impact analysis.
@@ -303,7 +253,7 @@ Edits rebuild the affected Python or Rust language scope; additions/deletions, `
 
 ## MCP tools
 
-All graph queries refresh the index first. `detect_changes` reports pending changes without indexing. A fixed root prevents an agent from changing the repository or reading arbitrary paths through tool arguments.
+All graph queries apply pending watcher events and reconcile when due. `index_repository` explicitly scans source hashes. `detect_changes` reports pending changes without indexing. A fixed root prevents an agent from changing the repository or reading arbitrary paths through tool arguments.
 
 | Tool | Arguments | Purpose |
 | --- | --- | --- |
@@ -319,6 +269,7 @@ All graph queries refresh the index first. `detect_changes` reports pending chan
 | `dependencies` | `target`, `direction?` | File-level directives and cross-file symbol dependencies |
 | `neighbors` | `target`, `direction?`, `kinds?` | Adjacent graph nodes and source sites |
 | `affected_by_change` / `blast_radius` | `target`, `depth?` | Conservative reverse closure, with reasons |
+| `inspect_change` | `target`, `depth?`, `limit?`, `include_snippet?` | Symbol, callers, implementations and impact in one generation |
 | `snippet` | `target?`, `file?`, `start_line?`, `end_line?`, `context?` | Bounded source window |
 
 List-returning tools accept `offset` (default 0) and `limit` (default 50, capped by `max_results`). `get_architecture` defaults to 20 hubs. `search_symbol.file` is a relative path prefix; `kind`/`tag` are exact filters. Filter `language` with `dart`, `typescript`, `javascript`, `java`, `go`, `python`, `rust`, `swift`, `objectivec` or `kotlin`. An empty `query` lists symbols. Search favors exact names, then prefixes, then substrings. A `target` is a returned stable ID, an unambiguous qualified name/name, or an indexed relative file path. Ambiguous names return candidate IDs instead of guessing.
@@ -379,11 +330,17 @@ Tags are discovery hints. Annotation and naming hints do not certify framework o
 
 ## Cache and incremental indexing
 
-The repository-local cache stores per-file hashes, declarations, edges, dependencies and diagnostics in an atomic JSON snapshot. SHA-256 content hashes detect edits even when timestamps/sizes are unchanged. A warm unchanged query reuses extraction results, but still scans/hashes source files: freshness checking is O(source bytes), not constant time. Graph adjacency is reconstructed in memory for each tool query; this release favors simple inspectable storage over database-scale indexing.
+The repository-local SQLite cache stores schema-3 records, symbols, edges, scopes, dependencies and diagnostics. Transactions publish a coherent generation. Incoming/outgoing indexes and an immutable in-memory graph are reused while the generation is unchanged; unchanged warm queries perform no extraction or graph reconstruction.
 
-An edit invalidates the file and transitive dependents from both directives and resolved cross-file references. Additions/deletions conservatively trigger a full rebuild. Changes to pubspecs, analysis options, package configs, excluded source files, SDK/config fingerprints also rebuild. TypeScript/JavaScript changes rebuild the shared TS/JS scope conservatively; Java or Go changes rebuild that language across the root. This avoids stale implicit-package/interface bindings. Configuration/lock files, provider code/runtime changes, Go build environment and configured Java classpath contents participate in invalidation. Each Dart indexing batch creates fresh Analyzer contexts, so reused Analyzer sessions cannot supply stale bindings. A second scan detects concurrent source edits; unstable repositories retry up to three times without publishing a mixed snapshot.
+`serve` watches the repository before initial indexing. Events are debounced for 200 ms and drained before queries. A complete hash reconciliation runs every 30 seconds, including configured environment/provider/dependency inputs. Lost events can leave a bounded freshness window until reconciliation: inspect `status.freshness`. Watcher errors/overflow force reconciliation; unavailable or disabled watchers scan on every query. `watch: false` restores the strict per-query scanning policy. CLI `index`/`status` perform explicit scans; MCP `index_repository` scans too, and `force: true` reconstructs all records.
 
-Writers serialize with an in-process queue and an OS advisory lock. Snapshot replacement is atomic on the same filesystem; a crashed writer leaves the previous complete snapshot. Corrupt, incompatible or wrong-root caches rebuild automatically. No daemon/watch service is required: freshness is checked on every query. Keep the cache on a local filesystem that supports locking and atomic rename, and add `.polycodegraph/` to the indexed project's `.gitignore`.
+Invalidation expands old/new file dependencies and semantic scopes: Dart pubspec contexts, TS/JS configs, Go modules, Rust crates and mobile modules. Java/Python use a conservative root scope. Changed manifest/environment inputs conservatively rebuild the involved language; ambiguous inputs or provider/config changes may rebuild all languages. Record publication is scoped; compiler resolution may still need the full language context, which is sent separately from `emit_files`. This avoids losing links to unchanged declarations. Additions/deletions invalidate their scopes and dependent scopes rather than always rebuilding unrelated modules.
+
+Configured Java/mobile classpaths, mobile include/framework/import paths and bridging headers, Python search paths, explicit Rust source contexts, prepared Node dependency sources and external Dart package source roots participate in reconciliation. Providers/SDK metadata are fingerprinted. For other externally prepared artifacts not tracked directly, explicitly reindex with `force: true` after preparation.
+
+SQLite plus an advisory writer lock serializes publishers. Initial provider failures report incomplete coverage. Failed updates retain the previous committed generation and return an error; resolve the failure before using it for a new change. Source changes during analysis cause retries (up to three). Corrupt/incompatible caches are preserved under a `.corrupt-*` name and rebuilt; old 0.4 JSON caches are left untouched. Keep the cache on a local filesystem and exclude `.polycodegraph/` from Git.
+
+`inspect_change` defaults to depth 6 and 20 rows per section, with explicit omitted/truncated counts; snippets are optional and disabled by default. All sections share a generation. Query output budgets and static-analysis limitations continue to apply.
 
 ## Suggested AGENTS.md harness integration
 
@@ -396,35 +353,11 @@ Copy the adaptable instructions from [docs/harness-AGENTS.md](docs/harness-AGENT
 5. Make the change, then call `index_repository` and inspect the updated graph.
 6. Run the project's normal `dart analyze`/`flutter analyze` and tests; the graph does not replace them.
 
-## Development harness
+## Development and validation
 
-[AGENTS.md](AGENTS.md) defines the server's development invariants and agent workflow. [CONTRIBUTING.md](CONTRIBUTING.md) describes setup and the shared validation command, also used by CI. [Fixture contracts](docs/fixture-contracts.md) specify expected semantic edges and negative cases. Consumer harness integration above remains a separate template.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md) and [VALIDATION.md](VALIDATION.md). Run `cargo xtask check` for format, Clippy and Rust tests; `cargo xtask package` builds a host package. Real-provider MCP validation uses `python tool/smoke.py --group dart|polyglot|mobile|flutter` after provider setup. These tests fail if required coverage is missing.
 
-## Tests and fixture
-
-```sh
-dart run tool/check.dart
-dart run tool/check.dart --providers --build
-```
-
-The default suite covers symbol extraction, parts, same-name disambiguation, calls, overrides, conservative impact, pagination, snippets, cache reuse/invalidation/recovery, concurrent writers, config/path validation and a real stdio subprocess. Tests copy the Dart fixture to temporary directories before edits.
-
-Enable the real Flutter package integration test:
-
-```sh
-cd examples/flutter_fixture
-flutter pub get
-cd ../..
-dart test test/flutter_fixture_test.dart
-```
-
-That test verifies actual Flutter, flutter_bloc, flutter_riverpod, GetIt, go_router and Freezed annotations, plus impact propagation into the screen file. It skips explicitly when the fixture's package config is absent. The fixture is a small runnable Flutter entry point; platform scaffolding is intentionally omitted. Freezed recognition is tested via annotations; build_runner generation is not required by the fixture.
-
-CI runs Dart validation, a required semantic polyglot job (TypeScript, JavaScript, Java, Go, Python and Rust), and a separate real Flutter integration job. `test/fixtures/polyglot/` and `test/fixtures/semantic/` verify static calls, unrelated same-name decoys, overloads, references, implementations, dependencies, impact and semantic cache invalidation. `test/semantic_test.dart` also checks Python callbacks, Rust path dependencies, nonexecution of build hooks, Unicode/CRLF and stale bindings. Combined native MCP tests index all ten languages; the mobile jobs require Swift/Objective-C/Kotlin and Android SDK tests on all three hosts, plus real UIKit/bridging-header analysis on macOS. Add `--dev` to adapter setup to include Ruff formatting/lint and strict mypy in provider checks. Optional language tests skip locally when adapters are unavailable; `--providers` requires them. See [docs/architecture.md](docs/architecture.md) and [docs/protocol.md](docs/protocol.md) for implementation and protocol contracts. See [VALIDATION.md](VALIDATION.md) for the checks performed on this checkout.
-
-## Migration from dart-codegraph
-
-The project, package and executable are now `polycodegraph`; update imports, MCP registration names and commands. The default config is `polycodegraph.yaml` and the cache is `.polycodegraph/`. Old caches are not migrated; rebuild them. The repository rename preserves Git history. Existing Dart symbol IDs are preserved for unchanged source; cache schema 2 invalidates previous snapshots.
+Differential checks can use `--baseline /path/to/v0.4.0/executable`. They compare all fixture symbols, calls, references, implementations, neighbors, dependencies, impact and snippets while normalizing generation. See [benchmark methodology](docs/benchmarks/README.md); synthetic query results are not token-savings or whole-project analysis claims.
 
 ## References
 
