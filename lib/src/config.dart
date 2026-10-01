@@ -20,10 +20,16 @@ class GraphConfig {
     '**/*.py',
     '**/*.pyi',
     '**/*.rs',
+    '**/*.swift',
+    '**/*.kt',
+    '**/*.h',
+    '**/*.m',
+    '**/*.mm',
   ];
   final String? providersPath;
   final String nodePath, javaPath, goPath, rustAnalyzerPath;
-  final String? pythonPath, rustSysrootSrc;
+  final String? pythonPath, rustSysrootSrc, libclangPath;
+  final String swiftcPath, mobileProjectPath;
   final List<String> pythonSearchPaths, rustCfg;
   final List<String> javaClasspath;
   final int providerTimeoutSeconds;
@@ -54,6 +60,9 @@ class GraphConfig {
     this.javaPath = 'java',
     this.goPath = 'go',
     this.pythonPath,
+    this.swiftcPath = 'swiftc',
+    this.libclangPath,
+    this.mobileProjectPath = 'polycodegraph.mobile.json',
     this.pythonSearchPaths = const [],
     this.rustAnalyzerPath = 'rust-analyzer',
     this.rustCfg = const [],
@@ -74,6 +83,7 @@ class GraphConfig {
         !p.isWithin(this.root, p.normalize(p.join(this.root, cache)))) {
       throw FormatException('cache must be a directory inside the repository');
     }
+    safePath(mobileProjectPath);
     for (final value in [
       maxResults,
       maxSnippetLines,
@@ -132,6 +142,9 @@ class GraphConfig {
       'python_path',
       'rust_analyzer_path',
       'rust_sysroot_src',
+      'swiftc_path',
+      'libclang_path',
+      'mobile_project_path',
       'java_classpath',
       'python_search_paths',
       'rust_cfg',
@@ -171,6 +184,9 @@ class GraphConfig {
       'python_path',
       'rust_analyzer_path',
       'rust_sysroot_src',
+      'swiftc_path',
+      'libclang_path',
+      'mobile_project_path',
     ]) {
       if (raw[key] != null && raw[key] is! String) {
         throw FormatException('$key must be a string');
@@ -209,6 +225,12 @@ class GraphConfig {
         'python_search_paths',
         [],
       ).map((v) => p.normalize(p.join(base, v))).toList(),
+      swiftcPath: runtime('swiftc_path', 'swiftc'),
+      libclangPath: raw['libclang_path'] == null
+          ? null
+          : p.normalize(p.join(base, raw['libclang_path'] as String)),
+      mobileProjectPath:
+          raw['mobile_project_path'] as String? ?? 'polycodegraph.mobile.json',
       rustAnalyzerPath: runtime('rust_analyzer_path', 'rust-analyzer'),
       rustCfg: strings('rust_cfg', []),
       rustSysrootSrc: raw['rust_sysroot_src'] == null
@@ -280,7 +302,10 @@ class GraphConfig {
               rustAnalyzerPath,
               rustCfg,
               rustSysrootSrc,
-              'semantic-v2',
+              swiftcPath,
+              libclangPath,
+              mobileProjectPath,
+              'semantic-v3',
             ],
             'runtime': Platform.version,
             'executable': Platform.resolvedExecutable,

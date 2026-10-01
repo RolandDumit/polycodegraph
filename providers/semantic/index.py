@@ -24,8 +24,19 @@ def main() -> None:
         from polycodegraph_adapters.rust_graph import RustGraph
 
         records = RustGraph(graph, request.get("options", {})).extract()
+    elif sys.argv[1:] in (["--swift"], ["--objectivec"], ["--kotlin"]):
+        from polycodegraph_adapters.kotlin_graph import KotlinGraph
+        from polycodegraph_adapters.swift_graph import SwiftGraph
+
+        if sys.argv[1:] == ["--objectivec"]:
+            from polycodegraph_adapters.objc_graph import ObjcGraph
+
+            records = ObjcGraph(graph, request.get("options", {})).extract()
+        else:
+            provider = SwiftGraph if sys.argv[1:] == ["--swift"] else KotlinGraph
+            records = provider(graph, request.get("options", {})).extract()
     else:
-        raise ValueError("Expected --python or --rust")
+        raise ValueError("Expected a supported semantic language")
     sys.stdout.write(json.dumps(records, ensure_ascii=False, separators=(",", ":")))
 
 

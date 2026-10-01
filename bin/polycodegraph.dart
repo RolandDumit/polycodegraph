@@ -14,7 +14,7 @@ Future<void> main(List<String> args) async {
   try {
     final options = parser.parse(args);
     if (options['version'] == true) {
-      stdout.writeln('polycodegraph 0.3.0');
+      stdout.writeln('polycodegraph 0.4.0');
       return;
     }
     if (options['help'] == true || options.rest.isEmpty) {
@@ -66,6 +66,11 @@ include:
   - "**/*.py"
   - "**/*.pyi"
   - "**/*.rs"
+  - "**/*.swift"
+  - "**/*.kt"
+  - "**/*.h"
+  - "**/*.m"
+  - "**/*.mm"
 exclude:
   - "**/.git/**"
   - "**/.dart_tool/**"

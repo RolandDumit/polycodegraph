@@ -6,7 +6,7 @@ PolyCodeGraph is a local semantic code-intelligence MCP server. Read `docs/archi
 
 1. Inspect the affected module and relevant fixture expectations in `docs/fixture-contracts.md`. If this repository is indexed by PolyCodeGraph, use architecture/search/callers/blast_radius to narrow exploration; use source search when coverage is incomplete or the server is being changed.
 2. Keep extraction, indexing, queries and MCP transport separate. Put language-specific logic in providers, with targets resolved by the supported semantic engines. Add regression tests for semantic or protocol changes; document precision limits.
-3. Run `dart run tool/check.dart` before completing a change. Use `--providers` for provider changes and `--flutter` for Flutter discovery changes; use `--build` for CLI/packaging changes. See `CONTRIBUTING.md` for toolchain setup. Optional tests skipped for missing dependencies are not verified coverage.
+3. Run `dart run tool/check.dart` before completing a change. Use `--providers` for the original semantic providers, `--mobile` for Swift/Objective-C/Kotlin, `--android` or `--ios` for SDK integration changes, and `--flutter` for Flutter discovery changes; use `--build` for CLI/packaging changes. See `CONTRIBUTING.md` for toolchain setup. Optional tests skipped for missing dependencies are not verified coverage.
 4. Update user-facing docs when options, precision or runtime prerequisites change. Report the checks run, skipped checks and remaining limitations.
 
 ## Invariants

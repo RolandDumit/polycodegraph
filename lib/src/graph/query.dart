@@ -482,7 +482,7 @@ class GraphQuery {
             .toList(),
       },
       'precision':
-          'Static semantic targets across Dart, TypeScript/JavaScript, Java, Go, Python and Rust; dynamic/callback flow, external Rust crates and macro expansion may be incomplete. Flutter tags are optional discovery hints.',
+          'Static semantic targets across Dart, TypeScript/JavaScript, Java, Go, Python, Rust, Swift, Objective-C and Kotlin; dynamic/callback flow, external Rust crates and macro expansion may be incomplete. Flutter tags are optional discovery hints.',
     };
   }
 }

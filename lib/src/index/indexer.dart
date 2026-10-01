@@ -82,6 +82,15 @@ class RepositoryIndexer {
     final excludes = config.exclude.map(Glob.new).toList();
     final hashes = <String, String>{};
     final environment = <String, String>{};
+    final model = File(config.safePath(config.mobileProjectPath));
+    if (model.existsSync()) {
+      if (model.lengthSync() > 2097152) {
+        throw FormatException('Mobile project model exceeds 2 MiB');
+      }
+      environment[config.mobileProjectPath] = sha256
+          .convert(model.readAsBytesSync())
+          .toString();
+    }
     final skipped = <String>[];
     void walk(Directory directory) {
       final entries = directory.listSync(followLinks: false)
@@ -109,6 +118,10 @@ class RepositoryIndexer {
                 '.pytest_cache',
                 '.tox',
                 '.nox',
+                '.build',
+                '.gradle',
+                'DerivedData',
+                '.tools',
               }.contains(p.basename(entry.path)) ||
               p.equals(entry.path, config.cachePath)) {
             continue;
@@ -161,11 +174,17 @@ class RepositoryIndexer {
               'Cargo.toml',
               'Cargo.lock',
               'rust-project.json',
+              'Package.swift',
+              'Package.resolved',
+              'project.pbxproj',
+              'libs.versions.toml',
               'rust-toolchain',
               'rust-toolchain.toml',
             }.contains(p.basename(entry.path)) ||
             p.basename(entry.path).startsWith('tsconfig') ||
-            p.basename(entry.path) == 'jsconfig.json') {
+            p.basename(entry.path) == 'jsconfig.json' ||
+            p.extension(entry.path) == '.xcconfig' ||
+            rel == config.mobileProjectPath) {
           environment[rel] = sha256.convert(entry.readAsBytesSync()).toString();
         }
         if (!{
@@ -181,6 +200,11 @@ class RepositoryIndexer {
           'py',
           'pyi',
           'rs',
+          'swift',
+          'kt',
+          'h',
+          'm',
+          'mm',
         }.contains(p.extension(entry.path).replaceFirst('.', ''))) {
           continue;
         }
@@ -243,6 +267,7 @@ class RepositoryIndexer {
           .where((f) => languageFor(f) != 'dart')
           .map(languageFor)
           .toSet();
+      if (languages.contains('objectivec')) languages.add('swift');
       affected.addAll(
         scan.hashes.keys.where((f) => languages.contains(languageFor(f))),
       );

@@ -14,3 +14,5 @@ __pycache__/
 .ruff_cache/
 providers/semantic/.installed.json
 providers/semantic/.tools/
+
+providers/kotlin/.tools/

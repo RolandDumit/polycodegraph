@@ -1,6 +1,6 @@
 name: polycodegraph
-version: 0.3.0
-description: Semantic, incremental code intelligence graph and stdio MCP server for Dart/Flutter, TypeScript/JavaScript, Java, Go, Python and Rust.
+version: 0.4.0
+description: Semantic, incremental code intelligence graph and stdio MCP server for Dart/Flutter, TypeScript/JavaScript, Java, Go, Python, Rust, Swift, Objective-C and Kotlin.
 repository: https://github.com/RolandDumit/polycodegraph
 issue_tracker: https://github.com/RolandDumit/polycodegraph/issues
 environment:

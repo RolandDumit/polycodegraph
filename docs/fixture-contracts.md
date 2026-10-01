@@ -30,3 +30,9 @@ Renaming contract methods must remove stale calls from unchanged consumers in bo
 ## Transport and boundaries
 
 `mcp_test.dart` exercises a real stdio subprocess, initialization, tool schemas, validation, framing, cancellation and bounded errors. Config and graph tests verify path traversal/symlink rejection, ambiguity, stable pagination, snippet bounds and source freshness. Preserve these guarantees as providers are added.
+
+## Mobile languages
+
+`test/fixtures/mobile` exercises static Swift protocol and Kotlin interface calls, unrelated same-name methods, aliased Kotlin construction, inherited methods, overloads, suspend/data tags, Swift enums/aliases/extensions, Objective-C header imports, selectors and implementation overrides. Consumer dependencies and impact cross file boundaries. Leading comments preserve IDs; renamed contracts remove stale calls; UTF-8/UTF-16/CRLF coordinates preserve snippets. Mobile configuration invalidates graphs and rejects executable/plugin fields.
+
+`test/fixtures/ios_sdk` resolves actual UIKit classes and an Objective-C bridging header with the Xcode simulator SDK on macOS; no mocked UIKit types are substituted. `test/fixtures/android_sdk` resolves actual `android.app.Activity` and local typed calls using a prepared platform `android.jar`. These check semantic analysis, not app packaging or simulator/device execution. Mobile CI requires portable/native MCP and Android cases on each host and the UIKit case on macOS.

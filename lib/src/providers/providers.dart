@@ -125,6 +125,15 @@ class ExternalProviders {
       'go/go.sum',
       'semantic/index.py',
       'semantic/requirements.lock',
+      'semantic/requirements-mobile.lock',
+      'semantic/setup_mobile.py',
+      'kotlin/GraphPlugin.kt',
+      'kotlin/.tools/installed.json',
+      'kotlin/.tools/graph-plugin.jar',
+      'semantic/polycodegraph_adapters/mobile_common.py',
+      'semantic/polycodegraph_adapters/swift_graph.py',
+      'semantic/polycodegraph_adapters/objc_graph.py',
+      'semantic/polycodegraph_adapters/kotlin_graph.py',
       'semantic/.installed.json',
       'semantic/setup_rust_analyzer.py',
       'semantic/polycodegraph_adapters/__init__.py',
@@ -145,12 +154,22 @@ class ExternalProviders {
       config.goPath,
       pythonExecutable,
       rustAnalyzerExecutable,
+      config.swiftcPath,
+      if (config.libclangPath != null) config.libclangPath!,
       p.join(assets, 'go', Platform.isWindows ? 'graph.exe' : 'graph'),
     ]) {
       final path = _executable(name);
       final stat = path == null ? null : File(path).statSync();
       state[name] =
           '$path:${stat?.size}:${stat?.modified.toUtc().toIso8601String()}';
+    }
+    for (final name in [
+      p.join(assets, 'kotlin/.tools/kotlinc/lib/kotlin-compiler.jar'),
+      if (config.libclangPath != null) config.libclangPath!,
+    ]) {
+      final stat = File(name).statSync();
+      state[name] =
+          '${stat.type}:${stat.size}:${stat.modified.toUtc().toIso8601String()}';
     }
     return sha256.convert(utf8.encode(jsonEncode(state))).toString();
   }
@@ -196,6 +215,30 @@ class ExternalProviders {
       'engine': 'Python AST + Jedi 0.20.0',
       'runtime': pythonExecutable,
     },
+    'swift': {
+      'available':
+          _executable(pythonExecutable) != null &&
+          _executable(config.swiftcPath) != null,
+      'engine': 'Swift 6.2+ semantic JSON AST',
+      'runtime': config.swiftcPath,
+    },
+    'objectivec': {
+      'available':
+          _executable(pythonExecutable) != null &&
+          (config.libclangPath != null
+              ? File(config.libclangPath!).existsSync()
+              : semanticSetup['libclang'] != null),
+      'engine': 'libclang canonical cursors',
+      'runtime': config.libclangPath ?? 'adapter libclang',
+    },
+    'kotlin': {
+      'available':
+          _executable(pythonExecutable) != null &&
+          _executable(config.javaPath) != null &&
+          File(p.join(assets, 'kotlin/.tools/graph-plugin.jar')).existsSync(),
+      'engine': 'Kotlin K2 2.3.10 resolved IR',
+      'runtime': config.javaPath,
+    },
     'rust': {
       'available':
           _executable(pythonExecutable) != null &&
@@ -210,7 +253,16 @@ class ExternalProviders {
 
   Future<Map<String, FileRecord>> extract(Map<String, String> hashes) async {
     final records = <String, FileRecord>{};
-    for (final language in ['typescript', 'java', 'go', 'python', 'rust']) {
+    for (final language in [
+      'typescript',
+      'java',
+      'go',
+      'python',
+      'rust',
+      'swift',
+      'objectivec',
+      'kotlin',
+    ]) {
       final files =
           hashes.keys
               .where(
@@ -260,6 +312,11 @@ class ExternalProviders {
                   config.rustAnalyzerPath,
               'rust_cfg': config.rustCfg,
               'rust_sysroot_src': config.rustSysrootSrc,
+              'swiftc_path':
+                  _executable(config.swiftcPath) ?? config.swiftcPath,
+              'java_path': _executable(config.javaPath) ?? config.javaPath,
+              'libclang_path': config.libclangPath,
+              'mobile_project_path': config.mobileProjectPath,
               'adapter_directory': p.join(assets, 'semantic'),
               'timeout': config.providerTimeoutSeconds,
               'max_file_bytes': config.maxFileBytes,

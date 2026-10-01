@@ -11,5 +11,5 @@ python_version = "3.11"
 strict = true
 
 [[tool.mypy.overrides]]
-module = "jedi.*"
+module = ["jedi.*", "clang.*"]
 ignore_missing_imports = true

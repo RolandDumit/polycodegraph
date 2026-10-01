@@ -7,6 +7,9 @@ String languageFor(String file) {
     'go' => 'go',
     'py' || 'pyi' => 'python',
     'rs' => 'rust',
+    'swift' => 'swift',
+    'kt' => 'kotlin',
+    'h' || 'm' || 'mm' => 'objectivec',
     _ => 'dart',
   };
 }

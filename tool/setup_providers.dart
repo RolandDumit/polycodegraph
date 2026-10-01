@@ -10,11 +10,14 @@ Future<void> main(List<String> args) async {
     '--go',
     '--python',
     '--rust',
+    '--swift',
+    '--objectivec',
+    '--kotlin',
     '--dev',
   };
   if (args.any((arg) => !flags.contains(arg))) {
     stderr.writeln(
-      'Usage: dart run tool/setup_providers.dart [--typescript] [--java] [--go] [--python] [--rust] [--dev]',
+      'Usage: dart run tool/setup_providers.dart [--typescript] [--java] [--go] [--python] [--rust] [--swift] [--objectivec] [--kotlin] [--dev]',
     );
     exitCode = 64;
     return;
@@ -48,7 +51,13 @@ Future<void> main(List<String> args) async {
         '.',
       ], directory: directory);
     }
-    if (enabled('--python') || enabled('--rust')) {
+    if ([
+      '--python',
+      '--rust',
+      '--swift',
+      '--objectivec',
+      '--kotlin',
+    ].any(enabled)) {
       final python = command(
         'PYTHON',
         Platform.isWindows ? 'python' : 'python3',
@@ -104,6 +113,33 @@ Future<void> main(List<String> args) async {
           custom ?? bundledRustAnalyzer,
           ['--version'],
         )).trim();
+      }
+      if (enabled('--objectivec')) {
+        await runTool(semanticPython, [
+          '-I',
+          '-m',
+          'pip',
+          'install',
+          '--disable-pip-version-check',
+          '--require-hashes',
+          '--only-binary=:all:',
+          '-r',
+          p.join(directory, 'requirements-mobile.lock'),
+        ]);
+        state['libclang'] = '18.1.1';
+      }
+      if (enabled('--kotlin')) {
+        await runTool(semanticPython, [
+          '-I',
+          p.join(directory, 'setup_mobile.py'),
+          command('JAVA', 'java'),
+        ]);
+        state['kotlin'] = '2.3.10';
+      }
+      if (enabled('--swift')) {
+        state['swift'] = (await captureTool(command('SWIFTC', 'swiftc'), [
+          '--version',
+        ])).trim();
       }
       if (args.contains('--dev')) {
         await runTool(semanticPython, [

@@ -7,7 +7,11 @@ import 'processes.dart';
 import '../test/support.dart' show copyTree;
 
 /// Exercise the compiled server, URI escaping, CRLF and paths with spaces.
-Future<void> smokeNative(String binary, {bool providers = false}) async {
+Future<void> smokeNative(
+  String binary, {
+  bool providers = false,
+  bool mobile = false,
+}) async {
   final root = Directory.systemTemp.createTempSync(
     'polycodegraph native spaces ',
   );
@@ -19,6 +23,7 @@ Future<void> smokeNative(String binary, {bool providers = false}) async {
       jsonEncode({
         'sdk_path': cli.sdkPath ?? (throw ToolFailure('Dart SDK not found')),
         'providers_path': p.join(repositoryRoot, 'providers'),
+        'swiftc_path': Platform.environment['SWIFTC'] ?? 'swiftc',
         'java_path': Platform.environment['JAVA'] ?? 'java',
         'go_path': Platform.environment['GO'] ?? 'go',
         'node_path': Platform.environment['NODE'] ?? 'node',
@@ -42,6 +47,9 @@ Future<void> smokeNative(String binary, {bool providers = false}) async {
         Directory(p.join(repositoryRoot, 'test/fixtures/polyglot')),
         root,
       );
+    }
+    if (mobile) {
+      copyTree(Directory(p.join(repositoryRoot, 'test/fixtures/mobile')), root);
     }
     process = await Process.start(binary, ['serve', '--root', root.path]);
     process.stderr.transform(utf8.decoder).listen(errors.write);
@@ -160,6 +168,36 @@ Future<void> smokeNative(String binary, {bool providers = false}) async {
       }
       stdout.writeln(
         'Native MCP: all seven languages indexed; Python and Rust calls/snippets passed.',
+      );
+    }
+    if (mobile) {
+      for (final language in ['swift', 'kotlin', 'objectivec']) {
+        final symbols = await call('search_symbol', {
+          'query': 'load',
+          'kind': 'function',
+          'language': language,
+        });
+        final loads = (symbols['rows'] as List)
+            .where(
+              (row) => row[2] == 'load' && (row[0] as String).contains('/Use.'),
+            )
+            .toList();
+        if (loads.length != 1) {
+          throw ToolFailure('Native $language load search failed: $symbols', 1);
+        }
+        final target = loads.single[0] as String;
+        final callees = await call('callees', {'target': target});
+        if (!(callees['rows'] as List).any(
+          (row) =>
+              (row[0] as String).contains('Repository.') &&
+              (row[0] as String).contains('fetch'),
+        )) {
+          throw ToolFailure('Native $language binding failed: $callees', 1);
+        }
+        await call('snippet', {'target': target});
+      }
+      stdout.writeln(
+        'Native MCP: Swift, Objective-C and Kotlin calls/snippets passed.',
       );
     }
     await process.stdin.close();
