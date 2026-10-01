@@ -1,10 +1,10 @@
 # Validation of the Rust migration (0.5.0)
 
-Local reference: immutable `v0.4.0`, initially commit `2501034b84fab0ca0c0194d95be74a7660bb8a56`. Both servers use the retained semantic adapters; the comparison checks the new orchestration/storage/query/transport against the old core. Stable IDs, complete fixture searches, architecture/diagnostics, callers, callees, references, implementations, neighbors, dependencies, affected_by_change, blast_radius and snippets are compared for every fixture symbol. Only generation is normalized; initialize version and new metadata are checked separately.
+Local reference: immutable `v0.4.0`, initially commit `2501034b84fab0ca0c0194d95be74a7660bb8a56`. Both servers use the retained semantic adapters; the comparison checks the new orchestration/storage/query/transport against the old core. Stable IDs, complete fixture searches, architecture/diagnostics, callers, callees, references, implementations, neighbors, dependencies, affected_by_change, blast_radius and snippets are compared for every fixture symbol. Only generation is normalized in graph comparisons; initialize version and new metadata are checked separately. Existing status fields and unchanged index/change reports are compared; provider-health field shapes are checked because runtime availability/locations change with the native launch. After a source edit, source-change reports and resulting graph data are compared; reindexed work sets may differ because scope invalidation is intentionally different.
 
 ## Local checks (Linux x64, 2026-10-01)
 
-- Rust formatting, Clippy with warnings denied, 29 core/transport/storage/incremental tests.
+- Rust formatting, Clippy with warnings denied, 30 core/transport/storage/incremental tests.
 - Dart provider formatting, analysis with infos denied and three Analyzer tests, including generics/accessors/operators, conditional dependencies and emission with unchanged context.
 - Ruff and strict mypy on the retained Python adapters; Go vet on the retained Go adapter.
 - Differential native MCP: Dart fixture 37 symbols / 99 edges; polyglot 41 / 108; Python/Rust 32 / 81; mobile 75 / 131; actual Flutter 24 / 75. Mixed ten-language repository: 185 / 419.
@@ -18,7 +18,7 @@ Regression tests cover watcher overflow/loss recovery, duplicate source events, 
 
 CI requires core and native semantic/provider smoke checks on Linux, Windows and macOS, Flutter on each host, Android SDK on each host and real UIKit/bridging-header resolution on macOS/Xcode. Package builds and relocation/setup smoke tests cover Linux x64, Windows x64, macOS x64 and ARM64. The workflow uses `v0.4.0` as its compiled oracle and uploads benchmark reports.
 
-Remote CI results must be checked for the exact commit before calling cross-platform acceptance complete. Local Linux checks do not verify UIKit, Windows or macOS. Package preparation does not publish a GitHub release/tag; that remains a separate step after validation.
+The complete 20-job cross-platform matrix passed for [bef8832](https://github.com/RolandDumit/polycodegraph/actions/runs/36899205872), including all four packages, Flutter, Android and macOS UIKit. Later commits must also pass their exact CI run before delivery. Local Linux checks do not verify UIKit, Windows or macOS. Package preparation does not publish a GitHub release/tag; that remains a separate step after validation.
 
 ## Limits
 

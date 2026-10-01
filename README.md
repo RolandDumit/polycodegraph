@@ -348,7 +348,7 @@ Copy the adaptable instructions from [docs/harness-AGENTS.md](docs/harness-AGENT
 
 1. Read `status`/`get_architecture` and check diagnostics once.
 2. Find stable symbol IDs with `search_symbol`.
-3. Query `callers`, `implementations`, `dependencies` and `blast_radius` before changing an API.
+3. Use `inspect_change` for callers, implementations and impact in one generation; query `dependencies` or individual tools when needed.
 4. Read only relevant `snippet` windows, expanding truncated windows explicitly.
 5. Make the change, then call `index_repository` and inspect the updated graph.
 6. Run the project's normal `dart analyze`/`flutter analyze` and tests; the graph does not replace them.

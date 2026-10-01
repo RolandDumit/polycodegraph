@@ -5,29 +5,29 @@
       "symbols": 100000,
       "edges": 500000,
       "samples": 9,
-      "median_ms": 3373.056,
-      "p95_ms": 3435.236,
-      "mean_ms": 3373.673666666667,
-      "max_ms": 3435.236,
+      "median_ms": 3334.814,
+      "p95_ms": 3940.895,
+      "mean_ms": 3395.800666666667,
+      "max_ms": 3940.895,
       "reconciliations": 9,
       "source_bytes": 1048586,
       "workload": "in-memory graph query including per-query SHA-256 reconciliation; excludes provider analysis and database startup",
-      "peak_tree_rss_bytes": 247771136
+      "peak_tree_rss_bytes": 252727296
     },
     {
       "engine": "rust",
       "symbols": 100000,
       "edges": 500000,
-      "build_ms": 526.334616,
+      "build_ms": 1809.450666,
       "samples": 310,
-      "median_ms": 0.015169,
-      "p95_ms": 0.032551000000000004,
-      "mean_ms": 0.02132585161290323,
-      "max_ms": 0.609936,
+      "median_ms": 0.016391,
+      "p95_ms": 0.047788,
+      "mean_ms": 0.025536425806451615,
+      "max_ms": 0.7187180000000001,
       "reconciliations": 2,
       "source_bytes": 1048586,
       "workload": "in-memory graph query including periodic SHA-256 reconciliation; excludes provider analysis and database startup",
-      "peak_tree_rss_bytes": 374300672
+      "peak_tree_rss_bytes": 359067648
     }
   ],
   "persistence": [
@@ -35,26 +35,26 @@
       "engine": "dart-json",
       "symbols": 100000,
       "edges": 500000,
-      "write_ms": 941.695,
-      "read_ms": 728.821,
+      "write_ms": 919.765,
+      "read_ms": 745.31,
       "bytes": 96044851,
       "workload": "separate cold persistence; no providers or queries",
-      "peak_tree_rss_bytes": 662835200
+      "peak_tree_rss_bytes": 665788416
     },
     {
       "engine": "rust-sqlite",
       "symbols": 100000,
       "edges": 500000,
-      "write_ms": 1402.773532,
-      "read_ms": 138.180731,
+      "write_ms": 1428.246666,
+      "read_ms": 143.774223,
       "bytes": 399331328,
       "workload": "separate cold persistence; no providers or queries",
-      "peak_tree_rss_bytes": 574181376
+      "peak_tree_rss_bytes": 611663872
     }
   ],
   "machine": "Linux-7.2.5-3-omarchy-x86_64-with-glibc2.44",
   "cpu": "AMD Ryzen 9 9900X 12-Core Processor",
-  "median_speedup": 222365.08668995977,
+  "median_speedup": 203453.96864132755,
   "criterion_met": true,
   "platform": "posix",
   "note": "Synthetic graph workload; not a token-savings or end-to-end provider benchmark. RSS sampling is Linux-only."

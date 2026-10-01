@@ -193,8 +193,9 @@ impl Indexer {
     }
     pub fn detect_changes(&mut self) -> Result<Value> {
         let scan = self.scan()?;
-        let old = self.graph.as_ref().map(|g| &g.snapshot);
-        let changed: Vec<_> = scan
+        let saved = self.store.read()?;
+        let old = saved.as_ref();
+        let mut changed: Vec<_> = scan
             .hashes
             .iter()
             .filter(|(f, h)| {
@@ -203,14 +204,16 @@ impl Indexer {
             })
             .map(|(f, _)| f.clone())
             .collect();
-        let deleted: Vec<_> = old
+        let mut deleted: Vec<_> = old
             .into_iter()
             .flat_map(|o| o.files.keys())
             .filter(|f| !scan.hashes.contains_key(*f))
             .cloned()
             .collect();
+        changed.sort_by(|a, b| crate::model::compare_text(a, b));
+        deleted.sort_by(|a, b| crate::model::compare_text(a, b));
         Ok(
-            json!({"indexed":old.is_some(),"changed":changed,"deleted":deleted,"skipped":scan.skipped,"environment_changed":old.is_some_and(|o|o.environment!=hash(serde_json::to_vec(&scan.environment).unwrap_or_default()))}),
+            json!({"indexed":old.is_some(),"changed":changed,"deleted":deleted,"skipped":scan.skipped,"environment_changed":old.is_none_or(|o|o.environment!=hash(serde_json::to_vec(&scan.environment).unwrap_or_default()))}),
         )
     }
     pub async fn refresh(&mut self, explicit: bool, force: bool) -> Result<Value> {
@@ -571,13 +574,16 @@ impl Indexer {
     }
     fn report(
         &self,
-        changed: Vec<String>,
-        deleted: Vec<String>,
-        reindexed: Vec<String>,
+        mut changed: Vec<String>,
+        mut deleted: Vec<String>,
+        mut reindexed: Vec<String>,
         full: bool,
     ) -> Value {
+        for rows in [&mut changed, &mut deleted, &mut reindexed] {
+            rows.sort_by(|a, b| crate::model::compare_text(a, b));
+        }
         let g = self.graph.as_ref();
-        json!({"generation":g.map(|g|&g.snapshot.generation),"changed_total":changed.len(),"deleted_total":deleted.len(),"reindexed_total":reindexed.len(),"changed":changed,"deleted":deleted,"reindexed":reindexed,"full":full,"files":g.map_or(0,|g|g.snapshot.files.len()),"skipped":g.map_or(vec![],|g|g.snapshot.skipped.clone())})
+        json!({"generation":g.map(|g|&g.snapshot.generation),"changed_total":changed.len(),"deleted_total":deleted.len(),"reindexed_total":reindexed.len(),"changed":changed,"deleted":deleted,"reindexed":reindexed,"full":full,"files":g.map_or(0,|g|g.snapshot.files.len()),"skipped":g.map_or(vec![],|g|g.snapshot.skipped.clone()),"skipped_total":g.map_or(0,|g|g.snapshot.skipped.len())})
     }
     pub async fn call(&mut self, name: &str, args: &Value) -> Result<Value> {
         if name == "detect_changes" {

@@ -16,6 +16,17 @@ Linux RSS is sampled every 25 ms from `/proc`, including descendants without dou
 
 See [large graph results](v0.5.0-linux.json) and [end-to-end results](v0.5.0-end-to-end-linux.json). The synthetic median gate passes. The large-graph Rust process has a higher query-run RSS peak than the Dart baseline, so this release claims a measured repeated-query improvement for that workload and **does not claim a memory reduction**. Provider semantic limits remain unchanged.
 
+### Recorded native MCP fixture run (Linux x64)
+
+| Fixture | Engine | First index ms | Median ms | p95 ms | Edit/update ms | Peak process tree MiB |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| polyglot | dart-v0.4.0 | 1511.7 | 2.210 | 2.669 | 21.5 | 412.7 |
+| polyglot | rust | 1491.5 | 0.247 | 0.318 | 256.7 | 417.9 |
+| flutter_fixture | dart-v0.4.0 | 2929.0 | 1.874 | 2.216 | 2877.0 | 479.5 |
+| flutter_fixture | rust | 2997.3 | 0.248 | 0.317 | 3155.2 | 527.3 |
+
+These runs improve repeated query medians by about 7.6–9.0×. First indexing is comparable; updates include the Rust watcher debounce and do not improve in these fixtures. Neither the fixture runs nor the synthetic query run demonstrates a memory reduction. All timings include the configured reconciliation policy.
+
 ```sh
 python tool/baseline.py
 cargo build --release --locked --workspace --bins --examples

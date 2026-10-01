@@ -240,6 +240,15 @@ async fn warm_queries_reuse_graph_without_scan() {
         before
     );
 }
+#[test]
+fn change_detection_before_first_index_reports_environment_change() {
+    let d = tempfile::tempdir().unwrap();
+    let mut i = Indexer::new(config(&d)).unwrap();
+    let detected = i.detect_changes().unwrap();
+    assert_eq!(detected["indexed"], false);
+    assert_eq!(detected["environment_changed"], true);
+    assert!(i.graph.is_none(), "detection must not publish an index");
+}
 #[tokio::test]
 async fn disabled_watcher_scans_every_query() {
     let d = tempfile::tempdir().unwrap();

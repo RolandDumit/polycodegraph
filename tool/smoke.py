@@ -115,6 +115,30 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                 assert clean(new.call("search_symbol", query="", limit=200)) == clean(
                     old.call("search_symbol", query="", limit=200)
                 )
+            if old:
+                assert clean(new.call("search", query="", limit=200)) == clean(
+                    old.call("search", query="", limit=200)
+                )
+                assert clean(new.call("index_repository")) == clean(
+                    old.call("index_repository")
+                )
+                assert clean(new.call("detect_changes")) == clean(
+                    old.call("detect_changes")
+                )
+                status, reference = new.call("status"), old.call("status")
+                for key in reference:
+                    if key not in ("provider_health", "generation"):
+                        assert clean(status[key]) == clean(reference[key]), (
+                            "status",
+                            key,
+                        )
+                # Runtime locations/availability can differ after separating Dart from the core.
+                for provider, health in reference["provider_health"].items():
+                    assert provider in status["provider_health"]
+                    if isinstance(health, dict):
+                        assert (
+                            health.keys() <= status["provider_health"][provider].keys()
+                        )
             # Compare graph relationships and source windows for every fixture symbol.
             for row in rows:
                 target = row[0]
@@ -161,7 +185,38 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
             comment = "# edit\n" if source.suffix in (".py", ".pyi") else "// edit\n"
             source.write_text(comment + text, encoding="utf-8")
             time.sleep(0.3)
+            if old:
+                assert clean(new.call("detect_changes")) == clean(
+                    old.call("detect_changes")
+                )
             changed = new.call("index_repository")
+            if old:
+                reference = old.call("index_repository")
+                # Scope invalidation can deliberately emit a different work set.
+                for key in [
+                    "files",
+                    "changed",
+                    "changed_total",
+                    "deleted",
+                    "deleted_total",
+                    "full",
+                    "skipped",
+                    "skipped_total",
+                ]:
+                    assert changed[key] == reference[key], (
+                        "incremental index",
+                        key,
+                        changed,
+                        reference,
+                    )
+                assert changed["reindexed_total"] == len(changed["reindexed"])
+                assert set(changed["changed"]) <= set(changed["reindexed"])
+                assert clean(new.call("get_architecture")) == clean(
+                    old.call("get_architecture")
+                )
+                assert clean(new.call("search_symbol", query="", limit=200)) == clean(
+                    old.call("search_symbol", query="", limit=200)
+                )
             assert rows[0][3] in changed["changed"], changed
             assert (
                 new.call("search_symbol", query="")["generation"] != arch["generation"]
