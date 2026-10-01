@@ -3,7 +3,7 @@ import 'package:path/path.dart' as p;
 
 Directory fixtureCopy() {
   final destination = Directory.systemTemp.createTempSync(
-    'polycodegraph-test-',
+    'polycodegraph test ',
   );
   copyTree(Directory('test/fixtures/dart_app'), destination);
   return destination;

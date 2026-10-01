@@ -28,12 +28,17 @@ void main() {
   test('paths cannot escape repository or follow symlinks', () {
     final config = GraphConfig(root: root.path);
     expect(() => config.safePath('../outside'), throwsFormatException);
-    expect(() => config.safePath('/etc/passwd'), throwsFormatException);
+    expect(
+      () => config.safePath(p.join(root.path, 'absolute.txt')),
+      throwsFormatException,
+    );
     expect(
       () => GraphConfig(root: root.path, cache: '../outside'),
       throwsFormatException,
     );
-    Link(p.join(root.path, 'linked')).createSync('/tmp');
+    final outside = Directory.systemTemp.createTempSync('graph-outside-');
+    addTearDown(() => outside.deleteSync(recursive: true));
+    Link(p.join(root.path, 'linked')).createSync(outside.path);
     expect(() => config.safePath('linked/secret'), throwsFormatException);
     expect(
       () => GraphConfig(root: root.path, cache: 'linked/cache').cachePath,

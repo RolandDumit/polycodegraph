@@ -416,7 +416,12 @@ class _Relations extends GeneralizingAstVisitor<void> {
         targetPath = c.result.libraryElement.firstFragment.source.fullName;
       }
       if (targetPath != null && p.isWithin(c.config.root, targetPath)) {
-        uris.add(p.relative(targetPath, from: p.dirname(c.result.path)));
+        // Compiler paths are filesystem paths; directive identities are URIs.
+        uris.add(
+          p
+              .toUri(p.relative(targetPath, from: p.dirname(c.result.path)))
+              .toString(),
+        );
       }
       for (final uri in uris) {
         final parsed = Uri.tryParse(uri);

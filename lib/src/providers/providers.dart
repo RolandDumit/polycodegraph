@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import '../config.dart';
+import '../platform/executables.dart';
 import '../graph/model.dart';
 
 /// Compiler adapters exchange repository-scoped FileRecords over JSON stdin/stdout.
@@ -27,20 +28,8 @@ class ExternalProviders {
     return p.normalize(candidates.first);
   }
 
-  String? _executable(String name) {
-    final candidates = p.isAbsolute(name) || name.contains(p.separator)
-        ? [p.absolute(name)]
-        : (Platform.environment['PATH'] ?? '')
-              .split(Platform.isWindows ? ';' : ':')
-              .map((dir) => p.join(dir, name));
-    for (final path in candidates) {
-      if (File(path).existsSync()) return path;
-      if (Platform.isWindows && File('$path.exe').existsSync()) {
-        return '$path.exe';
-      }
-    }
-    return null;
-  }
+  String? _executable(String name) =>
+      resolveNativeExecutable(name, directory: config.root);
 
   String get fingerprint {
     final state = <String, String>{
@@ -261,16 +250,27 @@ class ExternalProviders {
   }
 
   Future<String> _run(List<String> command, String request) async {
+    final executable = _executable(command.first);
+    if (executable == null) {
+      throw StateError('Native executable not found: ${command.first}');
+    }
+    final environment = Map<String, String>.of(Platform.environment);
+    final searchPath = executableSearchPath(environment);
+    environment.removeWhere(
+      (key, _) =>
+          Platform.isWindows ? key.toUpperCase() == 'PATH' : key == 'PATH',
+    );
+    final go = _executable(config.goPath);
+    environment['PATH'] = go == null
+        ? searchPath
+        : '${p.dirname(go)}${Platform.isWindows ? ';' : ':'}$searchPath';
     final child = await Process.start(
-      command.first,
+      executable,
       command.skip(1).toList(),
       workingDirectory: config.root,
       runInShell: false,
-      environment: {
-        if (_executable(config.goPath) case final String go)
-          'PATH':
-              '${p.dirname(go)}${Platform.isWindows ? ';' : ':'}${Platform.environment['PATH'] ?? ''}',
-      },
+      environment: environment,
+      includeParentEnvironment: false,
     );
     final output = BytesBuilder(copy: false),
         errors = BytesBuilder(copy: false);

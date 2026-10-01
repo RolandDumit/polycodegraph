@@ -1,3 +1,4 @@
+import 'package:cli_util/cli_util.dart' as cli;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -112,7 +113,7 @@ void main() {
     'real stdio process handles malformed framing, tools, refresh and EOF',
     () async {
       final process = await Process.start(
-        Platform.resolvedExecutable,
+        cli.dartExecutable!,
         ['bin/polycodegraph.dart', 'serve', '--root', repo.path],
         workingDirectory: Directory.current.path,
         environment: {'DASH__SUPPRESS_ANALYTICS': 'true'},
@@ -175,7 +176,7 @@ void main() {
   );
   test('separate index processes serialize persistent writes', () async {
     Future<ProcessResult> run() => Process.run(
-      Platform.resolvedExecutable,
+      cli.dartExecutable!,
       ['bin/polycodegraph.dart', 'index', '--root', repo.path],
       environment: {'DASH__SUPPRESS_ANALYTICS': 'true'},
     );

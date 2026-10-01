@@ -28,7 +28,7 @@ Fresh Analyzer contexts and compiler Programs prevent stale bindings. A second s
 
 ## Development harness
 
-[../AGENTS.md](../AGENTS.md) is the development contract. [../CONTRIBUTING.md](../CONTRIBUTING.md) and the shared `tool/check.sh` connect local checks to the same CI paths. [fixture-contracts.md](fixture-contracts.md) documents meaningful positive/negative semantic cases. `harness-AGENTS.md` remains the adaptable consumer template.
+[../AGENTS.md](../AGENTS.md) is the development contract. [../CONTRIBUTING.md](../CONTRIBUTING.md) and the shared `tool/check.dart` connect local checks to the same CI paths. [fixture-contracts.md](fixture-contracts.md) documents meaningful positive/negative semantic cases. `harness-AGENTS.md` remains the adaptable consumer template.
 
 ## Operational limits
 

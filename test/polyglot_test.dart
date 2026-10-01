@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'support.dart';
 import 'package:path/path.dart' as p;
 import 'package:polycodegraph/polycodegraph.dart';
 import 'package:test/test.dart';
@@ -34,19 +35,9 @@ void main() {
       late RepositoryIndexer indexer;
       late GraphQuery graph;
       setUpAll(() async {
-        repo = Directory.systemTemp.createTempSync('polycodegraph-mixed-');
+        repo = Directory.systemTemp.createTempSync('polycodegraph mixed ');
         final source = Directory('test/fixtures/polyglot').absolute;
-        for (final entry in source.listSync(recursive: true)) {
-          final dest = p.join(
-            repo.path,
-            p.relative(entry.path, from: source.path),
-          );
-          if (entry is Directory) Directory(dest).createSync(recursive: true);
-          if (entry is File) {
-            File(dest).parent.createSync(recursive: true);
-            entry.copySync(dest);
-          }
-        }
+        copyTree(source, repo);
         File(
           p.join(repo.path, 'dart_side.dart'),
         ).writeAsStringSync('class DartIndependent {}');

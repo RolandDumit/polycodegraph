@@ -27,13 +27,14 @@ dart pub get
 For TypeScript/JavaScript, Java and Go, install Node.js 22+, a full JDK 17+ (matching the source language level) and Go 1.25+, then prepare the adapters:
 
 ```sh
-bash tool/setup-providers.sh
-# Or prepare only the adapter you need:
-npm ci --ignore-scripts --prefix providers/typescript
-(cd providers/go && go build -buildvcs=false -mod=readonly -o graph .)
+dart run tool/setup_providers.dart
+# Or prepare only the adapter you need (same commands on all three systems):
+dart run tool/setup_providers.dart --typescript
+dart run tool/setup_providers.dart --go
+dart run tool/setup_providers.dart --java
 ```
 
-Java uses JDK compiler APIs directly and needs no extra library. `setup-providers.sh` checks all three runtimes; use the individual commands when you only need some languages.
+Java uses JDK compiler APIs directly and needs no extra library. `setup_providers.dart` checks all three runtimes by default; use its flags when you only need some languages. Bash is not required.
 
 From the checkout, index a repository and start the MCP server:
 
@@ -55,17 +56,43 @@ dart pub global activate --source path /absolute/path/to/polycodegraph
 polycodegraph index --root /path/to/project
 ```
 
-Add your pub cache's `bin` directory to `PATH`. For a standalone native executable on the current operating system/architecture:
+Add your pub cache's `bin` directory to `PATH`. To compile and verify a native executable for the current operating system/architecture:
 
 ```sh
-mkdir -p build
-dart compile exe bin/polycodegraph.dart -o build/polycodegraph
+dart run tool/check.dart --build
+```
+
+This builds `build/polycodegraph` on Linux/macOS and `build/polycodegraph.exe` on Windows, and verifies real MCP queries against the compiled server. Run it on Linux/macOS:
+
+```sh
 ./build/polycodegraph serve --root /path/to/project
 ```
+
+On Windows (PowerShell):
+
+```powershell
+& .\build\polycodegraph.exe serve --root "C:/Projects/My Flutter App"
+```
+
+Native binaries and the compiled Go adapter must be built separately for each OS/architecture. The source checkout and `dart run` commands work on all three operating systems.
 
 Keep the `providers/` directory next to the executable or one directory above it (as in `build/polycodegraph`), or set `providers_path` explicitly. A global activation outside the checkout may also need this explicit path. Include its installed TypeScript compiler and built Go adapter when distributing it. Node/JDK/Go remain runtime prerequisites for their respective adapters.
 
 The native executable still needs access to a Dart SDK for analysis. Specify `sdk_path` in configuration when SDK auto-detection is unavailable, especially when the executable is moved outside a Dart installation. For Flutter, point it to `flutter/bin/cache/dart-sdk`.
+
+## Operating system support
+
+Linux, macOS and Windows are supported. Development/setup scripts are written in Dart and work in a normal terminal or PowerShell; Bash, WSL and a Unix shell are optional. CI runs Dart/MCP/native-binary checks, mandatory multi-language integration tests and a real Flutter fixture on all three systems.
+
+| Platform | Native server | Go adapter |
+| --- | --- | --- |
+| Linux | `build/polycodegraph` | `providers/go/graph` |
+| macOS | `build/polycodegraph` | `providers/go/graph` |
+| Windows | `build/polycodegraph.exe` | `providers/go/graph.exe` |
+
+Use a Dart SDK (or Flutter's bundled Dart SDK) on your host. Install Node.js, a **full JDK** and Go for the languages you need. The adapter setup selects the correct executable suffix automatically and launches native programs directly, including npm through Node, so paths with spaces work. `NODE`, `JAVA` and `GO` may point to native executables; Windows `.cmd`, `.bat` and PowerShell launchers are not runtime executables. For custom npm installations, set `NPM_CLI` to `npm-cli.js`.
+
+Graph IDs/globs always use forward slashes, independent of OS. Windows configuration can use `C:/Projects/My App` paths; alternatively use single-quoted YAML/TOML paths or escape backslashes in JSON. Cache files belong to their original repository root and are rebuilt after moving a checkout; do not transfer a native binary or compiled Go adapter between different OS/architectures.
 
 ## Configuration
 
@@ -130,6 +157,16 @@ codex mcp add polycodegraph -- polycodegraph serve --root /absolute/path/to/proj
 
 Use `codex mcp list` to verify registration. The executable must be available in the environment that launches Codex. Model and reasoning effort belong to the host agent settings; this MCP server does not select or invoke an LLM.
 
+On Windows, the same Codex configuration uses the `.exe` path (TOML literal strings preserve backslashes):
+
+```toml
+[mcp_servers.polycodegraph]
+command = 'C:\Projects\polycodegraph\build\polycodegraph.exe'
+args = ['serve', '--root', 'C:\Projects\My Flutter App']
+startup_timeout_sec = 20
+tool_timeout_sec = 180
+```
+
 ## Connect Claude Code
 
 ```sh
@@ -138,7 +175,7 @@ claude mcp add --transport stdio --scope project polycodegraph -- \
   --root /absolute/path/to/flutter-project
 ```
 
-Equivalent `.mcp.json`:
+Equivalent `.mcp.json` (on Windows, use `C:/Projects/polycodegraph/build/polycodegraph.exe` and your project root):
 
 ```json
 {
@@ -272,8 +309,8 @@ Copy the adaptable instructions from [docs/harness-AGENTS.md](docs/harness-AGENT
 ## Tests and fixture
 
 ```sh
-bash tool/check.sh
-bash tool/check.sh --providers --build
+dart run tool/check.dart
+dart run tool/check.dart --providers --build
 ```
 
 The default suite covers symbol extraction, parts, same-name disambiguation, calls, overrides, conservative impact, pagination, snippets, cache reuse/invalidation/recovery, concurrent writers, config/path validation and a real stdio subprocess. Tests copy the Dart fixture to temporary directories before edits.

@@ -13,11 +13,11 @@ Tests query compact graph rows using stable IDs. Fixtures are copied to temporar
 
 ## Flutter
 
-The package-backed fixture must classify `HomeScreen` as Widget/Screen, `UserCubit`, `userRepositoryProvider`, `homeRoute`, `User` as Freezed, and typed GetIt registrations. Domain changes affect the screen. Missing package configuration is an explicit skip in ordinary tests and an error in `tool/check.sh --flutter`.
+The package-backed fixture must classify `HomeScreen` as Widget/Screen, `UserCubit`, `userRepositoryProvider`, `homeRoute`, `User` as Freezed, and typed GetIt registrations. Domain changes affect the screen. Missing package configuration is an explicit skip in ordinary tests and an error in `tool/check.dart --flutter`.
 
 ## Other languages
 
-`test/fixtures/polyglot/` supplies TypeScript and JavaScript imports, a Java interface with implementing and overloaded methods, and a Go interface with implicit implementation. Integration tests require real compiler adapters, check calls/references/implementations/dependencies and impact, reject unrelated same-name targets, and mutate source to check cache refresh. TypeScript fixtures share a constructor across two tsconfig scopes; Go receiver methods live in a separate file from their type. Missing runtimes are skips only in the optional local suite; `tool/check.sh --providers` requires full coverage.
+`test/fixtures/polyglot/` supplies TypeScript and JavaScript imports, a Java interface with implementing and overloaded methods, and a Go interface with implicit implementation. Integration tests require real compiler adapters, check calls/references/implementations/dependencies and impact, reject unrelated same-name targets, and mutate source to check cache refresh. TypeScript fixtures share a constructor across two tsconfig scopes; Go receiver methods live in a separate file from their type. Missing runtimes are skips only in the optional local suite; `tool/check.dart --providers` requires full coverage.
 
 ## Transport and boundaries
 

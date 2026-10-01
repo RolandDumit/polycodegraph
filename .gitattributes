@@ -1,0 +1,2 @@
+# Keep source/lockfile formatting stable across host Git configurations.
+* text=auto eol=lf
