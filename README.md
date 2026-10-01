@@ -4,6 +4,10 @@ Semantic code intelligence for **Dart/Flutter, TypeScript, JavaScript, Java, Go,
 
 Index a repository, explore its symbols and dependencies through compact graph queries, assess the impact of a change, and request only the source snippets you need. Relations use compiler-resolved symbols rather than matching names across files. A mixed repository shares one graph and one MCP API; each language keeps its own semantic resolver.
 
+![Illustrative Flutter code graph with method calls, implementations, overrides and containment](docs/assets/polycodegraph-code-graph.png)
+
+*Illustrative graph based on the Flutter fixture in this repository. The artwork represents semantic relationships; it is not a screenshot of a graph viewer.*
+
 - **Symbols and relations:** classes, mixins, enums, extensions, typedefs, functions, methods, fields, constructors, imports, references, inheritance and overrides.
 - **Agent tools:** symbol search, callers/callees, implementations, neighbors, dependencies, architecture summaries and conservative blast radius.
 - **Incremental index:** content hashes, transitive invalidation and a persistent repository-local cache.
