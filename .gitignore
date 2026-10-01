@@ -1,5 +1,9 @@
 .dart_tool/
-.dart-codegraph/
+.polycodegraph/
 build/
 *.tmp
 *.lockfile
+node_modules/
+providers/go/graph
+providers/go/graph.exe
+.dart-codegraph/

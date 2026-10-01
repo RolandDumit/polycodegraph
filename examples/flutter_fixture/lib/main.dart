@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) =>
-      const Scaffold(body: Text('dart-codegraph fixture'));
+      const Scaffold(body: Text('polycodegraph fixture'));
 }
 
 void main() {

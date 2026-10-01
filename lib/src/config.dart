@@ -7,6 +7,22 @@ import 'package:yaml/yaml.dart';
 
 /// Repository-scoped configuration. No server tool can switch the root.
 class GraphConfig {
+  static const defaultIncludes = [
+    '**/*.dart',
+    '**/*.ts',
+    '**/*.tsx',
+    '**/*.js',
+    '**/*.jsx',
+    '**/*.mjs',
+    '**/*.cjs',
+    '**/*.java',
+    '**/*.go',
+  ];
+  final String? providersPath;
+  final String nodePath, javaPath, goPath;
+  final List<String> javaClasspath;
+  final int providerTimeoutSeconds;
+
   final String root;
   final List<String> include;
   final List<String> exclude;
@@ -19,15 +35,21 @@ class GraphConfig {
   final int maxFileBytes;
   GraphConfig({
     required String root,
-    this.include = const ['**/*.dart'],
+    this.include = defaultIncludes,
     this.exclude = const [
       '**/.git/**',
       '**/.dart_tool/**',
       '**/build/**',
-      '**/.dart-codegraph/**',
+      '**/.polycodegraph/**',
     ],
-    this.cache = '.dart-codegraph',
+    this.cache = '.polycodegraph',
     this.flutter = true,
+    this.providersPath,
+    this.nodePath = 'node',
+    this.javaPath = 'java',
+    this.goPath = 'go',
+    this.javaClasspath = const [],
+    this.providerTimeoutSeconds = 120,
     this.sdkPath,
     this.maxResults = 200,
     this.maxSnippetLines = 120,
@@ -47,6 +69,7 @@ class GraphConfig {
       maxSnippetLines,
       maxSnippetChars,
       maxFileBytes,
+      providerTimeoutSeconds,
     ]) {
       if (value < 1) throw FormatException('limits must be positive');
     }
@@ -66,9 +89,9 @@ class GraphConfig {
       }
     } else {
       for (final name in [
-        'dart-codegraph.yaml',
-        'dart-codegraph.yml',
-        'dart-codegraph.json',
+        'polycodegraph.yaml',
+        'polycodegraph.yml',
+        'polycodegraph.json',
       ]) {
         final candidate = File(p.join(base, name));
         if (candidate.existsSync()) {
@@ -92,6 +115,12 @@ class GraphConfig {
       'max_snippet_lines',
       'max_snippet_chars',
       'max_file_bytes',
+      'providers_path',
+      'node_path',
+      'java_path',
+      'go_path',
+      'java_classpath',
+      'provider_timeout_seconds',
     };
     for (final key in raw.keys) {
       if (!keys.contains(key)) {
@@ -117,22 +146,49 @@ class GraphConfig {
     if (raw['flutter'] != null && raw['flutter'] is! bool) {
       throw FormatException('flutter must be boolean');
     }
-    for (final key in ['cache', 'sdk_path']) {
+    for (final key in [
+      'cache',
+      'sdk_path',
+      'providers_path',
+      'node_path',
+      'java_path',
+      'go_path',
+    ]) {
       if (raw[key] != null && raw[key] is! String) {
         throw FormatException('$key must be a string');
       }
     }
+    String runtime(String key, String fallback) {
+      final value = raw[key] as String? ?? fallback;
+      if (!p.isAbsolute(value) &&
+          (value.contains('/') || value.contains('\\'))) {
+        return p.normalize(p.join(base, value));
+      }
+      return value;
+    }
+
     return GraphConfig(
       root: base,
-      include: strings('include', ['**/*.dart']),
+      include: strings('include', defaultIncludes),
       exclude: strings('exclude', [
         '**/.git/**',
         '**/.dart_tool/**',
         '**/build/**',
-        '**/.dart-codegraph/**',
+        '**/.polycodegraph/**',
       ]),
-      cache: raw['cache'] as String? ?? '.dart-codegraph',
+      cache: raw['cache'] as String? ?? '.polycodegraph',
       flutter: raw['flutter'] as bool? ?? true,
+      providersPath: raw['providers_path'] == null
+          ? null
+          : p.normalize(p.join(base, raw['providers_path'] as String)),
+      nodePath: runtime('node_path', 'node'),
+      javaPath: runtime('java_path', 'java'),
+      goPath: runtime('go_path', 'go'),
+      javaClasspath: strings(
+        'java_classpath',
+        [],
+      ).map((v) => p.normalize(p.join(base, v))).toList(),
+      providerTimeoutSeconds: number('provider_timeout_seconds', 120),
       sdkPath: raw['sdk_path'] == null
           ? null
           : p.normalize(p.join(base, raw['sdk_path'] as String)),
@@ -182,6 +238,15 @@ class GraphConfig {
             'cache': cache,
             'maxFileBytes': maxFileBytes,
             'analyzer': '13.3.0',
+            'providers': [
+              providersPath,
+              nodePath,
+              javaPath,
+              goPath,
+              javaClasspath,
+              providerTimeoutSeconds,
+              'semantic-v1',
+            ],
             'runtime': Platform.version,
             'executable': Platform.resolvedExecutable,
           }),

@@ -1,8 +1,14 @@
 import 'dart:io';
-import 'package:dart_codegraph/dart_codegraph.dart';
+import 'package:polycodegraph/polycodegraph.dart';
 import 'package:test/test.dart';
 
 void main() {
+  if (Platform.environment['POLYCODEGRAPH_REQUIRE_FLUTTER'] == '1' &&
+      !File(
+        'examples/flutter_fixture/.dart_tool/package_config.json',
+      ).existsSync()) {
+    throw StateError('Required Flutter fixture is unconfigured');
+  }
   final fixture = Directory('examples/flutter_fixture').absolute.path;
   final configured = File(
     '$fixture/.dart_tool/package_config.json',

@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import '../analysis/extractor.dart';
+import '../providers/providers.dart';
 import '../config.dart';
 import '../graph/model.dart';
 import 'store.dart';
@@ -94,8 +95,12 @@ class RepositoryIndexer {
         if (entry is Directory) {
           if ({
                 '.git',
-                '.dart-codegraph',
+                '.polycodegraph',
                 'build',
+                'node_modules',
+                'vendor',
+                'target',
+                'dist',
               }.contains(p.basename(entry.path)) ||
               p.equals(entry.path, config.cachePath)) {
             continue;
@@ -119,13 +124,41 @@ class RepositoryIndexer {
         }
         if (entry is! File) continue;
         if ({
-          'pubspec.yaml',
-          'pubspec.lock',
-          'analysis_options.yaml',
-        }.contains(p.basename(entry.path))) {
+              'pubspec.yaml',
+              'pubspec.lock',
+              'analysis_options.yaml',
+              'package.json',
+              'package-lock.json',
+              'pnpm-lock.yaml',
+              'yarn.lock',
+              'go.mod',
+              'go.sum',
+              'go.work',
+              'go.work.sum',
+              'pom.xml',
+              'build.gradle',
+              'build.gradle.kts',
+              'settings.gradle',
+              'settings.gradle.kts',
+              'gradle.properties',
+            }.contains(p.basename(entry.path)) ||
+            p.basename(entry.path).startsWith('tsconfig') ||
+            p.basename(entry.path) == 'jsconfig.json') {
           environment[rel] = sha256.convert(entry.readAsBytesSync()).toString();
         }
-        if (!entry.path.endsWith('.dart')) continue;
+        if (!{
+          'dart',
+          'ts',
+          'tsx',
+          'js',
+          'jsx',
+          'mjs',
+          'cjs',
+          'java',
+          'go',
+        }.contains(p.extension(entry.path).replaceFirst('.', ''))) {
+          continue;
+        }
         if (entry.lengthSync() > config.maxFileBytes) {
           skipped.add(rel);
           continue;
@@ -141,6 +174,7 @@ class RepositoryIndexer {
     }
 
     walk(Directory(config.root));
+    environment['provider_runtime'] = ExternalProviders(config).fingerprint;
     return _Scan(hashes, digest(jsonEncode(environment)), skipped..sort());
   }
 
@@ -178,6 +212,23 @@ class RepositoryIndexer {
           }
         }
       }
+      // Compiler bindings depend on project/package scopes, including implicit imports.
+      // Rebuild an affected non-Dart language scope conservatively.
+      final languages = affected
+          .where((f) => languageFor(f) != 'dart')
+          .map(languageFor)
+          .toSet();
+      affected.addAll(
+        scan.hashes.keys.where((f) => languages.contains(languageFor(f))),
+      );
+      if (languages.contains('typescript') ||
+          languages.contains('javascript')) {
+        affected.addAll(
+          scan.hashes.keys.where(
+            (f) => {'typescript', 'javascript'}.contains(languageFor(f)),
+          ),
+        );
+      }
       final reindexed = affected.toList()..sort();
       if (reindexed.isEmpty &&
           deleted.isEmpty &&
@@ -188,19 +239,29 @@ class RepositoryIndexer {
         return IndexReport(old, changed, deleted, [], false);
       }
       final files = <String, FileRecord>{if (!full) ...old.files};
-      final collection = AnalysisContextCollection(
-        includedPaths: [config.root, ...scan.hashes.keys.map(config.safePath)],
-        sdkPath: config.sdkPath,
-        excludedPaths: [
-          config.cachePath,
-          p.join(config.root, 'build'),
-          p.join(config.root, '.git'),
-        ],
-      );
+      final dartFiles = reindexed
+          .where((f) => languageFor(f) == 'dart')
+          .toList();
+      final collection = dartFiles.isEmpty
+          ? null
+          : AnalysisContextCollection(
+              includedPaths: [
+                config.root,
+                ...scan.hashes.keys
+                    .where((f) => languageFor(f) == 'dart')
+                    .map(config.safePath),
+              ],
+              sdkPath: config.sdkPath,
+              excludedPaths: [
+                config.cachePath,
+                p.join(config.root, 'build'),
+                p.join(config.root, '.git'),
+              ],
+            );
       try {
-        for (final file in reindexed) {
+        for (final file in dartFiles) {
           final absolute = config.safePath(file);
-          final result = await collection
+          final result = await collection!
               .contextFor(absolute)
               .currentSession
               .getResolvedUnit(absolute);
@@ -216,8 +277,14 @@ class RepositoryIndexer {
           files[file] = extract(result, config, scan.hashes[file]!);
         }
       } finally {
-        await collection.dispose();
+        await collection?.dispose();
       }
+      files.addAll(
+        await ExternalProviders(config).extract({
+          for (final f in reindexed.where((f) => languageFor(f) != 'dart'))
+            f: scan.hashes[f]!,
+        }),
+      );
       final after = _scan();
       if (files.length != scan.hashes.length ||
           !_sameMap(scan.hashes, after.hashes) ||

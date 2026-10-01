@@ -9,11 +9,30 @@ jobs:
         with:
           sdk: '3.13.2'
       - run: dart pub get --enforce-lockfile
-      - run: dart format --output=none --set-exit-if-changed bin lib test
-      - run: dart analyze --fatal-infos
-      - run: dart test --reporter expanded
-      - run: mkdir -p build && dart compile exe bin/dart_codegraph.dart -o build/dart-codegraph
-      - run: ./build/dart-codegraph --version
+      - run: bash tool/check.sh --build
+  polyglot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.2'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.1'
+          cache-dependency-path: providers/go/go.sum
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: dart pub get --enforce-lockfile
+      - run: bash tool/setup-providers.sh
+      - run: go vet ./...
+        working-directory: providers/go
+      - run: bash tool/check.sh --providers
   flutter:
     runs-on: ubuntu-latest
     steps:
@@ -25,4 +44,4 @@ jobs:
       - run: dart pub get
       - run: flutter pub get
         working-directory: examples/flutter_fixture
-      - run: dart test test/flutter_fixture_test.dart --reporter expanded
+      - run: bash tool/check.sh --flutter

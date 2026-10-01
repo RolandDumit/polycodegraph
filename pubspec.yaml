@@ -1,8 +1,8 @@
-name: dart_codegraph
-version: 0.1.0
-description: Analyzer-backed, incremental code intelligence graph and stdio MCP server for Dart and Flutter agents.
-repository: https://github.com/RolandDumit/dart-codegraph
-issue_tracker: https://github.com/RolandDumit/dart-codegraph/issues
+name: polycodegraph
+version: 0.2.0
+description: Semantic, incremental code intelligence graph and stdio MCP server for Dart/Flutter, TypeScript/JavaScript, Java and Go.
+repository: https://github.com/RolandDumit/polycodegraph
+issue_tracker: https://github.com/RolandDumit/polycodegraph/issues
 environment:
   sdk: '>=3.11.0 <4.0.0'
 dependencies:
@@ -16,4 +16,4 @@ dev_dependencies:
   lints: ^6.0.0
   test: ^1.30.0
 executables:
-  dart-codegraph: dart_codegraph
+  polycodegraph: polycodegraph

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:dart_codegraph/dart_codegraph.dart';
+import 'package:polycodegraph/polycodegraph.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'support.dart';
@@ -104,10 +104,10 @@ void main() {
     ).writeAsStringSync('analyzer:\n  errors:\n    unused_import: ignore\n');
     expect((await indexer.refresh()).reindexed, hasLength(4));
     File(
-      p.join(repo.path, '.dart-codegraph/index.json'),
+      p.join(repo.path, '.polycodegraph/index.json'),
     ).writeAsStringSync('{broken');
     expect((await indexer.refresh()).full, isTrue);
-    final jsonFile = File(p.join(repo.path, '.dart-codegraph/index.json'));
+    final jsonFile = File(p.join(repo.path, '.polycodegraph/index.json'));
     final cache = jsonDecode(jsonFile.readAsStringSync()) as Map;
     cache['schema'] = 999;
     jsonFile.writeAsStringSync(jsonEncode(cache));

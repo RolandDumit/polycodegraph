@@ -56,7 +56,7 @@ class McpServer {
             'capabilities': {
               'tools': {'listChanged': false},
             },
-            'serverInfo': {'name': 'dart-codegraph', 'version': '0.1.0'},
+            'serverInfo': {'name': 'polycodegraph', 'version': '0.2.0'},
             'instructions':
                 'Use get_architecture then search_symbol and callers/implementations/blast_radius. Use ids from compact rows. Read source only through snippet. Static dispatch is incomplete; check status diagnostics.',
           };
@@ -148,7 +148,7 @@ class McpServer {
       }
       return {'jsonrpc': '2.0', 'id': id, 'result': result};
     } catch (e, stack) {
-      stderr.writeln('dart-codegraph: unexpected request failure: $e\n$stack');
+      stderr.writeln('polycodegraph: unexpected request failure: $e\n$stack');
       return _error(id, -32603, 'Internal error; see server stderr');
     }
   }

@@ -1,3 +1,14 @@
+String languageFor(String file) {
+  final ext = file.split('.').last;
+  return switch (ext) {
+    'ts' || 'tsx' => 'typescript',
+    'js' || 'jsx' || 'mjs' || 'cjs' => 'javascript',
+    'java' => 'java',
+    'go' => 'go',
+    _ => 'dart',
+  };
+}
+
 /// Stable IDs are file::qualifiedName#kind; source offsets are never IDs.
 class GraphNode {
   final String id, name, kind, file, qualifiedName;
@@ -87,6 +98,7 @@ class GraphEdge {
 
 class FileRecord {
   final String file, hash;
+  String get language => languageFor(file);
   final List<GraphNode> nodes;
   final List<GraphEdge> edges;
   final List<String> dependencies;
@@ -128,7 +140,7 @@ class FileRecord {
 }
 
 class GraphSnapshot {
-  static const schemaVersion = 1;
+  static const schemaVersion = 2;
   final String root, fingerprint, environment, generation;
   final Map<String, FileRecord> files;
   final List<String> skipped;

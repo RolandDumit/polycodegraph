@@ -1,6 +1,7 @@
 import '../config.dart';
 import '../graph/query.dart';
 import '../index/indexer.dart';
+import '../providers/providers.dart';
 
 class ToolSpec {
   final String name, description;
@@ -104,6 +105,7 @@ class ToolRegistry {
           kind: args['kind'],
           tag: args['tag'],
           file: args['file'],
+          language: args['language'],
           offset: offset,
           limit: limit,
         );
@@ -113,6 +115,7 @@ class ToolRegistry {
         return {
           ...q.architecture(limit: 5),
           'index': report.toJson(limit: indexer.config.maxResults),
+          'provider_health': ExternalProviders(indexer.config).doctor(),
         };
       case 'callers':
         return q.relations(
@@ -198,6 +201,10 @@ List<ToolSpec> _specs(GraphConfig config) {
     'kind': text,
     'tag': text,
     'file': text,
+    'language': {
+      'type': 'string',
+      'enum': ['dart', 'typescript', 'javascript', 'java', 'go'],
+    },
     ...pagination,
   };
   final impact = {

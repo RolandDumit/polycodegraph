@@ -1,0 +1,21 @@
+# Provider contract
+
+The core owns root validation, discovery, hashes, cache publication, graph traversal, compact query tables and MCP. The Dart provider runs in process. Other adapters read one UTF-8 JSON object from stdin and write one JSON array to stdout; diagnostics/progress on stderr are bounded by the runner.
+
+Request:
+
+```json
+{"root":"/absolute/repository","files":[{"file":"src/Main.java","hash":"sha256"}],"options":{"classpath":["/absolute/dependency.jar"]}}
+```
+
+Each array item is a `FileRecord` from `lib/src/graph/model.dart`, containing `file`, `hash`, `nodes`, `edges`, `dependencies`, `diagnostics`, and `unresolvedCalls`. File IDs are `file::file`; declaration IDs are `file::qualifiedName#kind`. Java overloads include erased argument types; TypeScript overload signatures are distinguished when necessary. Go receiver methods are contained by their named type. Dart IDs preserve the established format.
+
+Nodes carry repository-relative file, one-based start/end lines, source offset/length, optional parent/tags/synthetic. Source offsets follow each compiler's native units (UTF-16 for TS/Java, byte offsets for Go); snippets use line windows and do not interchange these offset units. Relations include source/target IDs, kind, source site and `confidence: resolved`. Keep compiler-backed static calls separate from possible implementation relationships. External/unindexed targets are omitted or dropped and counted by the query layer.
+
+Dependencies list repository-relative files and drive invalidation. Diagnostics have severity, code, message and one-based line. A build-excluded file still returns a file node and a coverage diagnostic. An unresolved call must not create a guessed target. Builtins and known external declarations are not repository call targets. Missing external dependencies appear in compiler diagnostics.
+
+Responses are bounded to 64 MiB, stderr to 8 KiB, and subprocess duration to `provider_timeout_seconds`. The core validates exact file coverage, expected hashes and node location bounds, sorts rows/diagnostics, and rejects stale/incoherent source snapshots. Provider failures become explicit `provider_unavailable` file diagnostics. Tool/asset changes and Go/Java dependency configuration participate in cache freshness.
+
+To add a provider, implement compiler-backed extraction, include its source extension in discovery, add configuration/runtime health and fingerprint inputs, add a fixture with same-name decoys and semantic invalidation tests, and require its runtime in CI. Preserve existing MCP tool names and pagination contracts. Schema changes must bump `GraphSnapshot.schemaVersion`.
+
+The language adapters were implemented independently, inspired by [Lordymine/codegraph's architecture](https://github.com/Lordymine/codegraph/blob/main/docs/ARCHITECTURE.md). Its implementation uses scip-typescript and go/packages/VTA; PolyCodeGraph currently uses the TypeScript compiler API directly and static go/types targets. Java is an additional javac-based provider.

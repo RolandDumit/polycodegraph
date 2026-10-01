@@ -1,0 +1,10 @@
+{
+  "name": "polycodegraph-typescript-provider",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "description": "TypeScript compiler adapter for PolyCodeGraph",
+  "dependencies": {
+    "typescript": "6.0.2"
+  }
+}

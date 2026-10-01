@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:args/args.dart';
-import 'package:dart_codegraph/dart_codegraph.dart';
+import 'package:polycodegraph/polycodegraph.dart';
 import 'package:path/path.dart' as p;
 
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('root', defaultsTo: '.', help: 'Dart/Flutter repository root')
+    ..addOption('root', defaultsTo: '.', help: 'Repository root')
     ..addOption('config', help: 'YAML or JSON config path')
     ..addFlag('force', negatable: false, help: 'Rebuild all files')
     ..addFlag('help', abbr: 'h', negatable: false)
@@ -14,30 +14,40 @@ Future<void> main(List<String> args) async {
   try {
     final options = parser.parse(args);
     if (options['version'] == true) {
-      stdout.writeln('dart-codegraph 0.1.0');
+      stdout.writeln('polycodegraph 0.2.0');
       return;
     }
     if (options['help'] == true || options.rest.isEmpty) {
       stdout.writeln(
-        'dart-codegraph <init|index|serve|status> [options]\n${parser.usage}',
+        'polycodegraph <init|index|serve|status|doctor> [options]\n${parser.usage}',
       );
       return;
     }
     if (options.rest.length != 1 ||
-        !{'init', 'index', 'serve', 'status'}.contains(options.rest.single)) {
-      throw FormatException('Expected init, index, serve, or status');
+        !{
+          'init',
+          'index',
+          'serve',
+          'status',
+          'doctor',
+        }.contains(options.rest.single)) {
+      throw FormatException('Expected init, index, serve, status, or doctor');
     }
     final command = options.rest.single;
     final config = GraphConfig.load(
       options['root'] as String,
       configPath: options['config'] as String?,
     );
+    if (command == 'doctor') {
+      stdout.writeln(jsonEncode(ExternalProviders(config).doctor()));
+      return;
+    }
     if (command == 'init') {
-      final file = File(config.safePath('dart-codegraph.yaml'));
+      final file = File(config.safePath('polycodegraph.yaml'));
       if (file.existsSync() ||
           [
-            'dart-codegraph.yml',
-            'dart-codegraph.json',
+            'polycodegraph.yml',
+            'polycodegraph.json',
           ].any((n) => File(p.join(config.root, n)).existsSync())) {
         throw FormatException('Configuration already exists');
       }
@@ -45,12 +55,20 @@ Future<void> main(List<String> args) async {
         '''# Repository-relative globs; generated Dart sources are included by default.
 include:
   - "**/*.dart"
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.java"
+  - "**/*.go"
 exclude:
   - "**/.git/**"
   - "**/.dart_tool/**"
   - "**/build/**"
-  - "**/.dart-codegraph/**"
-cache: .dart-codegraph
+  - "**/.polycodegraph/**"
+cache: .polycodegraph
 flutter: true
 max_results: 200
 max_snippet_lines: 120
@@ -59,7 +77,7 @@ max_file_bytes: 2097152
 # sdk_path: /absolute/path/to/flutter/bin/cache/dart-sdk
 ''',
       );
-      stdout.writeln(jsonEncode({'created': 'dart-codegraph.yaml'}));
+      stdout.writeln(jsonEncode({'created': 'polycodegraph.yaml'}));
       return;
     }
     final indexer = RepositoryIndexer(config);
@@ -86,13 +104,13 @@ max_file_bytes: 2097152
       }),
     );
   } on FormatException catch (e) {
-    stderr.writeln('dart-codegraph: ${e.message}');
+    stderr.writeln('polycodegraph: ${e.message}');
     exitCode = 64;
   } on FileSystemException catch (e) {
-    stderr.writeln('dart-codegraph: ${e.message} (${e.path})');
+    stderr.writeln('polycodegraph: ${e.message} (${e.path})');
     exitCode = 74;
   } catch (e, stack) {
-    stderr.writeln('dart-codegraph: $e\n$stack');
+    stderr.writeln('polycodegraph: $e\n$stack');
     exitCode = 1;
   }
 }

@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:dart_codegraph/dart_codegraph.dart';
+import 'package:polycodegraph/polycodegraph.dart';
 import 'package:test/test.dart';
 import 'support.dart';
 

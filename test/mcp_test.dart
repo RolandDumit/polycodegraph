@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:dart_codegraph/dart_codegraph.dart';
+import 'package:polycodegraph/polycodegraph.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'support.dart';
@@ -113,7 +113,7 @@ void main() {
     () async {
       final process = await Process.start(
         Platform.resolvedExecutable,
-        ['bin/dart_codegraph.dart', 'serve', '--root', repo.path],
+        ['bin/polycodegraph.dart', 'serve', '--root', repo.path],
         workingDirectory: Directory.current.path,
         environment: {'DASH__SUPPRESS_ANALYTICS': 'true'},
       );
@@ -176,7 +176,7 @@ void main() {
   test('separate index processes serialize persistent writes', () async {
     Future<ProcessResult> run() => Process.run(
       Platform.resolvedExecutable,
-      ['bin/dart_codegraph.dart', 'index', '--root', repo.path],
+      ['bin/polycodegraph.dart', 'index', '--root', repo.path],
       environment: {'DASH__SUPPRESS_ANALYTICS': 'true'},
     );
     final results = await Future.wait([run(), run()]);

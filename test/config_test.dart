@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:dart_codegraph/dart_codegraph.dart';
+import 'package:polycodegraph/polycodegraph.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -8,7 +8,7 @@ void main() {
   setUp(() => root = Directory.systemTemp.createTempSync('graph-config-'));
   tearDown(() => root.deleteSync(recursive: true));
   test('YAML and JSON validate types and unknown keys', () {
-    final file = File(p.join(root.path, 'dart-codegraph.yaml'));
+    final file = File(p.join(root.path, 'polycodegraph.yaml'));
     file.writeAsStringSync(
       'flutter: false\ninclude: ["lib/**.dart"]\nmax_results: 7\n',
     );
@@ -21,7 +21,7 @@ void main() {
     expect(() => GraphConfig.load(root.path), throwsFormatException);
     file.deleteSync();
     File(
-      p.join(root.path, 'dart-codegraph.json'),
+      p.join(root.path, 'polycodegraph.json'),
     ).writeAsStringSync('{"max_snippet_chars":100}');
     expect(GraphConfig.load(root.path).maxSnippetChars, 100);
   });

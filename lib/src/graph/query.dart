@@ -103,6 +103,7 @@ class GraphQuery {
     String? kind,
     String? tag,
     String? file,
+    String? language,
     int offset = 0,
     int? limit,
   }) {
@@ -113,6 +114,7 @@ class GraphQuery {
               n.kind != 'external' &&
               (kind == null ? n.kind != 'file' : n.kind == kind) &&
               (tag == null || n.tags.contains(tag)) &&
+              (language == null || languageFor(n.file) == language) &&
               (file == null || n.file.startsWith(file)) &&
               (n.name.toLowerCase().contains(q) ||
                   n.qualifiedName.toLowerCase().contains(q)),
@@ -294,6 +296,10 @@ class GraphQuery {
         'enum',
         'extension',
         'extension_type',
+        'interface',
+        'struct',
+        'record',
+        'type',
       }.contains(n.kind)) {
         for (final e in outgoing[id] ?? <GraphEdge>[]) {
           if (e.kind == 'contains') {
@@ -427,6 +433,7 @@ class GraphQuery {
       'generation': snapshot.generation,
       'files': snapshot.files.length,
       'symbols': symbols.length,
+      'languages': counts(snapshot.files.values.map((f) => f.language)),
       'edges': edges.length,
       'kinds': counts(symbols.map((n) => n.kind)),
       'tags': counts(symbols.expand((n) => n.tags)),
@@ -439,6 +446,26 @@ class GraphQuery {
         snapshot.files.values
             .expand((f) => f.diagnostics)
             .map((d) => d['severity'] as String),
+      ),
+      'diagnostic_samples': [
+        for (final key in (snapshot.files.keys.toList()..sort()))
+          for (final d in snapshot.files[key]!.diagnostics)
+            {
+              'file': key,
+              ...d,
+              if (d['message'] is String)
+                'message': (d['message'] as String).substring(
+                  0,
+                  (d['message'] as String).length.clamp(0, 512),
+                ),
+              if (d['message'] is String &&
+                  (d['message'] as String).length > 512)
+                'message_truncated': true,
+            },
+      ].take(limit.clamp(1, config.maxResults)).toList(),
+      'diagnostic_samples_total': snapshot.files.values.fold<int>(
+        0,
+        (sum, f) => sum + f.diagnostics.length,
       ),
       'unresolved_calls': snapshot.files.values.fold<int>(
         0,
@@ -455,7 +482,7 @@ class GraphQuery {
             .toList(),
       },
       'precision':
-          'Static Analyzer targets; dynamic dispatch and callback targets may be incomplete. Flutter tags are optional discovery hints.',
+          'Static compiler targets across Dart, TypeScript/JavaScript, Java and Go; dynamic dispatch and callback targets may be incomplete. Flutter tags are optional discovery hints.',
     };
   }
 }

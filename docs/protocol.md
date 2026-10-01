@@ -4,7 +4,7 @@ Transport is UTF-8 newline-delimited JSON-RPC 2.0 on stdin/stdout, with stderr r
 
 Send `initialize` with protocolVersion, capabilities and clientInfo, then `notifications/initialized`, then tools/list or tools/call. Ping works before initialization. Repeated initialization fails. Tool calls are serialized for coherent indexing; stdin continues to receive notifications while work runs. EOF drains pending calls and flushes stdout. Unknown notification methods are ignored.
 
-A message is capped at 1 MiB. Oversized, invalid UTF-8, malformed JSON and unterminated frames yield a parse error; a following valid line remains readable. The request queue is capped at 64. Duplicate in-flight request IDs are rejected. Cancellation notifications suppress queued/cancelled responses; an active Analyzer operation finishes its cache update safely rather than being forcibly interrupted. Thus cancellation does not roll back indexing.
+A message is capped at 1 MiB. Oversized, invalid UTF-8, malformed JSON and unterminated frames yield a parse error; a following valid line remains readable. The request queue is capped at 64. Duplicate in-flight request IDs are rejected. Cancellation notifications suppress queued/cancelled responses; an active indexing/provider operation finishes its cache update safely rather than being forcibly interrupted. Thus cancellation does not roll back indexing.
 
 Protocol errors use JSON-RPC error codes (`-32700`, `-32600`, `-32601`, `-32602`, `-32603`); lifecycle/queue errors use `-32000`. Known-tool execution/argument errors return `isError: true` content so an agent can recover. Unanticipated errors are logged on stderr and returned as Internal error.
 
