@@ -1,6 +1,7 @@
 """Real stdio intent checks on prepared native semantic fixtures; never installs providers."""
 
 import argparse, json, shutil, tempfile, sqlite3
+from contextlib import closing
 from pathlib import Path
 from smoke import Client, clean
 
@@ -58,7 +59,7 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
         ], [d for d in arch["diagnostic_samples"] if d["severity"] == "error"]
         rows = client.call("search_symbol", query="", limit=200, detail="full")["rows"]
         targets = {}
-        with sqlite3.connect(root / ".polycodegraph/index.sqlite") as database:
+        with closing(sqlite3.connect(root / ".polycodegraph/index.sqlite")) as database:
             records = {
                 f: json.loads(r)
                 for f, r in database.execute("SELECT path,record FROM files")
@@ -146,6 +147,7 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                     assert ast.get("bindings"), (
                         "missing local/parameter identities",
                         suffix,
+                        ast.get("limitations"),
                     )
                     assert any(u.get("binding") for u in ast.get("uses", [])), (
                         "missing resolved local uses",
@@ -278,6 +280,7 @@ if __name__ == "__main__":
     a = parser.parse_args()
     base = Path(__file__).resolve().parent.parent
     cfg = json.loads(a.config.read_text())
+    cfg.setdefault("providers_path", str(base / "providers"))
     oldcfg = json.loads(a.baseline_config.read_text()) if a.baseline_config else cfg
     with tempfile.TemporaryDirectory(prefix="pcg intent all languages spaces ") as temp:
         root = Path(temp)

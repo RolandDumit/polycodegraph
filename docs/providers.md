@@ -47,6 +47,7 @@ uses referencing definition indexes, and fixed-width statement/control rows. It
 expands once before validation; corrupt indexes fail. SQLite persists the decoded
 metadata in file records without a schema bump. The existing 64 MiB subprocess
 limit remains unchanged. SourceKit queries supplement Swift local identities when
-available; PSI source parsing complements Kotlin IR without indexed project plugins.
+available; library discovery resolves PATH executables and the driver runtime
+resource path, including Xcode frameworks and Windows SDK DLL directories; PSI source parsing complements Kotlin IR without indexed project plugins.
 See [extraction precision](intents.md#extraction-precision); no name matching replaces
 compiler binding and no hypothetical dataflow/type compatibility is claimed.

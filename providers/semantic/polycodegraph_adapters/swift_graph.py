@@ -59,10 +59,9 @@ class SwiftGraph:
         deadline = time.monotonic() + max(1.0, float(self.options.get("timeout", 120)) - 8)
         all_trees: list[tuple[Source, Json]] = []
         context_args: dict[str, list[str]] = {}
-        try:
-            resolver = SourceKit(self.options.get("swiftc_path", "swiftc"))
-        except (OSError, ValueError):
-            resolver = None
+        resolver = None
+        resolver_attempted = False
+        resolver_failure = ""
         for module in projects(self.graph, self.options, "swift"):
             sources = [self.graph.sources[file] for file in module["files"] if Path(file).name != "Package.swift"]
             for file in module["files"]:
@@ -108,6 +107,13 @@ class SwiftGraph:
                 if info_code != 0:
                     raise ValueError("Cannot discover Swift runtime paths: " + info_errors)
                 runtime = json.loads(info_output).get("paths", {})
+                if not resolver_attempted:
+                    resolver_attempted = True
+                    try:
+                        resolver = SourceKit(self.options.get("swiftc_path", "swiftc"), runtime.get("runtimeResourcePath"))
+                    except (OSError, ValueError) as error:
+                        resolver = None
+                        resolver_failure = str(error)[:256]
                 if runtime.get("runtimeResourcePath"):
                     args += ["-resource-dir", runtime["runtimeResourcePath"]]
                 for directory in runtime.get("runtimeLibraryImportPaths", []):
@@ -153,6 +159,8 @@ class SwiftGraph:
                 "capabilities": ["region_bindings"],
                 "ast": swift_context(self.graph, source, tree, resolver, context_args[source.file]),
             }
+            if resolver_failure:
+                source.record["intent"]["ast"]["limitations"].append("SourceKit initialization unavailable: " + resolver_failure)
         return self.graph.results()
 
     def declare(self, source: Source, value: Any, parent: str | None, scope: str) -> None:

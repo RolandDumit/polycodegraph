@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 import json
+from contextlib import closing
 from pathlib import Path
 import shutil
 import sqlite3
@@ -20,7 +21,7 @@ def size(value):
 
 
 def edges(root, cache, target):
-    with sqlite3.connect(root / cache / "index.sqlite") as db:
+    with closing(sqlite3.connect(root / cache / "index.sqlite")) as db:
         return Counter(
             tuple(
                 json.loads(r)[k]

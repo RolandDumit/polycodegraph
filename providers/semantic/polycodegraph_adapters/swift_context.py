@@ -6,6 +6,8 @@ import ctypes
 import json
 import os
 import re
+import shutil
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -16,14 +18,21 @@ from .model import Graph, Json, Source
 class SourceKit:
     """Use the SDK's trusted SourceKit; project plugins and build tools are absent."""
 
-    def __init__(self, swiftc: str) -> None:
-        directory = Path(swiftc).resolve().parent.parent / "lib"
+    def __init__(self, swiftc: str, resource_path: str | None = None) -> None:
+        executable = Path(shutil.which(swiftc) or swiftc).resolve()
+        directories = [executable.parent.parent / "lib"]
+        if resource_path:
+            # The driver resolves Xcode shims and installed platform SDK layouts.
+            directories.insert(0, Path(resource_path).resolve().parent)
         library = next(
             (
                 p
+                for directory in directories
                 for p in (
                     directory / "libsourcekitdInProc.so",
                     directory / "libsourcekitdInProc.dylib",
+                    directory / "sourcekitd.framework" / "sourcekitd",
+                    directory / "sourcekitd.framework" / "Versions" / "A" / "sourcekitd",
                     directory / "sourcekitdInProc.dll",
                     directory.parent / "bin" / "sourcekitdInProc.dll",
                 )
@@ -37,7 +46,11 @@ class SourceKit:
         class Variant(ctypes.Structure):
             _fields_ = [("data", ctypes.c_uint64 * 3)]
 
-        self.lib = ctypes.CDLL(str(library))
+        if sys.platform == "win32":
+            with os.add_dll_directory(str(library.parent)):
+                self.lib = ctypes.CDLL(str(library))
+        else:
+            self.lib = ctypes.CDLL(str(library))
         signatures = {
             "sourcekitd_request_create_from_yaml": (
                 ctypes.c_void_p,
