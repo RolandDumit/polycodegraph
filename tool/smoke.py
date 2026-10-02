@@ -105,6 +105,12 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
             baseline_path.write_text(json.dumps(baseline_config), encoding="utf-8")
             old = Client(baseline, root, extra_args=("--config", str(baseline_path)))
         try:
+            old_index_args = {}
+            if old:
+                schemas = old.request("tools/list", {})["tools"]
+                index_schema = next(s for s in schemas if s["name"] == "index_repository")
+                if "detail" in index_schema["inputSchema"]["properties"]:
+                    old_index_args["detail"] = "full"
             arch = new.call("get_architecture")
             assert arch["files"] > 0, arch
             errors = [
@@ -199,7 +205,7 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                 )
             changed = new.call("index_repository", detail="full")
             if old:
-                reference = old.call("index_repository", detail="full")
+                reference = old.call("index_repository", **old_index_args)
                 # Scope invalidation can deliberately emit a different work set.
                 for key in [
                     "files",
