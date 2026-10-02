@@ -1,12 +1,19 @@
 [
   {
     "name": "index_repository",
-    "description": "Refresh the index and report changed/deleted/reindexed files. Writes repository cache only.",
+    "description": "Explicit source/dependency hash scan before sensitive impact or after edits. force re-extracts; detail full expands the report.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "force": {
           "type": "boolean"
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [],
@@ -21,10 +28,38 @@
   },
   {
     "name": "status",
-    "description": "Fresh index health, diagnostics, graph counts and precision limitations.",
+    "description": "Check freshness/coverage once; queries auto-refresh. section retrieves diagnostics/skipped/providers/update/metrics/architecture; page with offset/limit.",
     "inputSchema": {
       "type": "object",
-      "properties": {},
+      "properties": {
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
+        },
+        "section": {
+          "type": "string",
+          "enum": [
+            "diagnostics",
+            "skipped",
+            "providers",
+            "update",
+            "metrics",
+            "architecture"
+          ]
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
       "required": [],
       "additionalProperties": false
     },
@@ -40,7 +75,15 @@
     "description": "Report pending edits without rebuilding the index.",
     "inputSchema": {
       "type": "object",
-      "properties": {},
+      "properties": {
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
+        }
+      },
       "required": [],
       "additionalProperties": false
     },
@@ -61,6 +104,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [],
@@ -75,7 +125,7 @@
   },
   {
     "name": "search_symbol",
-    "description": "Search symbol names; returns compact rows and stable ids. Empty query lists symbols.",
+    "description": "Find stable IDs. file is an indexed prefix relative to graph root. Follow next_offset for more matches.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -114,6 +164,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -169,6 +226,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -202,6 +266,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -235,6 +306,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -268,6 +346,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -301,6 +386,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -341,6 +433,13 @@
             "in",
             "out",
             "both"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
           ]
         }
       },
@@ -389,6 +488,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -427,6 +533,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 32
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -465,6 +578,13 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 32
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [
@@ -481,7 +601,7 @@
   },
   {
     "name": "snippet",
-    "description": "Read only a bounded symbol/line window from an indexed source file.",
+    "description": "Read a bounded indexed source window; expand truncation with explicit start_line/end_line.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -505,6 +625,13 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 20
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [],
@@ -519,7 +646,7 @@
   },
   {
     "name": "inspect_change",
-    "description": "Inspect a symbol, callers, implementations and conservative impact in one generation; optionally include a bounded snippet.",
+    "description": "Symbol + callers + implementations + conservative impact in one generation. Expand omitted sections with paged tools; snippet optional.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -540,6 +667,13 @@
         },
         "include_snippet": {
           "type": "boolean"
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ]
         }
       },
       "required": [

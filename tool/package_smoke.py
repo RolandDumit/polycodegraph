@@ -47,7 +47,10 @@ with tempfile.TemporaryDirectory(prefix="installed package spaces ") as temp:
             )
         assets = client.call("status")["provider_health"]["providers_path"]
         assert Path(assets).resolve() == (install / "providers").resolve(), assets
-        assert json.loads((install / "manifest.json").read_text())["version"] == "0.5.0"
+        manifest_version = json.loads((install / "manifest.json").read_text())["version"]
+        cli_version = subprocess.check_output([str(binary), "--version"], text=True).strip().split()[-1]
+        assert manifest_version == cli_version, (manifest_version, cli_version)
+        assert client.initialization["serverInfo"]["version"] == manifest_version
         print(
             "Relocated native package works with adjacent TypeScript, compiled Dart and compiled Go providers"
         )

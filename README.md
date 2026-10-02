@@ -16,20 +16,20 @@ Index a repository, explore its symbols and dependencies through compact graph q
 
 No embeddings, LLM API key or database service is required. The server is a native Rust executable. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
 
-**Version 0.5.0.** Rust core, local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
+**Version 0.6.0.** Opt-in compact responses, paged diagnostics and per-tool metrics, on the Rust core with local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
 
 ## Install and run
 
-Download a prebuilt package from [release v0.5.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.5.0). **Rust is not required to run these packages.**
+Download a prebuilt package from [release v0.6.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.6.0). **Rust is not required to run these packages.**
 
 | System | Download |
 | --- | --- |
-| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-linux-x64.tar.gz) |
-| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-windows-x64.zip) |
-| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-macos-x64.tar.gz) |
-| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/polycodegraph-0.5.0-macos-arm64.tar.gz) |
+| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-linux-x64.tar.gz) |
+| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-windows-x64.zip) |
+| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-macos-x64.tar.gz) |
+| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-macos-arm64.tar.gz) |
 
-Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.5.0/SHA256SUMS) verifies the four archives.
+Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/SHA256SUMS) verifies the four archives.
 
 To build from source instead:
 
@@ -58,6 +58,32 @@ Replace `polycodegraph` with its executable path until installed on PATH. `setup
 Linux x64, Windows x64 and macOS x64/ARM64 package workflows build native artifacts. CI checks the core and real providers on Linux/macOS/Windows. SDK/toolchain requirements and virtual environments are host-specific: recreate adapter environments on a different machine. Set `sdk_path` if Dart SDK discovery is unavailable.
 
 Read [migration from 0.4](docs/migration-0.5.md) when updating an existing harness. The CLI is now Rust; `dart run bin/polycodegraph.dart` and Dart global activation are replaced by the native executable.
+
+### Compact response profile (0.6.0)
+
+Set `response_profile: compact` in YAML/JSON or launch the native executable
+with `serve --response-profile compact`. Legacy remains the default; `detail: full` expands an individual
+MCP call. `status` and indexing summarize health without dumping runtime paths
+and large file lists. Search defaults to 10 rows, relations to 20 and implicit
+snippets to 30 lines; explicit limits/windows and pagination remain available.
+
+```json
+{"name":"status","arguments":{}}
+{"name":"status","arguments":{"section":"diagnostics","offset":0,"limit":20}}
+{"name":"status","arguments":{"section":"update","offset":0,"limit":20}}
+{"name":"search_symbol","arguments":{"query":"Presenza","file":"packages/domain/","limit":5}}
+{"name":"inspect_change","arguments":{"target":"<stable-id>","limit":10}}
+{"name":"status","arguments":{"detail":"full"}}
+```
+
+Paths are relative to the graph root; nonexistent indexed prefixes produce a
+warning and a unique suggestion when possible, never a silent correction.
+Check status once, use `inspect_change` before editing and avoid repeating its
+sections without a reason. Still scan explicitly before sensitive impact and
+after edits. See [profile contract and rollback](docs/response-profiles.md) and
+the [consumer harness template](docs/harness-AGENTS.md). Smaller response bytes
+do not prove savings in AI tokens or subscription quota; compact stays opt-in
+until the controlled token experiment meets its correctness and consumption gates.
 
 ## Configuration
 

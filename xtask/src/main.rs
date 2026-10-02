@@ -66,7 +66,7 @@ fn main() -> Result<()> {
             std::fs::write(
                 output.join("manifest.json"),
                 serde_json::to_vec_pretty(
-                    &serde_json::json!({"version":"0.5.0","os":std::env::consts::OS,"arch":std::env::consts::ARCH,"rust_toolchain":"1.99.0","dart_sdk_build":"3.13.2","dart_analyzer":"13.3.0","typescript":"6.0.2","go_build":"1.27.1","go_tools":"0.43.0","jedi":"0.20.0","parso":"0.8.7","java_source":"17","swift":"6.2+","rust_analyzer":"2026-09-28","kotlin":"2.3.10","libclang":"18.1.1","requires":"See README for selected provider runtimes; virtual environments must be prepared on destination"}),
+                    &serde_json::json!({"version":env!("CARGO_PKG_VERSION"),"os":std::env::consts::OS,"arch":std::env::consts::ARCH,"rust_toolchain":"1.99.0","dart_sdk_build":"3.13.2","dart_analyzer":"13.3.0","typescript":"6.0.2","go_build":"1.27.1","go_tools":"0.43.0","jedi":"0.20.0","parso":"0.8.7","java_source":"17","swift":"6.2+","rust_analyzer":"2026-09-28","kotlin":"2.3.10","libclang":"18.1.1","requires":"See README for selected provider runtimes; virtual environments must be prepared on destination"}),
                 )?,
             )?;
         }

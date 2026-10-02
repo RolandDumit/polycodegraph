@@ -1,0 +1,108 @@
+{
+  "measurement": "UTF-8 bytes of one tool-result JSON representation in observed broker formatting (default JSON spaces + newline); not model tokens",
+  "snapshot_verified_files": 385,
+  "replays": [
+    {
+      "case": "with1",
+      "tools": {
+        "status": {
+          "calls": 2,
+          "legacy_bytes": 11018,
+          "compact_bytes": 1612
+        },
+        "search_symbol": {
+          "calls": 5,
+          "legacy_bytes": 9517,
+          "compact_bytes": 11047
+        },
+        "neighbors": {
+          "calls": 1,
+          "legacy_bytes": 7634,
+          "compact_bytes": 7898
+        },
+        "callers": {
+          "calls": 1,
+          "legacy_bytes": 746,
+          "compact_bytes": 1010
+        },
+        "inspect_change": {
+          "calls": 1,
+          "legacy_bytes": 6433,
+          "compact_bytes": 6663
+        },
+        "index_repository": {
+          "calls": 3,
+          "legacy_bytes": 20361,
+          "compact_bytes": 2432
+        }
+      },
+      "legacy_bytes": 55709,
+      "compact_bytes": 30662,
+      "reduction_percent": 44.96,
+      "tools_list_bytes": {
+        "legacy": 8945,
+        "compact": 10278
+      },
+      "parity": "passed; original fields/sites/counts checked; generation normalized for effective-config hashing"
+    },
+    {
+      "case": "with2",
+      "tools": {
+        "status": {
+          "calls": 2,
+          "legacy_bytes": 11012,
+          "compact_bytes": 1612
+        },
+        "search_symbol": {
+          "calls": 4,
+          "legacy_bytes": 5238,
+          "compact_bytes": 6358
+        },
+        "neighbors": {
+          "calls": 1,
+          "legacy_bytes": 7634,
+          "compact_bytes": 7898
+        },
+        "callers": {
+          "calls": 1,
+          "legacy_bytes": 746,
+          "compact_bytes": 1010
+        },
+        "inspect_change": {
+          "calls": 1,
+          "legacy_bytes": 6433,
+          "compact_bytes": 6663
+        },
+        "index_repository": {
+          "calls": 2,
+          "legacy_bytes": 20149,
+          "compact_bytes": 1619
+        }
+      },
+      "legacy_bytes": 51212,
+      "compact_bytes": 25160,
+      "reduction_percent": 50.87,
+      "tools_list_bytes": {
+        "legacy": 8945,
+        "compact": 10278
+      },
+      "parity": "passed; original fields/sites/counts checked; generation normalized for effective-config hashing"
+    }
+  ],
+  "provenance": {
+    "source_base_commit": "c37fa466cdc512569d874783d534b15e764dc87f",
+    "baseline_release_commit": "45fa910bde4cd98c19140b2d81ae850bea06a97c",
+    "core_source_digest": "bd1965a9aeb9526ab9d0b889da2076180211b2174524d08edd3a0d39fbd6d6f5",
+    "experimental_release_binary_sha256": "e352a6eb3b772d1962842d74808a9b6ed37bc716bf6de3a8ffce77e95533bb9a",
+    "baseline_release_binary_sha256": "b82acbb97204f1412929740777110c638d77132d33c5156983a0f9656ac1db9e",
+    "build": "Rust 1.99.0; release; locked; offline; separate targets; no official binary replaced",
+    "platform": "Linux x64"
+  },
+  "token_acceptance": {
+    "status": "not_measured",
+    "fresh_executor_runs": 0,
+    "existing_usage_extractor_checks": 4,
+    "primary_gate": "at least 20% less uncached input vs A; cached input/output at most +5%; correctness all six",
+    "note": "Real MCP replay is not an executor token benchmark. Existing counters can be extracted but provide no C evidence."
+  }
+}

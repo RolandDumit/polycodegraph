@@ -11,6 +11,9 @@ fn fixture() -> (tempfile::TempDir, tempfile::TempDir, Config) {
 import json,sys,pathlib,time
 r=json.load(sys.stdin);root=pathlib.Path(r['root']);out=[]
 marker=root/'race.once'
+config_marker=root/'config-race.once'
+if config_marker.exists():
+    config_marker.unlink(); p=root/'polycodegraph.json'; cfg=json.loads(p.read_text()); cfg['flutter']=not cfg['flutter']; p.write_text(json.dumps(cfg))
 if marker.exists():
     marker.unlink(); f=root/'a/first.ts';f.write_text(f.read_text()+'\n// concurrent edit')
 if (root/'slow.once').exists():
@@ -46,6 +49,29 @@ async fn delivered(i: &Indexer) {
         tokio::time::sleep(Duration::from_millis(10)).await;
     }
     panic!("watcher did not deliver an event")
+}
+#[tokio::test]
+async fn concurrent_configuration_edit_preserves_committed_generation() {
+    let (root, _assets, c) = fixture();
+    fs::write(
+        root.path().join("polycodegraph.json"),
+        serde_json::to_string(&c).unwrap(),
+    )
+    .unwrap();
+    let mut i = Indexer::new(Config::load(root.path(), None).unwrap()).unwrap();
+    i.refresh(true, false).await.unwrap();
+    let generation = i.graph.as_ref().unwrap().snapshot.generation.clone();
+    fs::write(root.path().join("config-race.once"), "").unwrap();
+    let failure = i.refresh(true, true).await.unwrap_err();
+    assert!(
+        failure
+            .to_string()
+            .contains("Configuration changed during indexing")
+    );
+    assert_eq!(i.graph.as_ref().unwrap().snapshot.generation, generation);
+    assert_eq!(i.store.read().unwrap().unwrap().generation, generation);
+    i.refresh(true, false).await.unwrap();
+    assert_ne!(i.graph.as_ref().unwrap().snapshot.generation, generation);
 }
 #[tokio::test]
 async fn independent_scopes_and_old_dependency_invalidation() {

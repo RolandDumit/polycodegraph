@@ -1,5 +1,10 @@
 # Provider contract
 
+The experimental compact response profile changes presentation only. Providers
+receive the same full context and emit-file requests, with unchanged semantic
+evidence, IDs and coverage. Health counts never substitute for original records;
+complete diagnostics remain accessible through paged MCP status sections.
+
 The Rust core owns root validation, discovery, hashes, cache publication, graph traversal, compact query tables and MCP. The Dart Analyzer provider also runs as a subprocess. All adapters read one UTF-8 JSON object from stdin and write one JSON array to stdout; diagnostics/progress on stderr are bounded by the runner.
 
 Request:

@@ -6,6 +6,18 @@ use std::{
     fs,
     path::{Component, Path, PathBuf},
 };
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ResponseProfile {
+    #[default]
+    Legacy,
+    Compact,
+}
+impl ResponseProfile {
+    fn is_legacy(&self) -> bool {
+        *self == Self::Legacy
+    }
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
@@ -40,6 +52,10 @@ pub struct Config {
     pub watch: bool,
     pub watch_debounce_ms: u64,
     pub reconcile_interval_seconds: u64,
+    #[serde(skip_serializing_if = "ResponseProfile::is_legacy")]
+    pub response_profile: ResponseProfile,
+    #[serde(skip)]
+    pub response_profile_override: Option<ResponseProfile>,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -84,6 +100,8 @@ impl Default for Config {
             watch: true,
             watch_debounce_ms: 200,
             reconcile_interval_seconds: 30,
+            response_profile: ResponseProfile::Legacy,
+            response_profile_override: None,
         }
     }
 }
@@ -231,7 +249,20 @@ impl Config {
         Ok((build(&self.include)?, build(&self.exclude)?))
     }
     pub fn fingerprint(&self) -> Result<String> {
-        Ok(hash(serde_json::to_vec(self)?))
+        // Presentation changes must not invalidate semantic records or the 0.5 cache.
+        let mut value = serde_json::to_value(self)?;
+        value
+            .as_object_mut()
+            .expect("configuration object")
+            .remove("response_profile");
+        Ok(hash(serde_json::to_vec(&value)?))
+    }
+    pub fn compact(&self, args: &serde_json::Value) -> bool {
+        match args["detail"].as_str() {
+            Some("full") => false,
+            Some("compact") => true,
+            _ => self.response_profile == ResponseProfile::Compact,
+        }
     }
     pub fn assets(&self) -> PathBuf {
         if let Some(p) = &self.providers_path {

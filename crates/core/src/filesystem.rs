@@ -170,7 +170,16 @@ pub fn scan(c: &Config) -> Result<Scan> {
             continue;
         }
         let bytes = fs::read(e.path()).with_context(|| format!("reading {rel}"))?;
-        let h = hash(bytes);
+        let h = if matches!(
+            name.as_ref(),
+            "polycodegraph.yaml" | "polycodegraph.yml" | "polycodegraph.json"
+        ) {
+            // Effective semantic configuration already excludes presentation options.
+            // Hashing raw YAML would re-extract on profile/format-only edits.
+            c.fingerprint()?
+        } else {
+            hash(bytes)
+        };
         if lang != "unknown" && inc.is_match(&rel) && !exc.is_match(&rel) {
             s.scopes.insert(rel.clone(), scope(c, &rel));
             s.hashes.insert(rel.clone(), h.clone());
@@ -512,6 +521,17 @@ pub fn context_unchanged(
     languages: &std::collections::BTreeSet<&str>,
 ) -> Result<bool> {
     for (key, expected) in inputs {
+        if !key.starts_with("external-")
+            && matches!(
+                Path::new(key).file_name().and_then(|n| n.to_str()),
+                Some("polycodegraph.yaml" | "polycodegraph.yml" | "polycodegraph.json")
+            )
+        {
+            if c.fingerprint()? != *expected {
+                return Ok(false);
+            }
+            continue;
+        }
         if key == "provider_runtime" {
             if crate::providers::fingerprint(c)? != *expected {
                 return Ok(false);

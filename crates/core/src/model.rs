@@ -20,7 +20,7 @@ pub fn language(file: &str) -> &'static str {
         _ => "unknown",
     }
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Node {
     pub id: String,
     pub name: String,
@@ -62,7 +62,7 @@ impl Node {
         v
     }
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Edge {
     pub source: String,
     pub target: String,
@@ -84,7 +84,7 @@ impl Edge {
         )
     }
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FileRecord {
     pub file: String,
     pub hash: String,
@@ -96,7 +96,7 @@ pub struct FileRecord {
     #[serde(default, rename = "unresolvedCalls")]
     pub unresolved_calls: usize,
 }
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Snapshot {
     pub root: String,
     pub fingerprint: String,

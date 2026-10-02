@@ -17,3 +17,9 @@ Dart uses Analyzer; TS/JS compiler API; Java javac; Go go/packages/go/types; Pyt
 The watcher is an optimization, not infallible change detection: 30-second source/environment hash reconciliation, error/overflow recovery and explicit index scans preserve a recovery path. watch:false scans every query. SDK and external artifact changes outside tracked inputs require forced indexing.
 
 Provider process groups/job objects have deadlines and bounded stdout/stderr. Initial failures create file nodes with coverage diagnostics; failed subsequent updates retain the prior committed generation. Source and context inputs are validated before transactional publication. No indexed project code or build hooks execute.
+
+The response module caches counts/diagnostic identities with each graph, separately
+from semantic records. Compact presentation never changes graph coverage or
+provider requests. Presentation profile changes are excluded from index identity.
+Reconciliation reloads changed persisted diagnostics even when source generation
+is unchanged. Detailed MCP pages preserve original diagnostic fields/messages.

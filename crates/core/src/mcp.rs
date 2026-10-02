@@ -132,7 +132,7 @@ impl Session {
                 } else {
                     "2025-11-25"
                 };
-                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"polycodegraph","version":"0.5.0"},"instructions":"Check status freshness and coverage, find stable ids with search_symbol, then inspect_change. Static dispatch is incomplete; run compiler checks and tests."})
+                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"polycodegraph","version":env!("CARGO_PKG_VERSION")},"instructions":"Check status freshness and coverage, find stable ids with search_symbol, then inspect_change. Static dispatch is incomplete; run compiler checks and tests."})
             }
             "ping" => json!({}),
             "tools/list" | "tools/call" => {
@@ -168,16 +168,28 @@ impl Session {
                     if !a.is_object() {
                         return Some(error(id, -32602, "Invalid tool call"));
                     }
+                    index.metrics.tools.entry(name.into()).or_default().calls += 1;
                     let result = match validate(spec, &a) {
                         Ok(()) => index.call(name, &a).await,
                         Err(e) => Err(e),
                     };
                     match result {
                         Ok(data) => {
-                            json!({"content":[{"type":"text","text":data.to_string()}],"structuredContent":data,"isError":false})
+                            let text = data.to_string();
+                            index
+                                .metrics
+                                .tools
+                                .entry(name.into())
+                                .or_default()
+                                .response_bytes += text.len() as u64;
+                            json!({"content":[{"type":"text","text":text}],"structuredContent":data,"isError":false})
                         }
                         Err(e) => {
-                            json!({"content":[{"type":"text","text":json!({"error":e.to_string()}).to_string()}],"isError":true})
+                            let text = json!({"error":e.to_string()}).to_string();
+                            let metrics = index.metrics.tools.entry(name.into()).or_default();
+                            metrics.errors += 1;
+                            metrics.response_bytes += text.len() as u64;
+                            json!({"content":[{"type":"text","text":text}],"isError":true})
                         }
                     }
                 }

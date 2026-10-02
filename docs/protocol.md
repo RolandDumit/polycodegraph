@@ -15,3 +15,12 @@ Node IDs: `<relative-file>::<qualified-name>#<kind>`; file nodes: `<relative-fil
 Relations: `contains`, `imports`, `exports`, `part`, `part_of`, `extends`, `implements`, `with`, `on`, `references`, `calls`, `overrides`, `registers`. Reference/call rows include source locations and `resolved` confidence. `registers` represents a recognized typed GetIt registration, not arbitrary runtime DI resolution.
 
 Version 0.5 adds inspect_change and status.freshness/metrics without changing the existing fifteen tools. inspect_change has target, depth (1–32, default 6), limit (default 20 per section), include_snippet (default false); every section uses the same generation and reports omissions/truncation. The server still serializes tool calls, while the reader handles cancellation independently. Periodic reconciliation runs while the server is idle.
+
+Version 0.6.0 adds opt-in [response profiles](response-profiles.md): `detail`
+per call and paged `status.section` details, using the same sixteen tool names.
+Compact health identities are independent of source generation; restart pages
+when either changes. `status(section: metrics)` exposes per-tool calls, errors
+and UTF-8 bytes of one JSON result representation, excluding protocol envelopes,
+tool schema and model tokens. The current metrics request is counted as a call;
+its bytes are added after returning the response. No duplicate-response inference
+or session result suppression is implemented.

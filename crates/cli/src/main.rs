@@ -1,5 +1,9 @@
 use clap::Parser;
-use polycodegraph_core::{config::Config, index::Indexer, mcp, providers, setup};
+use polycodegraph_core::{
+    config::{Config, ResponseProfile},
+    index::Indexer,
+    mcp, providers, setup,
+};
 use serde_json::json;
 use std::path::PathBuf;
 #[derive(Parser)]
@@ -21,6 +25,8 @@ struct Args {
     languages: Option<String>,
     #[arg(long)]
     dev: bool,
+    #[arg(long, value_parser=["legacy","compact"])]
+    response_profile: Option<String>,
 }
 #[tokio::main]
 async fn main() {
@@ -49,7 +55,7 @@ async fn main() {
         eprintln!("polycodegraph: unknown command");
         std::process::exit(64)
     }
-    let c = match Config::load(&args.root, args.config.as_deref()) {
+    let mut c = match Config::load(&args.root, args.config.as_deref()) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("polycodegraph: {e:#}");
@@ -60,6 +66,15 @@ async fn main() {
             })
         }
     };
+    if let Some(profile) = args.response_profile.as_deref() {
+        let profile = if profile == "compact" {
+            ResponseProfile::Compact
+        } else {
+            ResponseProfile::Legacy
+        };
+        c.response_profile = profile;
+        c.response_profile_override = Some(profile);
+    }
     let result: anyhow::Result<()> = async {
         match args.command.as_str() {
             "doctor" => println!("{}", providers::doctor(&c)),
@@ -75,11 +90,18 @@ async fn main() {
             "serve" => mcp::serve(tokio::io::stdin(), tokio::io::stdout(), Indexer::new(c)?).await?,
             "index" => {
                 let mut index = Indexer::new(c)?;
-                println!("{}", index.refresh(true, args.force).await?);
+                let report = if index.config.response_profile == ResponseProfile::Compact {
+                    index.call("index_repository", &json!({"force":args.force})).await?
+                } else { index.refresh(true,args.force).await? };
+                println!("{report}");
             }
             "status" => {
                 let mut index = Indexer::new(c)?;
                 let changes = index.detect_changes()?;
+                if index.config.response_profile == ResponseProfile::Compact {
+                    println!("{}", index.cached_status(&changes)?);
+                    return Ok(());
+                }
                 let mut v = json!({"indexed":index.graph.is_some(),"changes":changes,"freshness":index.freshness()});
                 if let Some(g) = &index.graph {
                     let arch = g.architecture(&index.config, 5);

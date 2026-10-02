@@ -45,12 +45,23 @@ jobs:
       - run: ./target/release/polycodegraph setup --languages dart,go
       - run: cargo xtask package
       - run: python tool/package_smoke.py
+      - name: Read and validate package version
+        id: version
+        shell: python
+        run: |
+          import os, tomllib
+          from pathlib import Path
+          version = tomllib.loads(Path("Cargo.toml").read_text())["workspace"]["package"]["version"]
+          if os.environ["GITHUB_REF_TYPE"] == "tag":
+              assert os.environ["GITHUB_REF_NAME"] == "v" + version
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"version={version}\n")
       - name: Archive native package with executable permissions
         shell: python
         run: |
           import shutil
-          shutil.make_archive('polycodegraph-0.5.0-${{ matrix.target }}', 'zip' if '${{ runner.os }}' == 'Windows' else 'gztar', 'dist', 'polycodegraph')
+          shutil.make_archive('polycodegraph-${{ steps.version.outputs.version }}-${{ matrix.target }}', 'zip' if '${{ runner.os }}' == 'Windows' else 'gztar', 'dist', 'polycodegraph')
       - uses: actions/upload-artifact@v6
         with:
           name: polycodegraph-${{ matrix.target }}
-          path: polycodegraph-0.5.0-${{ matrix.target }}.*
+          path: polycodegraph-${{ steps.version.outputs.version }}-${{ matrix.target }}.*

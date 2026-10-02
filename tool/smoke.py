@@ -15,9 +15,9 @@ from pathlib import Path
 
 
 class Client:
-    def __init__(self, binary: Path, root: Path, env=None):
+    def __init__(self, binary: Path, root: Path, env=None, extra_args=()):
         self.p = subprocess.Popen(
-            [str(binary), "serve", "--root", str(root)],
+            [str(binary), "serve", "--root", str(root), *extra_args],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -32,7 +32,7 @@ class Client:
         threading.Thread(
             target=lambda: self.errors.extend(self.p.stderr.readlines()), daemon=True
         ).start()
-        self.request(
+        self.initialization = self.request(
             "initialize",
             {
                 "protocolVersion": "2025-11-25",
@@ -95,7 +95,15 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
         )
         (root / "polycodegraph.json").write_text(json.dumps(config), encoding="utf-8")
         new = Client(binary, root)
-        old = Client(baseline, root) if baseline else None
+        # Native baselines also use SQLite: separate cache ownership so the
+        # second server cannot consume the first server's incremental update.
+        old = None
+        if baseline:
+            baseline_config = dict(config, cache=".polycodegraph/baseline")
+            baseline_path = root / ".polycodegraph/baseline-config.json"
+            baseline_path.parent.mkdir(exist_ok=True)
+            baseline_path.write_text(json.dumps(baseline_config), encoding="utf-8")
+            old = Client(baseline, root, extra_args=("--config", str(baseline_path)))
         try:
             arch = new.call("get_architecture")
             assert arch["files"] > 0, arch
@@ -127,7 +135,7 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                 )
                 status, reference = new.call("status"), old.call("status")
                 for key in reference:
-                    if key not in ("provider_health", "generation"):
+                    if key not in ("provider_health", "generation", "metrics", "freshness"):
                         assert clean(status[key]) == clean(reference[key]), (
                             "status",
                             key,

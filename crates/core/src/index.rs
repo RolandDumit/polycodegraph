@@ -4,6 +4,7 @@ use crate::{
     model::{Snapshot, hash, language},
     providers,
     query::Graph,
+    responses,
     store::Store,
 };
 use anyhow::{Result, bail};
@@ -29,6 +30,13 @@ pub struct Metrics {
     pub extraction_ms: f64,
     pub storage_ms: f64,
     pub query_ms: f64,
+    pub tools: BTreeMap<String, ToolMetrics>,
+}
+#[derive(Default, Debug, serde::Serialize)]
+pub struct ToolMetrics {
+    pub calls: u64,
+    pub response_bytes: u64,
+    pub errors: u64,
 }
 struct Changes {
     receiver: Receiver<notify::Result<Event>>,
@@ -47,6 +55,8 @@ pub struct Indexer {
     pub watcher_error: Option<String>,
     config_disk_hash: String,
     directory_stamps: BTreeMap<String, SystemTime>,
+    last_update: Value,
+    reported_errors: BTreeSet<String>,
 }
 fn watch(c: &Config) -> Result<Changes> {
     let (tx, receiver) = sync_channel(4096);
@@ -138,6 +148,8 @@ impl Indexer {
             watcher_error,
             config_disk_hash,
             directory_stamps: BTreeMap::new(),
+            last_update: json!({}),
+            reported_errors: BTreeSet::new(),
         })
     }
     fn drain(&mut self) -> (BTreeSet<String>, bool) {
@@ -237,7 +249,11 @@ impl Indexer {
         }
         let disk_hash = self.config.disk_fingerprint()?;
         if disk_hash != self.config_disk_hash {
-            let updated = Config::load(&self.config.root, self.config.config_file.as_deref())?;
+            let mut updated = Config::load(&self.config.root, self.config.config_file.as_deref())?;
+            updated.response_profile_override = self.config.response_profile_override;
+            if let Some(profile) = updated.response_profile_override {
+                updated.response_profile = profile;
+            }
             self.store = Store::new(&updated)?;
             self.watcher = if updated.watch {
                 match watch(&updated) {
@@ -302,7 +318,7 @@ impl Indexer {
             && self
                 .graph
                 .as_ref()
-                .is_none_or(|g| g.snapshot.generation != s.generation)
+                .is_none_or(|g| g.snapshot.as_ref() != &s)
             && s.root == self.config.root.to_string_lossy()
             && s.fingerprint == self.config.fingerprint()?
         {
@@ -501,6 +517,11 @@ impl Indexer {
             self.metrics.extractions += extracted.len() as u64;
             self.metrics.extraction_ms += t.elapsed().as_secs_f64() * 1000.;
             let (mut events, overflow) = self.drain();
+            if self.config.disk_fingerprint()? != self.config_disk_hash {
+                bail!(
+                    "Configuration changed during indexing; previous committed generation retained, retry"
+                );
+            }
             let mut unstable = overflow || !events.is_empty();
             for (f, h) in &scan.hashes {
                 if affected.iter().any(|a| {
@@ -594,6 +615,18 @@ impl Indexer {
         let mut report = self
             .refresh(name == "index_repository", args["force"] == true)
             .await?;
+        if name == "index_repository" || responses::update_summary(&report)["state"] == "updated" {
+            self.last_update = report.clone();
+        }
+        if self.config.compact(args)
+            && ["status", "index_repository"].contains(&name)
+            && args["section"].is_null()
+        {
+            return self.compact_report(name, &report);
+        }
+        if name == "status" && !args["section"].is_null() {
+            return self.details(args);
+        }
         cap(&mut report, &self.config);
         if name == "index_repository" {
             return Ok(report);
@@ -611,9 +644,103 @@ impl Indexer {
             return Ok(v);
         }
         let t = Instant::now();
-        let r = graph.call(&self.config, name, args);
+        let r = graph.call(&self.config, name, args).map(|mut result| {
+            if self.config.compact(args) {
+                result["health_fingerprint"] = json!(
+                    graph
+                        .health
+                        .fingerprint(&graph.health.provider_health(&self.config))
+                );
+                result["coverage"] = graph.health.coverage.clone();
+            }
+            result
+        });
         self.metrics.query_ms += t.elapsed().as_secs_f64() * 1000.;
         r
+    }
+    fn compact_report(&mut self, name: &str, report: &Value) -> Result<Value> {
+        let graph = self
+            .graph
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("No index"))?;
+        let h = &graph.health;
+        let providers = h.provider_health(&self.config);
+        let issues = h.issues(&providers) || self.watcher_error.is_some();
+        let update = responses::update_summary(report);
+        let diagnostic_total: usize = h.diagnostics.values().sum();
+        let error_update = h.error_update(&self.reported_errors);
+        self.reported_errors = h.errors.keys().cloned().collect();
+        Ok(
+            json!({"outcome":if issues {"issues"} else if name=="index_repository" && update["state"]=="unchanged" {"unchanged"} else {"ok"},"generation":graph.snapshot.generation,"health_fingerprint":h.fingerprint(&providers),"freshness":self.freshness(),"counts":h.counts,"coverage":h.coverage,"provider_health":providers,"diagnostics":{"counts":h.diagnostics,"total":diagnostic_total,"omitted":diagnostic_total,"errors":error_update},"update":update}),
+        )
+    }
+    /// CLI status verifies source hashes but never indexes or invokes providers.
+    pub fn cached_status(&mut self, changes: &Value) -> Result<Value> {
+        let mut result = if self.graph.is_some() {
+            self.compact_report("status", &json!({}))?
+        } else {
+            json!({"outcome":"not_indexed","generation":null,"freshness":self.freshness()})
+        };
+        result["source_changes"] = json!({"changed":changes["changed"].as_array().map_or(0,Vec::len),"deleted":changes["deleted"].as_array().map_or(0,Vec::len),"environment_changed":changes["environment_changed"]});
+        result["index_current"] = json!(
+            self.graph.is_some()
+                && result["source_changes"]["changed"] == 0
+                && result["source_changes"]["deleted"] == 0
+                && changes["environment_changed"] == false
+        );
+        Ok(result)
+    }
+    fn details(&self, args: &Value) -> Result<Value> {
+        let graph = self
+            .graph
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("No index"))?;
+        let generation = &graph.snapshot.generation;
+        let health = graph
+            .health
+            .fingerprint(&graph.health.provider_health(&self.config));
+        let page = |items| responses::page(items, args, &self.config, generation, &health);
+        match args["section"].as_str() {
+            Some("diagnostics") => Ok(page(
+                graph
+                    .snapshot
+                    .files
+                    .iter()
+                    .flat_map(|(file, r)| {
+                        r.diagnostics
+                            .iter()
+                            .map(move |d| json!({"file":file,"diagnostic":d}))
+                    })
+                    .collect::<Vec<_>>(),
+            )),
+            Some("skipped") => Ok(page(
+                graph.snapshot.skipped.iter().map(|s| json!(s)).collect(),
+            )),
+            Some("providers") => Ok(
+                json!({"generation":generation,"health_fingerprint":health,"provider_health":providers::doctor(&self.config)}),
+            ),
+            Some("metrics") => Ok(
+                json!({"generation":generation,"health_fingerprint":health,"scans":self.metrics.scans,"extractions":self.metrics.extractions,"graph_builds":self.metrics.graph_builds,"scan_ms":self.metrics.scan_ms,"extraction_ms":self.metrics.extraction_ms,"storage_ms":self.metrics.storage_ms,"query_ms":self.metrics.query_ms,"tools":self.metrics.tools,"response_bytes_scope":"one compact JSON representation per MCP tool result; excludes framing/schema and model tokens"}),
+            ),
+            Some("architecture") => graph.call(&self.config, "get_architecture", args),
+            Some("update") => {
+                let mut result = json!({"generation":self.last_update["generation"],"health_fingerprint":health,"available":!self.last_update["generation"].is_null(),"summary":responses::update_summary(&self.last_update)});
+                for key in ["changed", "deleted", "reindexed"] {
+                    result[key] = responses::page(
+                        self.last_update[key]
+                            .as_array()
+                            .cloned()
+                            .unwrap_or_default(),
+                        args,
+                        &self.config,
+                        self.last_update["generation"].as_str().unwrap_or(""),
+                        &health,
+                    );
+                }
+                Ok(result)
+            }
+            _ => bail!("Unknown status section"),
+        }
     }
 }
 fn cap(v: &mut Value, c: &Config) {

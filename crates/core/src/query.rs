@@ -62,6 +62,7 @@ impl Index<usize> for Edges {
     }
 }
 pub struct Graph {
+    pub health: crate::responses::Health,
     pub snapshot: Arc<Snapshot>,
     pub nodes: Nodes,
     pub ids: HashMap<String, usize>,
@@ -152,6 +153,12 @@ impl Graph {
             }
         }
         Self {
+            health: crate::responses::Health::new(
+                &snapshot,
+                nodes.iter().map(Into::into),
+                edges.len(),
+                dropped,
+            ),
             snapshot,
             nodes,
             ids,
@@ -194,7 +201,10 @@ impl Graph {
         mut extra: Value,
     ) -> Value {
         let offset = a["offset"].as_u64().unwrap_or(0) as usize;
-        let limit = (a["limit"].as_u64().unwrap_or(50) as usize).min(c.max_results);
+        let limit = (a["limit"]
+            .as_u64()
+            .unwrap_or(if c.compact(a) { 20 } else { 50 }) as usize)
+            .min(c.max_results);
         let total = rows.len();
         let page: Vec<_> = rows.into_iter().skip(offset).take(limit).collect();
         let next = if offset + page.len() < total {
@@ -208,6 +218,11 @@ impl Graph {
         extra["total"] = json!(total);
         extra["offset"] = json!(offset);
         extra["next_offset"] = next;
+        if c.compact(a) {
+            extra["omitted"] =
+                json!(total.saturating_sub(extra["rows"].as_array().map_or(0, Vec::len)));
+            extra["truncated"] = json!(total > extra["rows"].as_array().map_or(0, Vec::len));
+        }
         extra
     }
     pub fn search(&self, c: &Config, a: &Value) -> Value {
@@ -244,13 +259,48 @@ impl Graph {
                 .cmp(&rank(y))
                 .then_with(|| compare_text(&x.id, &y.id))
         });
+        let mut args = a.clone();
+        if c.compact(a) && a["limit"].is_null() {
+            args["limit"] = json!(10);
+        }
         self.table(
             c,
             json!(COLUMNS),
             matches.into_iter().map(Node::row).collect(),
-            a,
+            &args,
             json!({}),
         )
+    }
+    fn file_filter(&self, c: &Config, a: &Value) -> Result<Value> {
+        let Some(prefix) = a["file"].as_str().filter(|p| !p.is_empty()) else {
+            return Ok(json!({}));
+        };
+        if prefix.starts_with('/')
+            || prefix.contains('\\')
+            || prefix.contains(':')
+            || prefix.split('/').any(|p| p == "..")
+        {
+            bail!("file must be a slash-separated prefix relative to graph root");
+        }
+        c.safe(prefix)?;
+        let valid = self.snapshot.files.keys().any(|f| f.starts_with(prefix));
+        let mut result = json!({"file_filter":{"valid":valid}});
+        if !valid {
+            result["warning"] =
+                json!("File prefix is not indexed; use paths relative to graph root");
+            let mut candidates = BTreeSet::new();
+            for file in self.snapshot.files.keys() {
+                for (start, _) in file.match_indices(prefix) {
+                    if start > 0 && file.as_bytes()[start - 1] == b'/' {
+                        candidates.insert(file[..start + prefix.len()].to_owned());
+                    }
+                }
+            }
+            if candidates.len() == 1 {
+                result["file_filter"]["suggested_prefix"] = json!(candidates.first());
+            }
+        }
+        Ok(result)
     }
     pub fn relations(
         &self,
@@ -506,7 +556,12 @@ impl Graph {
         }
         let start = requested_start.saturating_sub(ctx).max(1);
         let desired = requested_end.saturating_add(ctx).min(lines.len());
-        let end = desired.min(start + c.max_snippet_lines - 1);
+        let budget = if c.compact(a) && a["end_line"].is_null() {
+            c.max_snippet_lines.min(30)
+        } else {
+            c.max_snippet_lines
+        };
+        let end = desired.min(start + budget - 1);
         let text = lines[start - 1..end].join("\n");
         let truncated = end < desired || text.encode_utf16().count() > c.max_snippet_chars;
         let mut units = 0;
@@ -593,16 +648,30 @@ impl Graph {
             v["truncated"] = json!(total > size);
         }
         if a["include_snippet"] == true {
-            out["snippet"] = self.snippet(c, &json!({"target":self.nodes[i].id}))?;
+            out["snippet"] =
+                self.snippet(c, &json!({"target":self.nodes[i].id,"detail":a["detail"]}))?;
         }
         Ok(out)
     }
     pub fn call(&self, c: &Config, name: &str, a: &Value) -> Result<Value> {
         match name {
-            "search_symbol" | "search" => Ok(self.search(c, a)),
-            "get_architecture" => {
-                Ok(self.architecture(c, a["limit"].as_u64().unwrap_or(20) as usize))
+            "search_symbol" | "search" => {
+                let filter = self.file_filter(c, a)?;
+                let mut out = self.search(c, a);
+                // Preserve legacy valid-prefix output; invalid prefixes are always explained.
+                if c.compact(a) || filter["file_filter"]["valid"] == false {
+                    for (key, value) in filter.as_object().into_iter().flatten() {
+                        out[key] = value.clone();
+                    }
+                }
+                Ok(out)
             }
+            "get_architecture" => Ok(self.architecture(
+                c,
+                a["limit"]
+                    .as_u64()
+                    .unwrap_or(if c.compact(a) { 5 } else { 20 }) as usize,
+            )),
             "callers" => self.relations(c, a, "in", Some(&["calls"])),
             "callees" => self.relations(c, a, "out", Some(&["calls"])),
             "references" => self.relations(c, a, "in", Some(&["references"])),
