@@ -18,7 +18,7 @@ from .model import Graph, Json, Source
 class SourceKit:
     """Use the SDK's trusted SourceKit; project plugins and build tools are absent."""
 
-    def __init__(self, swiftc: str, resource_path: str | None = None) -> None:
+    def __init__(self, swiftc: str, resource_path: str | None = None, runtime_paths: list[str] | None = None) -> None:
         executable = Path(shutil.which(swiftc) or swiftc).resolve()
         directories = [executable.parent.parent / "lib"]
         if resource_path:
@@ -47,8 +47,26 @@ class SourceKit:
             _fields_ = [("data", ctypes.c_uint64 * 3)]
 
         if sys.platform == "win32":
-            with os.add_dll_directory(str(library.parent)):
+            dll_directories = {library.parent, executable.parent}
+            dll_directories.update(directory.parent / "bin" for directory in directories)
+            dll_directories.update(Path(p).resolve() for p in (runtime_paths or []))
+            # Swift installs runtime DLLs separately from compiler DLLs. Python
+            # 3.8+ does not use PATH for dependent DLL lookup; admit only paths
+            # inside the selected toolchain's Swift installation, never the CWD.
+            installation = next((p.parent for p in executable.parents if p.name == "Toolchains"), None)
+            if installation:
+                for entry in os.environ.get("PATH", "").split(os.pathsep):
+                    if entry:
+                        directory = Path(entry).resolve()
+                        if directory.is_relative_to(installation):
+                            dll_directories.add(directory)
+            self.dll_handles = [os.add_dll_directory(str(p)) for p in sorted(dll_directories) if p.is_dir()]
+            try:
                 self.lib = ctypes.CDLL(str(library))
+            except OSError:
+                for handle in self.dll_handles:
+                    handle.close()
+                raise
         else:
             self.lib = ctypes.CDLL(str(library))
         signatures = {

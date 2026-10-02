@@ -110,7 +110,7 @@ class SwiftGraph:
                 if not resolver_attempted:
                     resolver_attempted = True
                     try:
-                        resolver = SourceKit(self.options.get("swiftc_path", "swiftc"), runtime.get("runtimeResourcePath"))
+                        resolver = SourceKit(self.options.get("swiftc_path", "swiftc"), runtime.get("runtimeResourcePath"), runtime.get("runtimeLibraryPaths", []))
                     except (OSError, ValueError) as error:
                         resolver = None
                         resolver_failure = str(error)[:256]
