@@ -1,6 +1,6 @@
 # Developing PolyCodeGraph
 
-The CLI/MCP/index/query core is Rust. Read docs/architecture.md and docs/protocol.md; docs/harness-AGENTS.md is the consumer template.
+The CLI/MCP/index/query core is Rust. Read docs/architecture.md and docs/protocol.md; docs/harness-AGENTS.md is the consumer template. Intent work also follows docs/intents.md and docs/intents-api-decision.md.
 
 - Preserve semantic resolver evidence, stable IDs, deterministic pagination, compact output and visible precision limits across all ten providers.
 - Keep transport, storage, filesystem, indexing and query logic separate. Rust code follows ownership-based sharing, typed errors and bounded concurrency; do not hold shared state locks during provider awaits.
@@ -10,3 +10,5 @@ The CLI/MCP/index/query core is Rust. Read docs/architecture.md and docs/protoco
 - Never execute indexed application code, project plugins, package scripts, build hooks or code generation. Keep subprocess budgets, path confinement and symlink rejection.
 - stdout is protocol-only during serve. Diagnostics go to stderr. Preserve cancellation, framing/queue limits and EOF draining.
 - Update configuration/docs/provider contracts when behavior changes. Record actual benchmarks, tests, skipped checks and limitations. Keep caches, binaries, SDK paths and environments out of Git.
+
+- Intent changes require `tool/intent_smoke.py` for the affected language groups, primitive differential checks against 0.6 and the deterministic rename evidence gate. Include every page/expansion/schema cost; never report characters as measured model tokens. Review baselines and cursor expiry/root/health are part of the contract.

@@ -14,6 +14,7 @@ from typing import Any
 
 from .mobile_common import byte_offset, compiler_diagnostics, path, projects, run
 from .model import Graph, Json, Source
+from .swift_context import SourceKit, swift_context
 
 KINDS = {
     "class_decl": "class",
@@ -57,6 +58,11 @@ class SwiftGraph:
     def extract(self) -> list[Json]:
         deadline = time.monotonic() + max(1.0, float(self.options.get("timeout", 120)) - 8)
         all_trees: list[tuple[Source, Json]] = []
+        context_args: dict[str, list[str]] = {}
+        try:
+            resolver = SourceKit(self.options.get("swiftc_path", "swiftc"))
+        except (OSError, ValueError):
+            resolver = None
         for module in projects(self.graph, self.options, "swift"):
             sources = [self.graph.sources[file] for file in module["files"] if Path(file).name != "Package.swift"]
             for file in module["files"]:
@@ -131,6 +137,7 @@ class SwiftGraph:
                         source = self.graph.by_path.get(Path(tree["filename"]).resolve())
                         if source:
                             trees.append((source, tree))
+                            context_args[source.file] = args[5:] + [str(item.path) for item in sources]
                             self.declare(source, tree, None, "")
                 if not trees:
                     for source in sources:
@@ -142,6 +149,10 @@ class SwiftGraph:
                 all_trees.extend(trees)
         for source, tree in all_trees:
             self.relations(source, tree)
+            source.record["intent"] = {
+                "capabilities": ["region_bindings"],
+                "ast": swift_context(self.graph, source, tree, resolver, context_args[source.file]),
+            }
         return self.graph.results()
 
     def declare(self, source: Source, value: Any, parent: str | None, scope: str) -> None:

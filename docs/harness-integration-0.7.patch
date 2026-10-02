@@ -1,0 +1,22 @@
+--- a/harness/docs/code-graph.md
++++ b/harness/docs/code-graph.md
+@@ -99,6 +99,19 @@
+ 
+ Il [piano di implementazione degli intenti](../plans/active/polycodegraph-intents.md) specifica dieci modalità di raccolta del contesto, contratto comune, priorità e verifiche. Sono proposte, non argomenti accettati dalla 0.6 ufficiale. Prima milestone rename Dart; poi change_signature/find_tests/review_change. Le query primitive restano il percorso operativo attuale. Nessuna nuova prova del modello avviata o autorizzata dal piano.
+ 
++
++## Intents nella 0.7 candidata
++
++Il candidato offre tutti e dieci gli intenti per tutti i linguaggi supportati, tramite `inspect_change` con `intent` e opzioni tipizzate: `rename`, `change_signature`, `find_tests`, `review_change`, `explain_symbol`, `trace_flow`, `move_symbol`, `remove_symbol`, `replace_dependency`, `extract_symbol`. Senza intent resta la risposta precedente.
++
++Preparare eseguibile/provider/cache separati e integrare l'override locale del launcher senza sostituire il pacchetto ufficiale. Riavviare MCP. Non resettare la baseline di drift per provare il candidato. Per rollback ripristinare executable/config precedenti. Contratto e migrazione: `docs/intents.md` e `docs/migration-0.7.md` nel checkout upstream.
++
++Dopo INDEX/find e status, trovare l'ID e usare l'intento pertinente con budget iniziale 12000 caratteri, 40 evidenze, 12 file e depth 2. Seguire tutte le pagine pertinenti con gli stessi argomenti più `next_cursor`; espandere snippet troncati solo per lacune specifiche. Controllare generation, health_fingerprint, freshness, diagnostici e omissioni su ogni pagina. Cambiamenti o handle scaduti richiedono restart. Prima di valutazioni sensibili riconciliare esplicitamente.
++
++Per review_change catturare prima degli edit una baseline con la lista di file esplicita; confrontare dopo la riconciliazione con lo stesso scope. Il handle dura dieci minuti e non sopravvive al riavvio; recuperare messaggi nuovi/risolti completi dalle pagine delle evidenze e conservare diagnostici separati solo oltre la scadenza del handle. Non inventare il diff se manca la baseline. Per extract_symbol selezionare istruzioni AST complete: capture/scritture/uscite sono vincoli, non una firma sicura o dataflow completo. Compiler e test restano necessari.
++
++Nel rename Presenza, distinguere campo domain e collegamenti risolti da DTO/JSON e omonimi: le chiavi wire richiedono una lettura mirata separata. Tre chiamate di raccolta e meno caratteri nel replay non dimostrano risparmio di token, quota o tempo AI. Nessun nuovo executor benchmark è autorizzato da questa integrazione.
++
+ ## Verifiche e limiti locali
+ 
+ I due benchmark seguenti riguardano la 0.5. Il [confronto empirico NFC del 2026-10-02](../benchmarks/nfc-start-session/report.md) esegue lo stesso incarico in due contesti nuovi: senza grafo e con MCP. In questa singola coppia entrambe le analisi ottengono 12/12 criteri; con il grafo il tempo aumenta del 7.65% e i byte di evidenza del 61.79%. Il caso non mostra un beneficio misurato e non generalizza ad altri incarichi. Rapporti, misure, protocollo e limiti sono conservati nell'harness.

@@ -97,6 +97,51 @@ class KotlinGraph:
                         if target["file"] != source.file:
                             self.graph.edge(source, source.file_id, target["file"] + "::file", "imports", 0)
                 for module_source in sources:
+                    module_source.record["intent"] = {
+                        "capabilities": ["region_bindings"],
+                        "ast": {
+                            "version": 1,
+                            "offset_unit": "unicode",
+                            "bindings": [],
+                            "uses": [],
+                            "statements": [],
+                            "controls": [],
+                            "limitations": [
+                                "PSI source boundaries and K2 IR local identities; no alias, coroutine ordering, callback, lifetime or hypothetical type-check proof"
+                            ],
+                        },
+                    }
+                local_ids: dict[str, str] = {}
+                for row in raw.get("contexts", []):
+                    source = self.graph.by_path.get(Path(row["file"]).resolve())
+                    if source and row["section"] == "bindings":
+                        local_ids[row["id"]] = f"{source.file}@{utf16_offset(source, row['start'])}"
+                for row in raw.get("contexts", []):
+                    source = self.graph.by_path.get(Path(row["file"]).resolve())
+                    if not source or row["start"] < 0:
+                        continue
+                    start, end = utf16_offset(source, row["start"]), utf16_offset(source, row["end"])
+                    scope = symbols.get(row.get("scope", ""))
+                    point = {
+                        "line": source.text[:start].count("\n") + 1,
+                        "end": source.text[: max(start, end - 1)].count("\n") + 1,
+                        "offset": start,
+                        "end_offset": end,
+                        "scope": scope["id"] if scope else self.graph.owner(source, start),
+                    }
+                    section = row["section"]
+                    if section == "bindings":
+                        point.update(id=local_ids[row["id"]], name=row["name"], kind=row["kind"], type=row["type"])
+                    if section == "uses":
+                        point.update(
+                            binding=local_ids.get(row.get("binding", "")), read=row["read"], write=row["write"]
+                        )
+                    if section == "statements":
+                        point["block"] = row["block"]
+                    if section == "controls":
+                        point["kind"] = row["kind"]
+                    source.record["intent"]["ast"][section].append(point)
+                for module_source in sources:
                     module_source.diagnostic(
                         "kotlin_precision",
                         "K2 static targets; Gradle/KAPT/KSP/Compose and project compiler plugins are not run. Provide prepared JAR classpaths; dynamic callbacks and Java cross-language graph targets are omitted.",

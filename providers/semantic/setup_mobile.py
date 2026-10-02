@@ -23,8 +23,8 @@ def main() -> None:
     libraries = destination / "kotlinc" / "lib"
     libraries.mkdir(parents=True, exist_ok=True)
     metadata = destination / "installed.json"
-    source = directory / "GraphPlugin.kt"
-    source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+    sources = sorted(directory.glob("*.kt"))
+    source_hash = hashlib.sha256(b"".join(source.name.encode() + source.read_bytes() for source in sources)).hexdigest()
     if not metadata.exists() or json.loads(metadata.read_text(encoding="utf-8")).get("version") != VERSION:
         url = f"https://github.com/JetBrains/kotlin/releases/download/v{VERSION}/kotlin-compiler-{VERSION}.zip"
         with urllib.request.urlopen(url, timeout=60) as response:
@@ -55,7 +55,7 @@ def main() -> None:
             os.pathsep.join(str(p) for p in sorted(libraries.glob("*.jar"))),
             "-d",
             str(plugin),
-            str(source),
+            *(str(source) for source in sources),
         ],
         cwd=directory,
         check=True,

@@ -23,3 +23,13 @@ from semantic records. Compact presentation never changes graph coverage or
 provider requests. Presentation profile changes are excluded from index identity.
 Reconciliation reloads changed persisted diagnostics even when source generation
 is unchanged. Detailed MCP pages preserve original diagnostic fields/messages.
+
+## Intent context
+
+The intents module separates typed input, planning, extraction constraints, page
+rendering and session state. An additional adjacency index is built once with each
+generation for provider intent-only evidence; primitive nodes/edges stay intact.
+Plans query one refreshed snapshot without MCP subcalls. Source windows are streamed
+and hash-checked, and shrinking pages reuse the same selected source slices.
+Opaque bounded cursor/baseline handles have independent TTLs and snapshot identities.
+See [the intent contract](intents.md) for budgets and precision.

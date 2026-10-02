@@ -57,6 +57,7 @@ fn graph(files: &[&str]) -> Graph {
                     dependencies: vec![],
                     diagnostics: vec![],
                     unresolved_calls: 0,
+                    intent: Default::default(),
                 },
             )
         })

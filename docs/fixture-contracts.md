@@ -36,3 +36,12 @@ Renaming contract methods must remove stale calls from unchanged consumers in bo
 `test/fixtures/mobile` exercises static Swift protocol and Kotlin interface calls, unrelated same-name methods, aliased Kotlin construction, inherited methods, overloads, suspend/data tags, Swift enums/aliases/extensions, Objective-C header imports, selectors and implementation overrides. Consumer dependencies and impact cross file boundaries. Leading comments preserve IDs; renamed contracts remove stale calls; UTF-8/UTF-16/CRLF coordinates preserve snippets. Mobile configuration invalidates graphs and rejects executable/plugin fields.
 
 `test/fixtures/ios_sdk` resolves actual UIKit classes and an Objective-C bridging header with the Xcode simulator SDK on macOS; no mocked UIKit types are substituted. `test/fixtures/android_sdk` resolves actual `android.app.Activity` and local typed calls using a prepared platform `android.jar`. These check semantic analysis, not app packaging or simulator/device execution. Mobile CI requires portable/native MCP and Android cases on each host and the UIKit case on macOS.
+
+## Intent constraints
+
+The extraction fixtures cover local input, compound mutation, a region-local output
+and return across all ten languages. `tool/intent_smoke.py` checks native stdio
+intent calls and resolved AST identities, capture/mutation/control results, shared
+snippets and no-intent parity. Rust tests additionally cover invalid regions, stale
+source, per-page budgets, same-line sites, cursor/root/health/TTL, baseline eviction,
+explicit diffs and packed AST integrity. Skipped SDK/OS checks remain unverified.

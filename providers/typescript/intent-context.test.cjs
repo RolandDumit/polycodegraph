@@ -1,0 +1,24 @@
+// Native compiler binding checks; no fixture code is emitted or executed.
+const assert = require('node:assert/strict');
+const ts = require('typescript');
+const context = require('./intent-context.cjs');
+const file = require('node:path').resolve('virtual/context.ts').replaceAll('\\', '/');
+const text = '// Unicode 🦀\r\nasync function check(input: number) {\r\n let item = input;\r\n item += 1;\r\n const wrapped = {item};\r\n { const item = 9; console.log(item); }\r\n await Promise.resolve(input);\r\n return wrapped;\r\n}\r\n';
+const host = ts.createCompilerHost({target: ts.ScriptTarget.ESNext});
+const load = host.getSourceFile.bind(host);
+host.getSourceFile = (name, version, ...args) => name === file ? ts.createSourceFile(name, text, version, true) : load(name, version, ...args);
+const program = ts.createProgram([file], {target: ts.ScriptTarget.ESNext}, host);
+const sf = program.getSourceFile(file);
+const fn = sf.statements[0];
+const ast = context(ts, program.getTypeChecker(), sf, 'context.ts', new Map([[fn, 'context.ts::check#function']]));
+const items = ast.bindings.filter(b => b.name === 'item');
+assert.equal(items.length, 2);
+assert.notEqual(items[0].id, items[1].id);
+const shorthand = ast.uses.find(u => u.line === 5);
+assert.equal(shorthand.binding, items[0].id);
+assert(ast.uses.some(u => u.binding === items[1].id && u.line === 6));
+assert(ast.uses.some(u => u.line === 4 && u.read && u.write));
+assert(ast.controls.some(c => c.kind === 'await'));
+assert(ast.controls.some(c => c.kind === 'return'));
+assert(ast.statements.some(s => s.line === 5 && s.end === 5));
+console.log('TypeScript AST bindings preserve shadowing, shorthand, mutations and control events');

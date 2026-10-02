@@ -62,6 +62,7 @@ impl Index<usize> for Edges {
     }
 }
 pub struct Graph {
+    pub context: crate::intents::ContextIndex,
     pub health: crate::responses::Health,
     pub snapshot: Arc<Snapshot>,
     pub nodes: Nodes,
@@ -75,6 +76,13 @@ pub struct Graph {
     file_edges: HashMap<String, Vec<usize>>,
 }
 impl Graph {
+    pub(crate) fn named(&self, name: &str) -> impl Iterator<Item = &Node> {
+        self.names
+            .get(name)
+            .into_iter()
+            .flatten()
+            .map(|i| &self.nodes[*i])
+    }
     pub fn new(snapshot: Snapshot) -> Self {
         let snapshot = Arc::new(snapshot);
         let files = Arc::new(snapshot.files.keys().cloned().collect::<Vec<_>>());
@@ -153,6 +161,7 @@ impl Graph {
             }
         }
         Self {
+            context: crate::intents::ContextIndex::new(&snapshot),
             health: crate::responses::Health::new(
                 &snapshot,
                 nodes.iter().map(Into::into),

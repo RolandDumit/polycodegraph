@@ -24,3 +24,8 @@ and UTF-8 bytes of one JSON result representation, excluding protocol envelopes,
 tool schema and model tokens. The current metrics request is counted as a call;
 its bytes are added after returning the response. No duplicate-response inference
 or session result suppression is implemented.
+
+Version 0.7 extends the existing inspect_change with optional typed intent/options,
+budget and opaque cursor; no-intent calls retain the 0.6 contract. Shared evidence
+tables, AST region constraints and explicit session review baselines are described
+in [intents.md](intents.md). No resources, sampling, source-edit or build tools are added.

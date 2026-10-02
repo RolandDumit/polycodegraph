@@ -1,3 +1,5 @@
+import 'intent_metadata.dart';
+
 String languageFor(String file) {
   final ext = file.split('.').last;
   return switch (ext) {
@@ -109,6 +111,7 @@ class FileRecord {
   final List<String> dependencies;
   final List<Map<String, dynamic>> diagnostics;
   final int unresolvedCalls;
+  final Map<String, dynamic> intent;
   const FileRecord({
     required this.file,
     required this.hash,
@@ -117,6 +120,7 @@ class FileRecord {
     required this.dependencies,
     this.diagnostics = const [],
     this.unresolvedCalls = 0,
+    this.intent = const {},
   });
   Map<String, dynamic> toJson() => {
     'file': file,
@@ -126,6 +130,12 @@ class FileRecord {
     'dependencies': dependencies,
     'diagnostics': diagnostics,
     'unresolvedCalls': unresolvedCalls,
+    if (intent.isNotEmpty)
+      'intent': {
+        ...intent,
+        if (intent['ast'] is Map<String, dynamic>)
+          'ast': packAst(intent['ast'] as Map<String, dynamic>),
+      },
   };
   factory FileRecord.fromJson(Map<String, dynamic> j) => FileRecord(
     file: j['file'],
@@ -141,5 +151,6 @@ class FileRecord {
         .map((d) => Map<String, dynamic>.from(d))
         .toList(),
     unresolvedCalls: j['unresolvedCalls'] ?? 0,
+    intent: Map<String, dynamic>.from(j['intent'] as Map? ?? {}),
   );
 }

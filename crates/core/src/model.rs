@@ -84,6 +84,32 @@ impl Edge {
         )
     }
 }
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct IntentMetadata {
+    #[serde(
+        default,
+        skip_serializing_if = "Value::is_null",
+        deserialize_with = "decode_ast"
+    )]
+    pub ast: Value,
+    #[serde(default)]
+    pub symbols: Vec<Node>,
+    #[serde(default)]
+    pub relations: Vec<Edge>,
+    #[serde(default)]
+    pub tests: Vec<Value>,
+    #[serde(default)]
+    pub capabilities: Vec<String>,
+}
+impl IntentMetadata {
+    fn empty(&self) -> bool {
+        self.ast.is_null()
+            && self.symbols.is_empty()
+            && self.relations.is_empty()
+            && self.tests.is_empty()
+            && self.capabilities.is_empty()
+    }
+}
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FileRecord {
     pub file: String,
@@ -95,6 +121,8 @@ pub struct FileRecord {
     pub diagnostics: Vec<Value>,
     #[serde(default, rename = "unresolvedCalls")]
     pub unresolved_calls: usize,
+    #[serde(default, skip_serializing_if = "IntentMetadata::empty")]
+    pub intent: IntentMetadata,
 }
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Snapshot {
@@ -129,4 +157,60 @@ impl PartialOrd for TextOrder {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
+}
+
+// Provider-only compact transport expands once, before validation/publication.
+fn decode_ast<'de, D: serde::Deserializer<'de>>(decoder: D) -> Result<Value, D::Error> {
+    use serde::de::Error;
+    let mut ast = Value::deserialize(decoder)?;
+    if ast["format"] != "pcg-ast-1" {
+        return Ok(ast);
+    }
+    let scopes = ast["scopes"]
+        .as_array()
+        .ok_or_else(|| D::Error::custom("Missing AST scopes"))?
+        .clone();
+    let scope = |v: &Value| -> Result<Value, D::Error> {
+        scopes
+            .get(v.as_u64().unwrap_or(u64::MAX) as usize)
+            .filter(|v| v.is_string())
+            .cloned()
+            .ok_or_else(|| D::Error::custom("Invalid AST scope index"))
+    };
+    let bindings = ast["bindings"]
+        .as_array()
+        .ok_or_else(|| D::Error::custom("Missing AST bindings"))?
+        .clone();
+    for (section, width) in [
+        ("bindings", 9),
+        ("uses", 8),
+        ("statements", 6),
+        ("controls", 6),
+    ] {
+        let input = ast[section]
+            .as_array()
+            .ok_or_else(|| D::Error::custom("Missing AST section"))?;
+        let mut output = Vec::with_capacity(input.len());
+        for row in input {
+            let row = row
+                .as_array()
+                .filter(|r| r.len() == width)
+                .ok_or_else(|| D::Error::custom("Invalid AST row"))?;
+            output.push(match section {
+                "bindings" => serde_json::json!({"id":row[0],"name":row[1],"kind":row[2],"type":row[3],"line":row[4],"end":row[5],"offset":row[6],"end_offset":row[7],"scope":scope(&row[8])?}),
+                "uses" => {
+                    let binding = if row[5].is_null() || row[5].is_string() {row[5].clone()} else {bindings.get(row[5].as_u64().unwrap_or(u64::MAX) as usize).and_then(|v|v.get(0)).filter(|v|v.is_string()).cloned().ok_or_else(|| D::Error::custom("Invalid AST binding index"))?};
+                    serde_json::json!({"line":row[0],"end":row[1],"offset":row[2],"end_offset":row[3],"scope":scope(&row[4])?,"binding":binding,"read":row[6],"write":row[7]})
+                },
+                "statements" => serde_json::json!({"line":row[0],"end":row[1],"offset":row[2],"end_offset":row[3],"scope":scope(&row[4])?,"block":row[5]}),
+                _ => serde_json::json!({"line":row[0],"end":row[1],"offset":row[2],"end_offset":row[3],"scope":scope(&row[4])?,"kind":row[5]}),
+            });
+        }
+        ast[section] = Value::Array(output);
+    }
+    if let Some(object) = ast.as_object_mut() {
+        object.remove("format");
+        object.remove("scopes");
+    }
+    Ok(ast)
 }

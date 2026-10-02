@@ -273,6 +273,10 @@ for (const [scope, requested] of scopes) {
     }
     bind(sf);
   }
+  for (const sf of sources) {
+    const record = records.get(relative(sf.fileName));
+    record.intent = { ...(record.intent || {}), capabilities: ["region_bindings"], ast: require("./intent-context.cjs")(ts, checker, sf, record.file, nodeIds) };
+  }
   function targetAt(node) {
     return symbols.get(canonical(checker.getSymbolAtLocation(node)));
   }

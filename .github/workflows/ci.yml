@@ -67,9 +67,24 @@ jobs:
       - run: dart test
         working-directory: providers/dart
         if: matrix.group == 'dart'
+      - name: Fetch frozen 0.6 tag for native compatibility
+        run: git fetch origin tag v0.6.0
+        if: matrix.group == 'polyglot'
+      - run: python tool/intent_baseline.py
+        if: matrix.group == 'polyglot'
+      - run: python tool/intent_smoke.py --group polyglot --binary target/release/polycodegraph --baseline work/intent-baseline-target/release/polycodegraph --config work/sdk-config.json
+        if: matrix.group == 'polyglot' && runner.os != 'Windows'
+      - run: python tool/intent_smoke.py --group polyglot --binary target/release/polycodegraph.exe --baseline work/intent-baseline-target/release/polycodegraph.exe --config work/sdk-config.json
+        if: matrix.group == 'polyglot' && runner.os == 'Windows'
+      - run: node providers/typescript/intent-context.test.cjs
+        if: matrix.group == 'polyglot'
       - run: go vet ./...
         working-directory: providers/go
         if: matrix.group == 'polyglot'
+      - run: python tool/intent_smoke.py --group ${{ matrix.group }} --binary target/release/polycodegraph --config work/sdk-config.json
+        if: runner.os != 'Windows'
+      - run: python tool/intent_smoke.py --group ${{ matrix.group }} --binary target/release/polycodegraph.exe --config work/sdk-config.json
+        if: runner.os == 'Windows'
       - run: python tool/no_dart_smoke.py --binary target/release/polycodegraph
         if: matrix.group == 'polyglot' && runner.os != 'Windows'
       - run: python tool/no_dart_smoke.py --binary target/release/polycodegraph.exe
@@ -106,6 +121,10 @@ jobs:
       - run: python tool/smoke.py --group flutter --baseline work/baseline/polycodegraph --config work/sdk-config.json
         if: runner.os != 'Windows'
       - run: python tool/smoke.py --group flutter --baseline work/baseline/polycodegraph.exe --config work/sdk-config.json
+        if: runner.os == 'Windows'
+      - run: python tool/intent_smoke.py --group flutter --binary target/release/polycodegraph --config work/sdk-config.json
+        if: runner.os != 'Windows'
+      - run: python tool/intent_smoke.py --group flutter --binary target/release/polycodegraph.exe --config work/sdk-config.json
         if: runner.os == 'Windows'
   mobile:
     strategy:
@@ -147,6 +166,10 @@ jobs:
       - run: python tool/smoke.py --group mobile --baseline work/baseline/polycodegraph --config work/sdk-config.json
         if: runner.os != 'Windows'
       - run: python tool/smoke.py --group mobile --baseline work/baseline/polycodegraph.exe --config work/sdk-config.json
+        if: runner.os == 'Windows'
+      - run: python tool/intent_smoke.py --group mobile --binary target/release/polycodegraph --config work/sdk-config.json
+        if: runner.os != 'Windows'
+      - run: python tool/intent_smoke.py --group mobile --binary target/release/polycodegraph.exe --config work/sdk-config.json
         if: runner.os == 'Windows'
       - run: python tool/sdk_smoke.py --binary target/release/polycodegraph --android
         if: runner.os != 'Windows'

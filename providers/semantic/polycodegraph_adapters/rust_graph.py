@@ -7,6 +7,7 @@ from typing import Any
 
 from polycodegraph_adapters.lsp import LspClient
 from polycodegraph_adapters.model import Graph, Json, Source
+from polycodegraph_adapters.rust_context import rust_context
 from polycodegraph_adapters.rust_project import project_model
 
 
@@ -99,6 +100,7 @@ class RustGraph:
     def _syntax(self, source: Source, tree: Json) -> None:
         calls: dict[int, int] = {}
         references: list[Json] = []
+        definitions: dict[int, list[Json]] = {}
 
         def name_refs(node: Json) -> list[Json]:
             if node["kind"] == "NAME_REF":
@@ -134,6 +136,7 @@ class RustGraph:
         for reference in references:
             offset = source.byte_offset(reference["start"][0])
             locations = self._locations(self.client.request("textDocument/definition", self._params(source, offset)))
+            definitions[reference["start"][0]] = locations
             targets = {target for location in locations if (target := self._target(location))}
             owner = self.graph.owner(source, offset)
             for target in targets:
@@ -151,6 +154,10 @@ class RustGraph:
                         )
                 elif not locations or len(locations) > 1:
                     source.record["unresolvedCalls"] += 1
+        source.record["intent"] = {
+            "capabilities": ["region_bindings"],
+            "ast": rust_context(self.graph, source, tree, definitions),
+        }
         # Out-of-line modules are NAME declarations, not NAME_REF syntax. Ask
         # the resolver for their source target; never join module names by text.
         for identifier, (symbol_source, symbol) in self.symbols.items():

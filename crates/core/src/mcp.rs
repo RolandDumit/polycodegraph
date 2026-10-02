@@ -45,6 +45,7 @@ pub fn validate(spec: &Value, a: &Value) -> Result<()> {
             Some("string") => value.is_string(),
             Some("integer") => value.is_i64() || value.is_u64(),
             Some("boolean") => value.is_boolean(),
+            Some("object") => value.is_object(),
             Some("array") => value.as_array().is_some_and(|a| {
                 a.len() <= 32
                     && a.iter()
@@ -71,6 +72,16 @@ pub fn validate(spec: &Value, a: &Value) -> Result<()> {
         }
         if s["enum"].as_array().is_some_and(|e| !e.contains(value)) {
             bail!("Invalid value for {key}")
+        }
+    }
+    if spec["name"] == "inspect_change" {
+        if a.get("intent").is_some() {
+            crate::intents::Request::parse(a)?;
+        } else if ["options", "budget", "cursor"]
+            .iter()
+            .any(|key| a.get(key).is_some())
+        {
+            bail!("options/budget/cursor require intent")
         }
     }
     Ok(())

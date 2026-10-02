@@ -57,6 +57,7 @@ fn main() -> Result<()> {
                 dependencies: vec![],
                 diagnostics: vec![],
                 unresolved_calls: 0,
+                intent: Default::default(),
             },
         )]),
         ..Default::default()

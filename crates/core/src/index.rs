@@ -45,6 +45,7 @@ struct Changes {
     _watcher: RecommendedWatcher,
 }
 pub struct Indexer {
+    pub intents: crate::intents::State,
     pub config: Config,
     pub store: Store,
     pub graph: Option<Graph>,
@@ -138,6 +139,7 @@ impl Indexer {
             });
         let config_disk_hash = config.disk_fingerprint()?;
         Ok(Self {
+            intents: Default::default(),
             config,
             store,
             graph,
@@ -607,6 +609,9 @@ impl Indexer {
         json!({"generation":g.map(|g|&g.snapshot.generation),"changed_total":changed.len(),"deleted_total":deleted.len(),"reindexed_total":reindexed.len(),"changed":changed,"deleted":deleted,"reindexed":reindexed,"full":full,"files":g.map_or(0,|g|g.snapshot.files.len()),"skipped":g.map_or(vec![],|g|g.snapshot.skipped.clone()),"skipped_total":g.map_or(0,|g|g.snapshot.skipped.len())})
     }
     pub async fn call(&mut self, name: &str, args: &Value) -> Result<Value> {
+        if name == "inspect_change" && args.get("intent").is_some() {
+            crate::intents::Request::parse(args)?;
+        }
         if name == "detect_changes" {
             let mut v = self.detect_changes()?;
             cap(&mut v, &self.config);
@@ -642,6 +647,10 @@ impl Indexer {
             v["freshness"] = self.freshness();
             v["metrics"] = json!({"scans":self.metrics.scans,"extractions":self.metrics.extractions,"graph_builds":self.metrics.graph_builds,"scan_ms":self.metrics.scan_ms,"extraction_ms":self.metrics.extraction_ms,"storage_ms":self.metrics.storage_ms,"query_ms":self.metrics.query_ms});
             return Ok(v);
+        }
+        if name == "inspect_change" && args.get("intent").is_some() {
+            let freshness = self.freshness();
+            return self.intents.prepare(graph, &self.config, args, freshness);
         }
         let t = Instant::now();
         let r = graph.call(&self.config, name, args).map(|mut result| {

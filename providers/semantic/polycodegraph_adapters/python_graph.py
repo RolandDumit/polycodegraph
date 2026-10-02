@@ -9,6 +9,7 @@ from typing import Any
 
 import jedi
 
+from polycodegraph_adapters.intent_context import python_context
 from polycodegraph_adapters.model import Graph, Json, Source
 
 
@@ -260,4 +261,10 @@ class PythonGraph:
                 source.diagnostic(
                     "unresolved_calls", "Dynamic or ambiguous call targets are omitted; no name matching is used."
                 )
+        for file, tree in self.trees.items():
+            source = self.graph.sources[file]
+            source.record["intent"] = {
+                "capabilities": ["region_bindings"],
+                "ast": python_context(source, tree, self.scripts[file], self.ast_nodes),
+            }
         return self.graph.results()

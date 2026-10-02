@@ -29,8 +29,10 @@ void registerServices() {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Text('polycodegraph fixture'));
+  Widget build(BuildContext context) {
+    const label = 'polycodegraph fixture';
+    return const Scaffold(body: Text(label));
+  }
 }
 
 void main() {

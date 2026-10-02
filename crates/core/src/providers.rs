@@ -353,7 +353,7 @@ pub async fn extract(
                 };
                 let lines = text.split('\n').count();
                 let mut ids = BTreeSet::new();
-                for n in &r.nodes {
+                for n in r.nodes.iter().chain(&r.intent.symbols) {
                     if !ids.insert(n.id.clone()) {
                         bail!("Duplicate provider symbol");
                     }
@@ -376,9 +376,38 @@ pub async fn extract(
                         bail!("Invalid provider symbol location");
                     }
                 }
-                for e in &r.edges {
+                for e in r.edges.iter().chain(&r.intent.relations) {
                     if e.file != r.file || e.line == 0 || e.confidence != "resolved" {
                         bail!("Invalid provider relation")
+                    }
+                }
+                if !r.intent.ast.is_null() {
+                    if r.intent.ast["version"] != 1 {
+                        bail!("Unsupported provider intent AST version");
+                    }
+                    for section in ["statements", "bindings", "uses", "controls"] {
+                        let sites = r.intent.ast[section]
+                            .as_array()
+                            .ok_or_else(|| anyhow::anyhow!("Missing provider AST section"))?;
+                        if sites.len() > 100_000 {
+                            bail!("Provider AST section exceeds budget");
+                        }
+                        for site in sites {
+                            let offset = site["offset"]
+                                .as_u64()
+                                .ok_or_else(|| anyhow::anyhow!("Missing AST offset"))?
+                                as usize;
+                            let line = site["line"].as_u64().unwrap_or(0) as usize;
+                            if offset > units
+                                || line == 0
+                                || line > lines
+                                || site["end_offset"]
+                                    .as_u64()
+                                    .is_some_and(|e| e as usize > units || (e as usize) < offset)
+                            {
+                                bail!("Invalid provider AST location");
+                            }
+                        }
                     }
                 }
                 r.nodes.sort_by(|a, b| a.id.cmp(&b.id));
@@ -400,7 +429,7 @@ pub async fn extract(
             Err(e) => {
                 for file in &selected {
                     let text = fs::read_to_string(c.safe(file)?)?;
-                    output.insert(file.clone(),FileRecord{file:file.clone(),hash:hashes[file].clone(),nodes:vec![Node{id:format!("{file}::file"),name:file.clone(),qualified:file.clone(),kind:"file".into(),file:file.clone(),line:1,end:text.split('\n').count(),offset:0,length:text.encode_utf16().count(),parent:None,tags:vec![],synthetic:false}],edges:vec![],dependencies:vec![],diagnostics:vec![json!({"severity":"error","code":"provider_unavailable","message":format!("{lang} provider: {e:#}").chars().take(2000).collect::<String>(),"line":1})],unresolved_calls:0});
+                    output.insert(file.clone(),FileRecord{file:file.clone(),hash:hashes[file].clone(),nodes:vec![Node{id:format!("{file}::file"),name:file.clone(),qualified:file.clone(),kind:"file".into(),file:file.clone(),line:1,end:text.split('\n').count(),offset:0,length:text.encode_utf16().count(),parent:None,tags:vec![],synthetic:false}],edges:vec![],dependencies:vec![],diagnostics:vec![json!({"severity":"error","code":"provider_unavailable","message":format!("{lang} provider: {e:#}").chars().take(2000).collect::<String>(),"line":1})],unresolved_calls:0,intent:Default::default()});
                 }
             }
         }

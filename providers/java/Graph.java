@@ -61,6 +61,40 @@ class Graph {
     return Math.max(1, unit.getLineMap().getLineNumber(Math.max(0, pos)));
   }
 
+  static Map<String,Object> intentContext(CompilationUnitTree unit) {
+    var statements = new ArrayList<Object>(); var bindings = new ArrayList<Object>(); var uses = new ArrayList<Object>(); var controls = new ArrayList<Object>();
+    var bound = new HashMap<Element,Map<String,Object>>();
+    class Context extends TreePathScanner<Void,Void> {
+      String scope() { for(var p=getCurrentPath();p!=null;p=p.getParentPath()) {var id=ids.get(p.getLeaf()); if(id!=null)return id;} return file(unit)+"::file"; }
+      Map<String,Object> site(Tree node) { return map("line",line(unit,start(unit,node)),"end",line(unit,Math.max(start(unit,node),end(unit,node)-1)),"offset",start(unit,node),"end_offset",end(unit,node),"scope",scope()); }
+      @Override public Void visitVariable(VariableTree node,Void unused) {
+        var e=trees.getElement(getCurrentPath());
+        if(e!=null && Set.of(ElementKind.LOCAL_VARIABLE,ElementKind.PARAMETER,ElementKind.EXCEPTION_PARAMETER,ElementKind.RESOURCE_VARIABLE).contains(e.getKind()) && start(unit,node)>=0) {
+          var b=site(node); b.putAll(map("id",file(unit)+"@"+start(unit,node),"name",e.getSimpleName().toString(),"kind",e.getKind()==ElementKind.PARAMETER?"parameter":"local","type",e.asType().toString()));bound.put(e,b);bindings.add(b);
+        }
+        return super.visitVariable(node,unused);
+      }
+    }
+    new Context().scan(unit,null);
+    new Context() {
+      @Override public Void scan(Tree node,Void unused) {
+        if(node==null || start(unit,node)<0 || end(unit,node)<start(unit,node))return null;
+        var parent=getCurrentPath()==null?null:getCurrentPath().getLeaf();
+        if(node instanceof StatementTree && parent instanceof BlockTree) {var s=site(node);s.put("block",start(unit,parent));statements.add(s);}
+        var kind=node instanceof ReturnTree?"return":node instanceof BreakTree?"break":node instanceof ContinueTree?"continue":node instanceof ThrowTree?"throw":null;
+        if(kind!=null){var s=site(node);s.put("kind",kind);controls.add(s);}
+        return super.scan(node,unused);
+      }
+      @Override public Void visitIdentifier(IdentifierTree node,Void unused) {
+        var binding=bound.get(trees.getElement(getCurrentPath()));
+        if(binding!=null){var parent=getCurrentPath().getParentPath().getLeaf();boolean write=parent instanceof AssignmentTree a&&a.getVariable()==node || parent instanceof CompoundAssignmentTree b&&b.getVariable()==node || parent instanceof UnaryTree u&&Set.of(Tree.Kind.PREFIX_INCREMENT,Tree.Kind.POSTFIX_INCREMENT,Tree.Kind.PREFIX_DECREMENT,Tree.Kind.POSTFIX_DECREMENT).contains(u.getKind());boolean read=!(parent instanceof AssignmentTree a&&a.getVariable()==node);
+          var s=site(node);s.putAll(map("binding",binding.get("id"),"read",read,"write",write));uses.add(s);}
+        return super.visitIdentifier(node,unused);
+      }
+    }.scan(unit,null);
+    return map("version",1,"offset_unit","utf16","statements",statements,"bindings",bindings,"uses",uses,"controls",controls,"limitations",List.of("No alias/lifetime, reflection, exception-path or hypothetical extracted type-check proof"));
+  }
+
   static String qualified(Element e) {
     if (e instanceof TypeElement t) return t.getQualifiedName().toString();
     return (
@@ -496,6 +530,7 @@ class Graph {
             return super.visitImport(node, owner);
           }
         }.scan(unit, file(unit) + "::file");
+      for (var unit : units) records.get(file(unit)).put("intent",map("capabilities",List.of("region_bindings"),"ast",intentContext(unit)));
       for (var d : diagnostics.getDiagnostics()) {
         String f =
           d.getSource() == null

@@ -17,3 +17,13 @@ Keep `.polycodegraph/` out of version control. Never paste the entire cached gra
 - For Swift/Objective-C/Kotlin repositories, inspect `polycodegraph.mobile.json` for the active module/target, SDK, bridging header and prepared dependencies. iOS SDK analysis belongs on macOS/Xcode; Android JAR analysis is portable. Prepare builds/dependencies through the project's normal workflow, then force indexing when external artifacts changed. Do not interpret the graph as running Gradle, SwiftPM manifests, KAPT/KSP, macros or compiler plugins. Swift/Objective-C and Kotlin/Java cross-language calls remain incomplete; use source/SDK tooling at those boundaries.
 
 Use the Rust executable as the MCP command. Watcher freshness can lag until reconciliation if events are missed; call index_repository before a sensitive impact assessment, or configure watch:false for per-query full scans. Neither the graph nor its freshness metadata replaces compiler checks/tests.
+
+## Intent context on 0.7+
+
+- Prefer `inspect_change` with the intent matching the task: rename, change_signature, find_tests, review_change, explain_symbol, trace_flow, move_symbol, remove_symbol, replace_dependency or extract_symbol. Start with the default global budget and depth two. Without intent the existing primitive workflow stays available.
+- Read every pertinent evidence page and omission; repeat identical arguments with next_cursor. Expand truncated windows through snippet. Restart when generation/health changes, or handles expire. Do not repeat primitive sections already returned unless a specific gap needs investigation.
+- Capture review_change baseline before editing with an explicit file list; retain its session handle; full new/resolved diagnostics are available in evidence details pages. After edits reconcile and compare with the same file scope. Missing baselines cannot establish a before/after diff.
+- For extraction select whole AST statements in one block. Treat local captures/writes/control events as constraints; suggested_signature remains unknown. Check aliases, callbacks, async, lifetime/exception behavior and hypothetical compatibility with source/compiler/tests.
+- Rename domain symbols by resolved identity; review DTO/JSON keys separately. Naming candidates, zero static consumers and bounded paths never establish correct business behavior, safe deletion or runtime coverage.
+
+[Options and response contract](intents.md).

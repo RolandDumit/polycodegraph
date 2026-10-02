@@ -239,7 +239,8 @@ class Extractor : IrGenerationExtension {
                 }
             }
         )
+        val contexts = intentContext(moduleFragment, ids)
         File(System.getenv("POLYCODEGRAPH_KOTLIN_OUTPUT") ?: error("Missing output"))
-            .writeText(json(mapOf("nodes" to rows, "edges" to edges)))
+            .writeText(json(mapOf("nodes" to rows, "edges" to edges, "contexts" to contexts)))
     }
 }

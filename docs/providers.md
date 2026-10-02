@@ -32,3 +32,21 @@ Mobile adapters use `--swift`, `--objectivec` and `--kotlin` in the isolated Pyt
 ## Context and emission in 0.5
 
 `files` contains context records and hashes. `options.emit_files` is the subset that must be returned; omission preserves legacy all-files emission. Resolve declarations/calls using the full context before filtering records. The core validates exact emission coverage, hashes, source bounds and semantic confidence. Do not drop relationships solely because their target is unchanged. Dart external URI nodes are the explicit exception to repository symbol locations.
+
+## Intent-only metadata (0.7)
+
+FileRecord optionally includes `intent: {symbols, relations, tests, capabilities, ast}`.
+Missing metadata defaults empty. Auxiliary declarations and semantic binding relations
+do not enter primitive symbol/edge tables. Context is retained even when emit_files
+selects only changed records. AST version 1 contains statement boundaries, block/scope
+IDs, local/parameter definitions, bound read/write sites, control events, offset_unit
+and explicit limitations. The core validates locations/shape before publication.
+
+Dart emits the lossless `pcg-ast-1` row transport: interned scope/definition tables,
+uses referencing definition indexes, and fixed-width statement/control rows. It
+expands once before validation; corrupt indexes fail. SQLite persists the decoded
+metadata in file records without a schema bump. The existing 64 MiB subprocess
+limit remains unchanged. SourceKit queries supplement Swift local identities when
+available; PSI source parsing complements Kotlin IR without indexed project plugins.
+See [extraction precision](intents.md#extraction-precision); no name matching replaces
+compiler binding and no hypothetical dataflow/type compatibility is claimed.

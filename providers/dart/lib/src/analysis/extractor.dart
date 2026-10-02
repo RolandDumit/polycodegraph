@@ -7,6 +7,7 @@ import '../config.dart';
 import '../graph/model.dart';
 import 'classifier.dart';
 import 'identity.dart';
+import 'intent_context.dart';
 
 FileRecord extract(ResolvedUnitResult result, GraphConfig config, String hash) {
   final collector = _Collector(result, config);
@@ -24,6 +25,7 @@ FileRecord extract(ResolvedUnitResult result, GraphConfig config, String hash) {
     edges: edges,
     dependencies: collector.dependencies.toList()..sort(),
     unresolvedCalls: collector.unresolvedCalls,
+    intent: intentContext(result, config, collector.nodes),
     diagnostics: result.diagnostics
         .map(
           (d) => {

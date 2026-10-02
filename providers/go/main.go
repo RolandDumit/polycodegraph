@@ -53,13 +53,14 @@ type Diagnostic struct {
 	Line     int    `json:"line"`
 }
 type Record struct {
-	File         string       `json:"file"`
-	Hash         string       `json:"hash"`
-	Nodes        []Node       `json:"nodes"`
-	Edges        []Edge       `json:"edges"`
-	Dependencies []string     `json:"dependencies"`
-	Diagnostics  []Diagnostic `json:"diagnostics"`
-	Unresolved   int          `json:"unresolvedCalls"`
+	Intent       map[string]any `json:"intent,omitempty"`
+	File         string         `json:"file"`
+	Hash         string         `json:"hash"`
+	Nodes        []Node         `json:"nodes"`
+	Edges        []Edge         `json:"edges"`
+	Dependencies []string       `json:"dependencies"`
+	Diagnostics  []Diagnostic   `json:"diagnostics"`
+	Unresolved   int            `json:"unresolvedCalls"`
 }
 type Source struct {
 	pkg  *packages.Package
@@ -398,6 +399,9 @@ func run() error {
 				}
 			}
 		}
+	}
+	for _, src := range sources {
+		records[src.file].Intent = intentContext(src, owners)
 	}
 	output := []*Record{}
 	for _, file := range input.Files {

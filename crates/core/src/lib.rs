@@ -1,6 +1,7 @@
 pub mod config;
 pub mod filesystem;
 pub mod index;
+pub mod intents;
 pub mod mcp;
 pub mod model;
 pub mod providers;

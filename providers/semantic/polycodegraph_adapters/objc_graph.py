@@ -10,6 +10,7 @@ from clang import cindex
 
 from .mobile_common import byte_offset, path, projects
 from .model import Graph, Json, Source
+from .objc_context import objc_context
 
 KINDS = {
     "OBJC_INTERFACE_DECL": "class",
@@ -112,6 +113,7 @@ class ObjcGraph:
                 self.declare(unit.cursor, None, "")
         for unit in self.units:
             self.relations(unit.cursor)
+            objc_context(self.graph, unit.cursor)
         for source in self.graph.sources.values():
             source.diagnostic(
                 "objc_static_dispatch",

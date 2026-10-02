@@ -16,20 +16,22 @@ Index a repository, explore its symbols and dependencies through compact graph q
 
 No embeddings, LLM API key or database service is required. The server is a native Rust executable. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
 
-**Version 0.6.0.** Opt-in compact responses, paged diagnostics and per-tool metrics, on the Rust core with local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
+**Version 0.7.0.** All ten [intent context services](docs/intents.md) are available through `inspect_change`: rename, change_signature, find_tests, review_change, explain_symbol, trace_flow, move_symbol, remove_symbol, replace_dependency and extract_symbol, across all ten languages. See [0.7 migration](docs/migration-0.7.md) and [validation](docs/benchmarks/intents-0.7/report.md).
+
+**Rust core.** Opt-in compact responses, paged diagnostics and per-tool metrics, on the Rust core with local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
 
 ## Install and run
 
-Download a prebuilt package from [release v0.6.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.6.0). **Rust is not required to run these packages.**
+Download a prebuilt package from [release v0.7.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.7.0). **Rust is not required to run these packages.**
 
 | System | Download |
 | --- | --- |
-| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-linux-x64.tar.gz) |
-| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-windows-x64.zip) |
-| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-macos-x64.tar.gz) |
-| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/polycodegraph-0.6.0-macos-arm64.tar.gz) |
+| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-linux-x64.tar.gz) |
+| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-windows-x64.zip) |
+| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-macos-x64.tar.gz) |
+| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-macos-arm64.tar.gz) |
 
-Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.6.0/SHA256SUMS) verifies the four archives.
+Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/SHA256SUMS) verifies the four archives.
 
 To build from source instead:
 
@@ -84,6 +86,19 @@ after edits. See [profile contract and rollback](docs/response-profiles.md) and
 the [consumer harness template](docs/harness-AGENTS.md). Smaller response bytes
 do not prove savings in AI tokens or subscription quota; compact stays opt-in
 until the controlled token experiment meets its correctness and consumption gates.
+
+### Intent context (0.7)
+
+```json
+{"name":"inspect_change","arguments":{"target":"<stable-id>","intent":"rename","options":{"new_name":"recordedAt"},"budget":{"max_chars":12000,"max_items":40,"max_files":12}}}
+{"name":"inspect_change","arguments":{"target":"<stable-id>","intent":"find_tests"}}
+{"name":"inspect_change","arguments":{"target":"src/service.ts","intent":"review_change","options":{"capture_baseline":true}}}
+```
+
+Use returned `next_cursor` with identical arguments, and restart if generation or
+health changes. Results share evidence/snippets and report every omission. AST
+extraction constraints remain partial; they do not establish a safe refactoring.
+[Full options, budgets and baseline lifecycle](docs/intents.md).
 
 ## Configuration
 

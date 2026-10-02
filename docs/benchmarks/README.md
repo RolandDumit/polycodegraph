@@ -35,3 +35,5 @@ python tool/end_to_end.py --rust target/release/polycodegraph --dart work/baseli
 ```
 
 Use `.exe` on Windows; memory sampling currently requires Linux. The CI benchmark uploads its own report. Native package smoke tests are separate from performance measurements.
+
+[0.7 intent replay and validation](intents-0.7/report.md) records complete evidence, schema costs, zero model runs and skipped host checks.

@@ -1,0 +1,53 @@
+{
+  "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+  "original_files": 385,
+  "model_runs": 0,
+  "baseline": {
+    "collection_calls": 13,
+    "characters": 36167,
+    "utf8_bytes": 36167
+  },
+  "intent": {
+    "pages": 2,
+    "expansion_calls": 1,
+    "collection_calls": 3,
+    "characters": 21047,
+    "utf8_bytes": 21047,
+    "evidence": 24,
+    "reference_edges_preserved": 19,
+    "oracle_line_patterns": 17,
+    "query_ms": [
+      1.8036050023511052,
+      0.5675390129908919
+    ],
+    "warm_scan_delta": 0,
+    "warm_extraction_delta": 0,
+    "warm_graph_build_delta": 0
+  },
+  "schema": {
+    "baseline_characters": 10277,
+    "intent_characters": 15219,
+    "added_characters": 4942,
+    "baseline_utf8_bytes": 10277,
+    "intent_utf8_bytes": 15219
+  },
+  "excluded_startup_calls": {
+    "status": 2,
+    "search_symbol": 2,
+    "index_repository": 1
+  },
+  "character_reduction_percent": 41.80606630353637,
+  "gate_passed": true,
+  "provenance": {
+    "baseline_commit": "fff953388d089ae89ab0b260fec05a8326c02b69",
+    "baseline_binary_sha256": "0ea3b2553c1702bf68ef87e49b7eeab786cf523756221bf7fcea6c4194fa2a9a",
+    "original_manifest_sha256": "6be1683cfd8d5aeaf747249579b7149ae58f53820eae9b56ef3719e8ad6d8c3e",
+    "date": "2026-10-02",
+    "host": "Linux x64",
+    "provider": "Dart Analyzer 13.3.0",
+    "profile": "compact",
+    "source_edits_applied": false,
+    "installed_consumer_package_modified": false,
+    "candidate_binary_sha256": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d"
+  }
+}

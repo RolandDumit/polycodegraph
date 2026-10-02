@@ -66,6 +66,7 @@ fn graph() -> Graph {
                 dependencies: vec![],
                 diagnostics: vec![],
                 unresolved_calls: 0,
+                intent: Default::default(),
             },
         )]),
         ..Default::default()
@@ -406,6 +407,7 @@ fn unicode_pagination_uses_legacy_utf16_order() {
                     dependencies: vec![],
                     diagnostics: vec![],
                     unresolved_calls: 0,
+                    intent: Default::default(),
                 },
             )
         })

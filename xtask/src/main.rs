@@ -54,11 +54,16 @@ fn main() -> Result<()> {
             } else {
                 "polycodegraph"
             };
-            std::fs::copy(
-                root.join("target/release").join(binary),
-                output.join(binary),
-            )?;
-            copy_assets(&root.join("providers"), &output.join("providers"))?;
+            let target = std::env::var_os("CARGO_TARGET_DIR")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| root.join("target"));
+            let assets = match args.as_slice() {
+                [_] => root.join("providers"),
+                [_, flag, directory] if flag == "--providers" => PathBuf::from(directory),
+                _ => bail!("Use cargo xtask package [--providers <prepared-assets-directory>]"),
+            };
+            std::fs::copy(target.join("release").join(binary), output.join(binary))?;
+            copy_assets(&assets, &output.join("providers"))?;
             copy_assets(&root.join("docs"), &output.join("docs"))?;
             for name in ["README.md", "LICENSE"] {
                 std::fs::copy(root.join(name), output.join(name))?;

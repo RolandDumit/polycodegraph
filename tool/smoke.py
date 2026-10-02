@@ -180,9 +180,9 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                     for k in ["callers", "implementations", "impact"]
                 )
             # Warm query invariant, and a real edit through the configured watcher.
-            before = new.call("status")["metrics"]
+            before = new.call("status", detail="full")["metrics"]
             new.call("search_symbol", query="")
-            after = new.call("status")["metrics"]
+            after = new.call("status", detail="full")["metrics"]
             if config.get("watch", True):
                 assert (
                     before["scans"] == after["scans"]
@@ -197,9 +197,9 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                 assert clean(new.call("detect_changes")) == clean(
                     old.call("detect_changes")
                 )
-            changed = new.call("index_repository")
+            changed = new.call("index_repository", detail="full")
             if old:
-                reference = old.call("index_repository")
+                reference = old.call("index_repository", detail="full")
                 # Scope invalidation can deliberately emit a different work set.
                 for key in [
                     "files",
@@ -263,7 +263,7 @@ def main():
     a = parser.parse_args()
     base = Path(__file__).resolve().parent.parent
     config = json.loads(a.config.read_text()) if a.config else {}
-    config["providers_path"] = str(base / "providers")
+    config.setdefault("providers_path", str(base / "providers"))
     fixtures = {
         "dart": [base / "test/fixtures/dart_app"],
         "polyglot": [base / "test/fixtures/polyglot", base / "test/fixtures/semantic"],

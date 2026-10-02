@@ -11,10 +11,11 @@ from smoke import Client
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--binary", required=True, type=Path)
+parser.add_argument("--providers", type=Path)
 a = parser.parse_args()
 node = shutil.which("node")
 assert node, "Prepare the TypeScript provider first"
-assets = Path(__file__).resolve().parent.parent / "providers"
+assets = a.providers.resolve() if a.providers else Path(__file__).resolve().parent.parent / "providers"
 with tempfile.TemporaryDirectory(prefix="no Dart SDK ") as temp:
     root = Path(temp)
     (root / "example.ts").write_text(
@@ -37,6 +38,7 @@ with tempfile.TemporaryDirectory(prefix="no Dart SDK ") as temp:
         assert not arch["diagnostic_samples"], arch
         assert client.call("search_symbol", query="answer")["total"] == 1
         assert client.call("status")["provider_health"]["dart"]["available"] is False
-        print("TypeScript MCP works with no Dart SDK on PATH")
+        assert client.call("inspect_change", target="answer", intent="explain_symbol")["intent"] == "explain_symbol"
+        print("TypeScript MCP and intents work with no Dart SDK on PATH")
     finally:
         client.close()

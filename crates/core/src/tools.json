@@ -646,7 +646,7 @@
   },
   {
     "name": "inspect_change",
-    "description": "Symbol + callers + implementations + conservative impact in one generation. Expand omitted sections with paged tools; snippet optional.",
+    "description": "Without intent: callers, implementations and impact (0.6 behavior). With intent: prepare bounded, snapshot-bound evidence/snippets for a task; follow next_cursor with identical arguments, expand gaps with primitives. Capabilities and unknowns are explicit; no edits/builds/tests execute.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -674,12 +674,444 @@
             "compact",
             "full"
           ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "rename",
+            "change_signature",
+            "find_tests",
+            "review_change",
+            "explain_symbol",
+            "trace_flow",
+            "move_symbol",
+            "remove_symbol",
+            "replace_dependency",
+            "extract_symbol"
+          ]
+        },
+        "options": {
+          "type": "object",
+          "description": "Typed options by intent; unknown/incompatible keys rejected. See docs/intents.md."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_chars": {
+              "type": "integer",
+              "minimum": 3000,
+              "maximum": 100000,
+              "default": 12000
+            },
+            "max_items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 40
+            },
+            "max_files": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32,
+              "default": 12
+            },
+            "max_traversal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "default": 10000
+            }
+          }
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "description": "Opaque session cursor; same target/intent/options/budget/depth/detail required. Restart on changed generation/health."
         }
       },
       "required": [
         "target"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "rename"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "new_name": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "scope": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "include_impact": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "change_signature"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "added_parameters": {
+                    "type": "array",
+                    "maxItems": 32,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 4096
+                    }
+                  },
+                  "removed_parameters": {
+                    "type": "array",
+                    "maxItems": 32,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 4096
+                    }
+                  },
+                  "renamed_parameters": {
+                    "type": "object",
+                    "maxProperties": 32,
+                    "additionalProperties": {
+                      "type": "string",
+                      "maxLength": 128
+                    }
+                  },
+                  "required": {
+                    "type": "boolean"
+                  },
+                  "return_type": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "asynchronous": {
+                    "type": "boolean"
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "find_tests"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "test_scope": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "framework": {
+                    "type": "string",
+                    "maxLength": 4096
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "review_change"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "maxItems": 32,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 4096
+                    }
+                  },
+                  "baseline": {
+                    "type": "string",
+                    "minLength": 64,
+                    "maxLength": 64
+                  },
+                  "capture_baseline": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "explain_symbol"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "focus": {
+                    "type": "string",
+                    "enum": [
+                      "contract",
+                      "implementation",
+                      "dependencies"
+                    ]
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "trace_flow"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "destination": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "in",
+                      "out"
+                    ]
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "move_symbol"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "destination": {
+                    "type": "string",
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "destination"
+                ]
+              }
+            },
+            "required": [
+              "options"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "remove_symbol"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "group": {
+                    "type": "array",
+                    "maxItems": 32,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 4096
+                    }
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "replace_dependency"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "replacement": {
+                    "type": "string",
+                    "maxLength": 4096
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": {
+                "const": "extract_symbol"
+              }
+            },
+            "required": [
+              "intent"
+            ]
+          },
+          "then": {
+            "properties": {
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "start_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "function",
+                      "component"
+                    ]
+                  }
+                },
+                "required": [
+                  "file",
+                  "start_line",
+                  "end_line"
+                ]
+              }
+            },
+            "required": [
+              "options"
+            ]
+          }
+        }
+      ]
     },
     "annotations": {
       "readOnlyHint": true,

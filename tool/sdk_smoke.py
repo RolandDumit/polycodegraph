@@ -50,7 +50,7 @@ def main():
     a = parser.parse_args()
     base = Path(__file__).resolve().parent.parent
     config = json.loads(a.config.read_text()) if a.config else {}
-    config["providers_path"] = str(base / "providers")
+    config.setdefault("providers_path", str(base / "providers"))
     binary = a.binary.resolve()
     if a.android:
         sdk = Path(
