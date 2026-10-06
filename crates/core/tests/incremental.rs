@@ -359,7 +359,10 @@ async fn irrelevant_file_edit_during_analysis_does_not_trigger_semantic_retry() 
 }
 #[tokio::test]
 async fn intent_query_and_provider_metrics_cover_real_work() {
-    let (_root, _assets, c) = fixture();
+    let (_root, _assets, mut c) = fixture();
+    // Count one deterministic invocation, independently of platform watcher startup.
+    // Watcher retries/irrelevant edits have separate native-event regressions above.
+    c.watch = false;
     let mut i = Indexer::new(c).unwrap();
     i.call(
         "inspect_change",
