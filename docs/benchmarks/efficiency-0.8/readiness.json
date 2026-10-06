@@ -1,0 +1,20 @@
+{
+  "launch_ready": false,
+  "missing": [
+    "local-react: independent oracle identity",
+    "rename-event: independent oracle identity",
+    "signature-store: independent oracle identity",
+    "negative-total: independent oracle identity",
+    "trace-entry: independent oracle identity",
+    "review-large: independent oracle identity",
+    "B: model_schema_sha256",
+    "B: loaded_graph_instructions_sha256",
+    "C: model_schema_sha256",
+    "C: loaded_graph_instructions_sha256",
+    "executor: model",
+    "executor: effort",
+    "executor: version",
+    "executor: isolation_verifier_sha256",
+    "executor: command_sha256"
+  ]
+}

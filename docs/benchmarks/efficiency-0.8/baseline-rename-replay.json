@@ -1,0 +1,41 @@
+{
+  "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+  "original_files": 385,
+  "model_runs": 0,
+  "baseline": {
+    "collection_calls": 13,
+    "characters": 36167,
+    "utf8_bytes": 36167
+  },
+  "intent": {
+    "pages": 2,
+    "expansion_calls": 1,
+    "collection_calls": 3,
+    "characters": 21047,
+    "utf8_bytes": 21047,
+    "evidence": 24,
+    "reference_edges_preserved": 19,
+    "oracle_line_patterns": 17,
+    "query_ms": [
+      1.7015099874697626,
+      0.5252690170891583
+    ],
+    "warm_scan_delta": 0,
+    "warm_extraction_delta": 0,
+    "warm_graph_build_delta": 0
+  },
+  "schema": {
+    "baseline_characters": 10277,
+    "intent_characters": 15219,
+    "added_characters": 4942,
+    "baseline_utf8_bytes": 10277,
+    "intent_utf8_bytes": 15219
+  },
+  "excluded_startup_calls": {
+    "status": 2,
+    "search_symbol": 2,
+    "index_repository": 1
+  },
+  "character_reduction_percent": 41.80606630353637,
+  "gate_passed": true
+}

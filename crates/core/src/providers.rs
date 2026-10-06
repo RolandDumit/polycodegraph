@@ -167,6 +167,12 @@ pub async fn run(c: &Config, command: &[String], input: &str) -> Result<String> 
     }
 }
 pub fn fingerprint(c: &Config) -> Result<String> {
+    fingerprint_measured(c, &mut crate::telemetry::HashVolume::default())
+}
+pub fn fingerprint_measured(
+    c: &Config,
+    metric: &mut crate::telemetry::HashVolume,
+) -> Result<String> {
     let mut values = BTreeMap::new();
     for key in [
         "GOFLAGS",
@@ -200,9 +206,11 @@ pub fn fingerprint(c: &Config) -> Result<String> {
     {
         let e = e?;
         if e.file_type().is_file() {
+            let bytes = fs::read(e.path())?;
+            metric.record(bytes.len());
             values.insert(
                 format!("asset:{}", relative(&c.assets(), e.path())),
-                hash(fs::read(e.path())?),
+                hash(bytes),
             );
         }
     }
@@ -216,7 +224,9 @@ pub fn fingerprint(c: &Config) -> Result<String> {
     ] {
         let p = c.assets().join(asset);
         if p.is_file() {
-            values.insert(asset.into(), hash(fs::read(p)?));
+            let bytes = fs::read(p)?;
+            metric.record(bytes.len());
+            values.insert(asset.into(), hash(bytes));
         }
     }
     for name in [
@@ -255,10 +265,26 @@ pub fn doctor(c: &Config) -> Value {
     let has = |name: &str| executable(c, name).is_ok();
     json!({"providers_path":assets,"dart":{"available":sdk(c).is_some_and(|p|p.join("version").is_file())&&(dart(c).is_ok()&&assets.join("dart/bin/graph.dart").is_file()||assets.join(if cfg!(windows){"dart/build/graph.exe"}else{"dart/build/graph"}).is_file()),"engine":"Dart Analyzer 13.3.0"},"typescript_javascript":{"available":has(&c.node_path)&&assets.join("typescript/node_modules/typescript/package.json").is_file(),"engine":"TypeScript compiler API","runtime":c.node_path},"java":{"available":has(&c.java_path)&&assets.join("java/Graph.java").is_file(),"engine":"javac Trees","runtime":c.java_path},"go":{"available":has(&c.go_path)&&assets.join(if cfg!(windows){"go/graph.exe"}else{"go/graph"}).is_file(),"engine":"go/packages + go/types","runtime":c.go_path},"python":{"available":has(&python(c))&&(c.python_path.is_some()||!state["jedi"].is_null()),"engine":"Python AST + Jedi 0.20.0","runtime":python(c)},"rust":{"available":has(&python(c))&&has(&analyzer(c)),"engine":"rust-analyzer LSP + HIR","runtime":analyzer(c),"build_scripts":false,"proc_macros":false},"swift":{"available":has(&python(c))&&has(&c.swiftc_path),"engine":"Swift 6.2+ semantic JSON AST","runtime":c.swiftc_path},"objectivec":{"available":has(&python(c))&&(c.libclang_path.as_ref().is_some_and(|p|c.path(p).is_file())||!state["libclang"].is_null()),"engine":"libclang canonical cursors","runtime":c.libclang_path.clone().unwrap_or("adapter libclang".into())},"kotlin":{"available":has(&python(c))&&has(&c.java_path)&&assets.join("kotlin/.tools/graph-plugin.jar").is_file(),"engine":"Kotlin K2 2.3.10 resolved IR","runtime":c.java_path}})
 }
+#[derive(Default, Debug, serde::Serialize)]
+pub struct ProviderMetrics {
+    pub starts: u64,
+    pub duration_ms: f64,
+    pub analyzed_context_files: u64,
+    pub emitted_files: u64,
+    pub failures: u64,
+}
 pub async fn extract(
     c: &Config,
     hashes: &BTreeMap<String, String>,
     emit: &BTreeSet<String>,
+) -> Result<BTreeMap<String, FileRecord>> {
+    extract_measured(c, hashes, emit, &mut BTreeMap::new()).await
+}
+pub async fn extract_measured(
+    c: &Config,
+    hashes: &BTreeMap<String, String>,
+    emit: &BTreeSet<String>,
+    metrics: &mut BTreeMap<String, ProviderMetrics>,
 ) -> Result<BTreeMap<String, FileRecord>> {
     let mut output = BTreeMap::new();
     for lang in [
@@ -332,6 +358,10 @@ pub async fn extract(
             .map(|(f, h)| json!({"file":f,"hash":h}))
             .collect();
         let request = json!({"root":c.root,"files":context,"options":{"emit_files":selected,"flutter":c.flutter,"sdk_path":sdk(c),"classpath":c.java_classpath.iter().map(|p|c.path(p)).collect::<Vec<_>>(),"python_search_paths":c.python_search_paths.iter().map(|p|c.path(p)).collect::<Vec<_>>(),"rust_analyzer_path":executable(c,&analyzer(c)).ok().unwrap_or_else(||PathBuf::from(analyzer(c))),"rust_cfg":c.rust_cfg,"rust_sysroot_src":c.rust_sysroot_src.as_ref().map(|p|c.path(p)),"swiftc_path":c.runtime(&c.swiftc_path),"java_path":c.runtime(&c.java_path),"libclang_path":c.libclang_path.as_ref().map(|p|c.path(p)),"mobile_project_path":c.mobile_project_path,"adapter_directory":assets.join("semantic"),"timeout":c.provider_timeout_seconds,"max_file_bytes":c.max_file_bytes}});
+        let started = std::time::Instant::now();
+        let measure = metrics.entry(lang.into()).or_default();
+        measure.starts += 1;
+        measure.analyzed_context_files += context.len() as u64;
         let batch = async {
             let data = run(c, &command, &request.to_string()).await?;
             let mut records: Vec<FileRecord> = serde_json::from_str(&data)?;
@@ -420,13 +450,16 @@ pub async fn extract(
             Ok::<_, anyhow::Error>(records)
         }
         .await;
+        measure.duration_ms += started.elapsed().as_secs_f64() * 1000.;
         match batch {
             Ok(records) => {
+                measure.emitted_files += records.len() as u64;
                 for r in records {
                     output.insert(r.file.clone(), r);
                 }
             }
             Err(e) => {
+                measure.failures += 1;
                 for file in &selected {
                     let text = fs::read_to_string(c.safe(file)?)?;
                     output.insert(file.clone(),FileRecord{file:file.clone(),hash:hashes[file].clone(),nodes:vec![Node{id:format!("{file}::file"),name:file.clone(),qualified:file.clone(),kind:"file".into(),file:file.clone(),line:1,end:text.split('\n').count(),offset:0,length:text.encode_utf16().count(),parent:None,tags:vec![],synthetic:false}],edges:vec![],dependencies:vec![],diagnostics:vec![json!({"severity":"error","code":"provider_unavailable","message":format!("{lang} provider: {e:#}").chars().take(2000).collect::<String>(),"line":1})],unresolved_calls:0,intent:Default::default()});

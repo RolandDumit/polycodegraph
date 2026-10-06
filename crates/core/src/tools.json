@@ -47,7 +47,8 @@
             "providers",
             "update",
             "metrics",
-            "architecture"
+            "architecture",
+            "tools"
           ]
         },
         "offset": {
@@ -58,6 +59,10 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 200
+        },
+        "tool": {
+          "type": "string",
+          "description": "Accepted tool name for section=tools schema discovery, including hidden aliases."
         }
       },
       "required": [],
@@ -171,6 +176,23 @@
             "compact",
             "full"
           ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "symbols",
+            "lexical"
+          ],
+          "description": "Default symbols keeps semantic name search; lexical finds indexed content candidates."
+        },
+        "expand": {
+          "type": "string",
+          "enum": [
+            "none",
+            "dependencies",
+            "callers"
+          ],
+          "description": "Lexical mode only: bounded direct resolved relations, separate from retrieval confidence."
         }
       },
       "required": [
@@ -233,6 +255,23 @@
             "compact",
             "full"
           ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "symbols",
+            "lexical"
+          ],
+          "description": "Default symbols keeps semantic name search; lexical finds indexed content candidates."
+        },
+        "expand": {
+          "type": "string",
+          "enum": [
+            "none",
+            "dependencies",
+            "callers"
+          ],
+          "description": "Lexical mode only: bounded direct resolved relations, separate from retrieval confidence."
         }
       },
       "required": [
@@ -721,6 +760,18 @@
               "minimum": 1,
               "maximum": 100000,
               "default": 10000
+            },
+            "max_tokens": {
+              "type": "integer",
+              "minimum": 256,
+              "maximum": 32000,
+              "description": "ceil(compact JSON Unicode characters/4), unicode_chars_div4_v1 estimate, not model usage."
+            },
+            "max_collection_items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Cumulative collection record cap; restart with a larger cap if exhausted."
             }
           }
         },
@@ -729,6 +780,20 @@
           "minLength": 64,
           "maxLength": 64,
           "description": "Opaque session cursor; same target/intent/options/budget/depth/detail required. Restart on changed generation/health."
+        },
+        "view": {
+          "type": "string",
+          "enum": [
+            "locations",
+            "contracts",
+            "edit_context",
+            "full_evidence"
+          ],
+          "description": "Additive source selection; absent preserves legacy intent windows."
+        },
+        "context": {
+          "type": "object",
+          "description": "Explicit retained-window acknowledgement: epoch, root_id, generation, health_fingerprint, known_windows, rehydrate. Reset after compaction; see context result."
         }
       },
       "required": [
@@ -895,6 +960,13 @@
                   "capture_baseline": {
                     "type": "boolean",
                     "default": false
+                  },
+                  "capture_mode": {
+                    "type": "string",
+                    "enum": [
+                      "minimal",
+                      "context"
+                    ]
                   }
                 },
                 "required": []

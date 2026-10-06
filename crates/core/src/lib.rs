@@ -9,3 +9,6 @@ pub mod query;
 pub mod responses;
 pub mod setup;
 pub mod store;
+
+mod retrieval;
+pub mod telemetry;

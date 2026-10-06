@@ -51,3 +51,16 @@ available; library discovery resolves PATH executables and the driver runtime
 resource path, including Xcode frameworks and Windows SDK DLL directories; PSI source parsing complements Kotlin IR without indexed project plugins.
 See [extraction precision](intents.md#extraction-precision); no name matching replaces
 compiler binding and no hypothetical dataflow/type compatibility is claimed.
+
+## 0.8 core compatibility
+
+Provider semantic payloads/resolvers and pinned Analyzer are unchanged. Review and
+source views consume existing declaration/statement line boundaries and retain
+provider-native offsets; missing statement/signature boundaries use explicit
+fallbacks rather than name-based resolution. `provider_starts` counts attempted
+invocations, duration includes extraction, and `analyzed_context_files` counts the
+requested semantic context, not the compiler's actual incremental work. `extractions`
+continues to count emitted file records, including retry/failure records.
+SQLite schema 4 changes core persistence only; existing schema 3 caches are read
+and migrated on publication. Provider health and semantic environment still bind
+cursors, baselines and acknowledged context independently of source generation.

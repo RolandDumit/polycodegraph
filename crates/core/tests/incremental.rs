@@ -324,3 +324,52 @@ async fn corrupted_database_while_running_recovers_with_coherent_generation() {
     assert_eq!(result["full"], true);
     assert_eq!(i.store.read().unwrap().unwrap().generation, previous);
 }
+
+#[tokio::test]
+async fn irrelevant_file_edit_during_analysis_does_not_trigger_semantic_retry() {
+    let (root, _assets, c) = fixture();
+    let mut i = Indexer::new(c).unwrap();
+    i.refresh(true, false).await.unwrap();
+    fs::write(root.path().join("slow.once"), "").unwrap();
+    let edit = async {
+        tokio::time::sleep(Duration::from_millis(80)).await;
+        fs::write(root.path().join("README.md"), "unrelated documentation\n").unwrap();
+    };
+    let (updated, ()) = tokio::join!(i.refresh(true, true), edit);
+    updated.unwrap();
+    assert_eq!(i.metrics.retries.values().sum::<u64>(), 0);
+    let context_before = i.metrics.providers["typescript"].analyzed_context_files;
+    fs::write(
+        root.path().join("a/first.ts"),
+        "function run() { return 7; }\n",
+    )
+    .unwrap();
+    delivered(&i).await;
+    i.refresh(false, false).await.unwrap();
+    assert!(i.metrics.providers["typescript"].analyzed_context_files > context_before);
+    assert!(i.metrics.hashing.source.bytes > 0);
+}
+#[tokio::test]
+async fn intent_query_and_provider_metrics_cover_real_work() {
+    let (_root, _assets, c) = fixture();
+    let mut i = Indexer::new(c).unwrap();
+    i.call(
+        "inspect_change",
+        &json!({"target":"a/first.ts::run#function","intent":"rename","view":"locations"}),
+    )
+    .await
+    .unwrap();
+    let metrics = i
+        .call("status", &json!({"section":"metrics"}))
+        .await
+        .unwrap();
+    assert!(metrics["query_ms"].as_f64().unwrap() > 0.);
+    assert!(metrics["intents"]["intent_plan_ms"].as_f64().unwrap() > 0.);
+    assert!(metrics["intents"]["intent_render_ms"].as_f64().unwrap() > 0.);
+    assert_eq!(metrics["providers"]["typescript"]["starts"], 1);
+    assert_eq!(
+        metrics["providers"]["typescript"]["analyzed_context_files"],
+        3
+    );
+    assert_eq!(metrics["providers"]["typescript"]["emitted_files"], 3);
+}

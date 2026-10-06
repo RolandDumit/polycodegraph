@@ -23,3 +23,17 @@ The complete 20-job cross-platform matrix passed for [bef8832](https://github.co
 ## Limits
 
 Watcher loss can leave stale data until the 30-second reconciliation. Use an explicit index scan for sensitive work, or watch:false for per-query verification. External artifacts beyond declared/tracked source contexts still need forced indexing after preparation. Provider analysis can read wider semantic context than the records emitted; scope tests guarantee isolated publication, not compiler incremental compilation. Dynamic/runtime and omitted cross-language relationships remain incomplete. The benchmark does not demonstrate token savings, a universal speed ratio or a memory reduction.
+
+## Local 0.8 candidate
+
+The clean v0.7 branch, hashes, new regression matrix, Linux native checks and
+unverified cross-platform/AI gates are recorded separately in the
+[0.8 report](docs/benchmarks/efficiency-0.8/report.md). This entry does not change
+historical 0.5/0.6/0.7 gates. The new Python accounting/evaluator tests are covered
+by the existing CI `test_*.py` discovery; Rust regressions remain in cargo xtask check.
+That dated report describes the uncommitted rc.1; subsequent publication is
+covered by [0.8 release notes](docs/releases/v0.8.0.md). Final 0.8 additionally fixes
+request metadata compatibility, tested in real framing/EOF and native profile checks.
+The [application pilot](docs/benchmarks/efficiency-0.8-application/report.md) observes
+lower uncached input than 0.7, but G2 remains failed and the no-graph target unmet.
+Exact release CI and package artifact identities are recorded in the GitHub release.

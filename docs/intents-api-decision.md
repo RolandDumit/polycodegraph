@@ -41,3 +41,12 @@ context within three collection calls and at least 25% fewer serialized evidence
 characters. Passing this gate does not establish token savings. The consumer
 checkout/package stays untouched; deliver its integration as a reviewable patch.
 No commit, push, PR or release is implied by this implementation task.
+
+## Additive 0.8 candidate contract
+
+The 0.7 decision and historical benchmark remain unchanged. 0.8 adds optional view,
+context, estimated response-token/record-collection budgets and minimal baseline
+capture; absent options preserve prior defaults. See [design](efficiency-0.8-design.md)
+and [migration](migration-0.8.md) for semantics and explicit experimental boundaries.
+The full accepted registry is separate from the optional advertised agent profile.
+No measured model-token saving follows from these API decisions alone.

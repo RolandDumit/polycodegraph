@@ -1,0 +1,261 @@
+{
+  "primary_metric": "uncached_input_per_accepted_task",
+  "aggregates": {
+    "A": {
+      "attempts": 0,
+      "accepted_tasks": 0,
+      "completed_cells": 0,
+      "components": {
+        "input_tokens": null,
+        "uncached_input_tokens": null,
+        "cached_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_output_tokens": null,
+        "total_tokens": null
+      },
+      "monetary_cost": null,
+      "primary_per_accepted_task": null,
+      "duration_ms": 0
+    },
+    "B": {
+      "attempts": 0,
+      "accepted_tasks": 0,
+      "completed_cells": 0,
+      "components": {
+        "input_tokens": null,
+        "uncached_input_tokens": null,
+        "cached_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_output_tokens": null,
+        "total_tokens": null
+      },
+      "monetary_cost": null,
+      "primary_per_accepted_task": null,
+      "duration_ms": 0
+    },
+    "C": {
+      "attempts": 0,
+      "accepted_tasks": 0,
+      "completed_cells": 0,
+      "components": {
+        "input_tokens": null,
+        "uncached_input_tokens": null,
+        "cached_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_output_tokens": null,
+        "total_tokens": null
+      },
+      "monetary_cost": null,
+      "primary_per_accepted_task": null,
+      "duration_ms": 0
+    }
+  },
+  "per_task": [
+    {
+      "task_id": "local-react",
+      "task_class": "local",
+      "values": {
+        "A": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "B": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "C": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        }
+      },
+      "comparisons": {
+        "C/A": null,
+        "C/B": null
+      }
+    },
+    {
+      "task_id": "rename-event",
+      "task_class": "rename",
+      "values": {
+        "A": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "B": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "C": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        }
+      },
+      "comparisons": {
+        "C/A": null,
+        "C/B": null
+      }
+    },
+    {
+      "task_id": "signature-store",
+      "task_class": "signature",
+      "values": {
+        "A": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "B": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "C": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        }
+      },
+      "comparisons": {
+        "C/A": null,
+        "C/B": null
+      }
+    },
+    {
+      "task_id": "negative-total",
+      "task_class": "bug",
+      "values": {
+        "A": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "B": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "C": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        }
+      },
+      "comparisons": {
+        "C/A": null,
+        "C/B": null
+      }
+    },
+    {
+      "task_id": "trace-entry",
+      "task_class": "trace",
+      "values": {
+        "A": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "B": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "C": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        }
+      },
+      "comparisons": {
+        "C/A": null,
+        "C/B": null
+      }
+    },
+    {
+      "task_id": "review-large",
+      "task_class": "review",
+      "values": {
+        "A": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "B": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        },
+        "C": {
+          "accepted": null,
+          "status": "not_measured",
+          "primary": null,
+          "attempts": 0
+        }
+      },
+      "comparisons": {
+        "C/A": null,
+        "C/B": null
+      }
+    }
+  ],
+  "comparisons": {
+    "C/A": null,
+    "C/B": null
+  },
+  "all_correct": false,
+  "local_no_regression": false,
+  "target_reached": false,
+  "target_status": "not_measured",
+  "correctness_status": "not_measured",
+  "failures": [],
+  "measurement_errors": [],
+  "gates": {
+    "G0": {
+      "status": "not_measured",
+      "reason": "Product/source/binary/provider/server-schema identities verified; executor/model/effort/oracle/isolation and actual model prompt insertion identities missing"
+    },
+    "G1": {
+      "status": "not_measured",
+      "reason": "Local Linux regressions, native differential/rename/Android/package checks pass; release-wide macOS/UIKit/Windows/exact remote CI coverage not obtained"
+    },
+    "G2": {
+      "status": "not_measured",
+      "reason": "accounting, client boundary and isolation checks"
+    },
+    "G3": {
+      "status": "not_measured",
+      "reason": "18 cells with valid comparable measurements"
+    },
+    "G4": {
+      "status": "not_measured",
+      "reason": "extended corpus, replicas and holdout need separate preregistration"
+    }
+  },
+  "model_runs": 0,
+  "limits": "one pilot replica per cell; no significance, robustness or subscription-quota inference"
+}

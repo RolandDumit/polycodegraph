@@ -399,3 +399,76 @@ fn schemas_allow_modes_and_sections_but_reject_unknown_fields() {
     }
     assert_eq!(tools.len(), 16);
 }
+
+#[test]
+fn selective_mcp_profile_preserves_registry_aliases_and_semantic_fingerprint() {
+    let mut c = Config::default();
+    let fingerprint = c.fingerprint().unwrap();
+    let registry = mcp::tools(&c);
+    c.tool_profile = polycodegraph_core::config::ToolProfile::Agent;
+    let advertised = mcp::advertised_tools(&c);
+    assert_eq!(advertised.len(), 5);
+    assert_eq!(registry.len(), 16);
+    assert_eq!(c.fingerprint().unwrap(), fingerprint);
+    assert!(registry.iter().any(|s| s["name"] == "blast_radius"));
+    assert!(!advertised.iter().any(|s| s["name"] == "blast_radius"));
+    let hidden = registry
+        .iter()
+        .find(|s| s["name"] == "blast_radius")
+        .unwrap();
+    assert!(mcp::validate(hidden, &json!({"target":"id","bogus":true})).is_err());
+    assert!(mcp::validate(hidden, &json!({"target":"id"})).is_ok());
+}
+#[test]
+fn storage_migrates_v3_and_revisions_change_for_health_at_same_generation() {
+    let d = tempfile::tempdir().unwrap();
+    let c = Config::load(d.path(), None).unwrap();
+    let store = polycodegraph_core::store::Store::new(&c).unwrap();
+    let mut snapshot = polycodegraph_core::model::Snapshot {
+        generation: "same".into(),
+        ..Default::default()
+    };
+    store.write(&snapshot).unwrap();
+    let first = store.revision().unwrap().unwrap();
+    let db = rusqlite::Connection::open(&store.path).unwrap();
+    db.execute("UPDATE metadata SET value='3' WHERE key='schema'", [])
+        .unwrap();
+    db.execute("DELETE FROM metadata WHERE key='revision'", [])
+        .unwrap();
+    db.execute("DROP INDEX edge_file", []).unwrap();
+    assert_eq!(store.read().unwrap().unwrap(), snapshot);
+    assert!(store.revision().unwrap().is_none());
+    // Use a new connection after the other connection performs schema migration.
+    drop(db);
+    let db = rusqlite::Connection::open(&store.path).unwrap();
+    let plan: String = db
+        .query_row(
+            "EXPLAIN QUERY PLAN DELETE FROM edges WHERE file='a.ts'",
+            [],
+            |r| r.get(3),
+        )
+        .unwrap();
+    assert!(plan.contains("edge_file"));
+    snapshot.skipped.push("new coverage gap".into());
+    store.write(&snapshot).unwrap();
+    let second = store.revision().unwrap().unwrap();
+    assert_ne!(first, second);
+    assert_eq!(store.read().unwrap().unwrap().generation, "same");
+}
+
+#[tokio::test]
+async fn hidden_tool_discovery_is_available_without_starting_providers() {
+    let d = tempfile::tempdir().unwrap();
+    let mut c = Config::load(d.path(), None).unwrap();
+    fs::write(d.path().join("missing.dart"), "class Missing {}").unwrap();
+    c.providers_path = Some(d.path().join("unavailable").to_string_lossy().into());
+    c.tool_profile = polycodegraph_core::config::ToolProfile::Agent;
+    let mut index = Indexer::new(c).unwrap();
+    let result = index
+        .call("status", &json!({"section":"tools","tool":"references"}))
+        .await
+        .unwrap();
+    assert_eq!(result["tools"][0]["name"], "references");
+    assert_eq!(index.metrics.scans, 0);
+    assert!(index.metrics.providers.is_empty());
+}

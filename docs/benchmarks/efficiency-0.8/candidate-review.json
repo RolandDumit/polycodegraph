@@ -1,0 +1,51 @@
+{
+  "binary_sha256": "cc8bb9e6008be85479d3a22c8c4ec1d8ab3f04177cc305d0e01350db713a6d23",
+  "model_runs": 0,
+  "measurement": "one JSON representation with Python default spaces; characters are not model tokens",
+  "cases": [
+    {
+      "functions": 1,
+      "default_error": null,
+      "limits": 3,
+      "distinct_limits": 3,
+      "limits_chars": 336,
+      "pages": 1,
+      "result_chars": 4376,
+      "evidence": 2,
+      "schema_chars": 16855
+    },
+    {
+      "functions": 40,
+      "default_error": null,
+      "limits": 3,
+      "distinct_limits": 3,
+      "limits_chars": 336,
+      "pages": 1,
+      "result_chars": 4435,
+      "evidence": 2,
+      "schema_chars": 16855
+    },
+    {
+      "functions": 100,
+      "default_error": null,
+      "limits": 3,
+      "distinct_limits": 3,
+      "limits_chars": 336,
+      "pages": 1,
+      "result_chars": 4435,
+      "evidence": 2,
+      "schema_chars": 16855
+    },
+    {
+      "functions": 140,
+      "default_error": null,
+      "limits": 3,
+      "distinct_limits": 3,
+      "limits_chars": 336,
+      "pages": 1,
+      "result_chars": 4435,
+      "evidence": 2,
+      "schema_chars": 16855
+    }
+  ]
+}

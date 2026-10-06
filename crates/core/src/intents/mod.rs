@@ -3,13 +3,15 @@ mod extraction;
 mod input;
 mod planner;
 mod render;
+mod review;
 use crate::{
     config::Config,
     model::{Edge, Node, Snapshot, hash},
     query::Graph,
 };
 use anyhow::{Result, bail};
-pub use input::{Budget, Intent, Options, Request};
+pub use input::{Budget, Intent, Options, Request, View};
+pub(crate) use planner::path as validate_path;
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap},
@@ -21,8 +23,8 @@ use std::{
 pub struct ContextIndex {
     pub nodes: BTreeMap<String, Node>,
     pub edges: Vec<Edge>,
-    incoming: HashMap<String, Vec<usize>>,
-    outgoing: HashMap<String, Vec<usize>>,
+    incoming: HashMap<String, BTreeMap<String, Vec<usize>>>,
+    outgoing: HashMap<String, BTreeMap<String, Vec<usize>>>,
 }
 impl ContextIndex {
     pub fn new(snapshot: &Snapshot) -> Self {
@@ -41,8 +43,18 @@ impl ContextIndex {
         }
         this.edges = edges.into_values().collect();
         for (i, e) in this.edges.iter().enumerate() {
-            this.incoming.entry(e.target.clone()).or_default().push(i);
-            this.outgoing.entry(e.source.clone()).or_default().push(i);
+            this.incoming
+                .entry(e.target.clone())
+                .or_default()
+                .entry(e.kind.clone())
+                .or_default()
+                .push(i);
+            this.outgoing
+                .entry(e.source.clone())
+                .or_default()
+                .entry(e.kind.clone())
+                .or_default()
+                .push(i);
         }
         this
     }
@@ -57,28 +69,36 @@ impl ContextIndex {
         g: &'a Graph,
         id: &str,
         incoming: bool,
+        kinds: &'a [&'a str],
     ) -> impl Iterator<Item = &'a Edge> {
-        g.ids
-            .get(id)
-            .into_iter()
-            .flat_map(move |i| {
-                if incoming {
-                    g.incoming[*i].iter()
-                } else {
-                    g.outgoing[*i].iter()
-                }
+        let primary = g.ids.get(id).and_then(|i| {
+            if incoming {
+                g.incoming_kinds.get(i)
+            } else {
+                g.outgoing_kinds.get(i)
+            }
+        });
+        let auxiliary = if incoming {
+            self.incoming.get(id)
+        } else {
+            self.outgoing.get(id)
+        };
+        kinds
+            .iter()
+            .flat_map(move |kind| {
+                primary
+                    .into_iter()
+                    .filter_map(move |m| m.get(*kind))
+                    .flatten()
+                    .map(|i| &g.edges[*i])
             })
-            .map(|i| &g.edges[*i])
-            .chain(
-                (if incoming {
-                    self.incoming.get(id)
-                } else {
-                    self.outgoing.get(id)
-                })
-                .into_iter()
-                .flatten()
-                .map(|i| &self.edges[*i]),
-            )
+            .chain(kinds.iter().flat_map(move |kind| {
+                auxiliary
+                    .into_iter()
+                    .filter_map(move |m| m.get(*kind))
+                    .flatten()
+                    .map(|i| &self.edges[*i])
+            }))
     }
 }
 #[derive(Clone, serde::Serialize)]
@@ -91,6 +111,39 @@ pub(super) struct Evidence {
     pub also_sections: Vec<String>,
 }
 impl Evidence {
+    fn required(&self, request: &Request) -> bool {
+        if let Options::Explain(v) = &request.options
+            && let Some(focus) = v.focus.as_deref()
+            && ((focus == "dependencies" && self.section == "dependencies")
+                || (focus == "implementation"
+                    && ["implementations", "contracts"].contains(&self.section.as_str()))
+                || (focus == "contract"
+                    && ["container", "contracts"].contains(&self.section.as_str())))
+        {
+            return true;
+        }
+        ![
+            "container",
+            "dependencies",
+            "consumers",
+            "forwarding_context",
+            "impact",
+            "test_candidates",
+            "module_context",
+            "candidates",
+        ]
+        .contains(&self.section.as_str())
+            || self.also_sections.iter().any(|s| {
+                [
+                    "usages",
+                    "contracts",
+                    "callers",
+                    "flow",
+                    "diagnostic_changes",
+                ]
+                .contains(&s.as_str())
+            })
+    }
     fn id(&self) -> String {
         hash(serde_json::to_vec(&(&self.phase, &self.edge)).expect("edge serialization"))[..16]
             .into()
@@ -124,11 +177,26 @@ pub struct Baseline {
     pub snapshot: Arc<Snapshot>,
     pub files: Vec<String>,
     pub health: String,
+    pub sources: BTreeMap<String, String>,
     pub created: Instant,
     bytes: usize,
 }
+#[derive(Default, serde::Serialize)]
+pub struct Metrics {
+    pub plan_calls: u64,
+    pub render_calls: u64,
+    pub intent_plan_ms: f64,
+    pub intent_render_ms: f64,
+    pub candidate_records: u64,
+    pub selected_records: u64,
+    pub required_records: u64,
+    pub optional_records: u64,
+    pub source_files_hashed: u64,
+    pub source_bytes_hashed: u64,
+}
 #[derive(Default)]
 pub struct State {
+    pub metrics: Metrics,
     cursors: BTreeMap<String, Cursor>,
     baselines: BTreeMap<String, Baseline>,
 }
@@ -205,8 +273,11 @@ impl State {
             if let Options::Review(v) = &request.options {
                 let files = planner::review_files(g, c, &request, v)?;
                 if v.capture_baseline {
-                    // Shared immutable snapshot; accounted once per retained baseline.
-                    let bytes = serde_json::to_vec(g.snapshot.as_ref())?.len();
+                    // Retain only explicitly selected sources and records, never implicit HEAD.
+                    let (snapshot, sources, bytes) = review::capture(g, c, &files)?;
+                    self.metrics.source_files_hashed += sources.len() as u64 * 2;
+                    self.metrics.source_bytes_hashed +=
+                        sources.values().map(|s| s.len() as u64).sum::<u64>() * 2;
                     if bytes > 128 * 1024 * 1024 {
                         bail!("Snapshot exceeds 128 MiB baseline capacity")
                     }
@@ -221,14 +292,15 @@ impl State {
                         key.clone(),
                         Baseline {
                             root: root.to_string(),
-                            snapshot: g.snapshot.clone(),
-                            files,
+                            snapshot,
+                            sources,
+                            files: files.clone(),
                             health: health.clone(),
                             created: Instant::now(),
                             bytes,
                         },
                     );
-                    baseline_info = json!({"handle":key,"generation":g.snapshot.generation,"health_fingerprint":health,"expires_after_seconds":600,"retained_bytes":bytes,"capacity":2,"session_only":true});
+                    baseline_info = json!({"handle":key,"generation":g.snapshot.generation,"health_fingerprint":health,"expires_after_seconds":600,"retained_bytes":bytes,"capacity":2,"session_only":true,"files":files,"capture_mode":v.capture_mode.as_deref().unwrap_or("context")});
                 } else if let Some(key) = &v.baseline {
                     let Some(old) = self.baselines.get(key) else {
                         return restart(
@@ -251,14 +323,43 @@ impl State {
                     baseline = Some(old);
                 }
             }
-            let mut plan = planner::build(g, c, request, baseline)?;
+            let started = Instant::now();
+            let planned = planner::build(g, c, request, baseline);
+            self.metrics.intent_plan_ms += started.elapsed().as_secs_f64() * 1000.;
+            self.metrics.plan_calls += 1;
+            let mut plan = planned?;
+            self.metrics.candidate_records += plan.facts["candidate_records"].as_u64().unwrap_or(0);
             if !baseline_info.is_null() {
                 plan.facts["baseline"] = baseline_info;
             }
             (Arc::new(plan), 0)
         };
-        match render::page(g, c, &plan, offset, &health, &providers, freshness.clone()) {
+        let started = Instant::now();
+        let page = render::page(
+            g,
+            c,
+            &plan,
+            offset,
+            (&health, &providers, freshness.clone()),
+            &mut self.metrics,
+        );
+        self.metrics.intent_render_ms += started.elapsed().as_secs_f64() * 1000.;
+        self.metrics.render_calls += 1;
+        match page {
             Ok((mut result, next)) => {
+                self.metrics.selected_records +=
+                    result["evidence"]["page_count"].as_u64().unwrap_or(0);
+                self.metrics.required_records += result["requirements"]["page_required"]
+                    .as_u64()
+                    .unwrap_or(0);
+                self.metrics.optional_records += result["evidence"]["page_count"]
+                    .as_u64()
+                    .unwrap_or(0)
+                    .saturating_sub(
+                        result["requirements"]["page_required"]
+                            .as_u64()
+                            .unwrap_or(0),
+                    );
                 if let Some(offset) = next {
                     let bytes = serde_json::to_vec(plan.as_ref())?.len();
                     if bytes > 64 * 1024 * 1024 {
@@ -278,7 +379,7 @@ impl State {
                             root: root.into_owned(),
                             generation: g.snapshot.generation.clone(),
                             health: health.clone(),
-                            plan,
+                            plan: plan.clone(),
                             offset,
                             created: Instant::now(),
                             bytes,
@@ -286,9 +387,7 @@ impl State {
                     );
                     result["next_cursor"] = json!(key);
                 }
-                if render::chars(&result)
-                    > result["budget"]["max_chars"].as_u64().unwrap_or(0) as usize
-                {
+                if !render::fits(&plan, &result) {
                     bail!("Mandatory intent metadata exceeds budget; increase max_chars")
                 }
                 Ok(result)
@@ -377,6 +476,7 @@ mod lifecycle_tests {
             Baseline {
                 root: String::new(),
                 snapshot: Arc::new(Snapshot::default()),
+                sources: BTreeMap::new(),
                 files: vec![],
                 health: String::new(),
                 created: Instant::now() - Duration::from_secs(601),

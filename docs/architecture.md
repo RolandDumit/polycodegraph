@@ -6,7 +6,7 @@ Rust core modules separate configuration, filesystem discovery, semantic provide
 
 A repository starts its watcher before reading/indexing cache. A serialized index owner drains bounded events, reconciles hashes periodically and expands semantic scopes/dependency closures. Provider context contains all needed source identities; emit_files identifies records to publish. Resolution may remain wider than the published scope.
 
-SQLite schema 3 stores metadata, records, scopes, symbols, edges, dependencies and diagnostics with source/target/name indexes. An advisory file lock protects writers and SQLite transactions publish generations. Reads use a coherent transaction. Corrupt caches are preserved and rebuilt.
+SQLite schema 4 reads existing schema 3 caches and stores metadata, records, scopes, symbols, edges, dependencies and diagnostics with source/target/file/name indexes. Each committed update has an independent revision; querying a small revision can avoid loading unchanged records, including when health changes at the same source generation. An advisory file lock protects writers and SQLite transactions publish generations. Reads use a coherent transaction. Corrupt caches are preserved and rebuilt.
 
 An immutable snapshot is shared by node/edge views; numeric positions and incoming/outgoing indexes avoid duplicating complete symbol/edge payloads. Queries reuse these structures for the same generation. Changing a generation reconstructs derived indexes after successful publication. There is no HTTP/distributed service.
 
@@ -33,3 +33,5 @@ Plans query one refreshed snapshot without MCP subcalls. Source windows are stre
 and hash-checked, and shrinking pages reuse the same selected source slices.
 Opaque bounded cursor/baseline handles have independent TTLs and snapshot identities.
 See [the intent contract](intents.md) for budgets and precision.
+
+Relation-specific adjacency buckets are built once per graph. Optional lexical discovery uses bounded source line documents and existing declaration intervals; it creates no semantic edges. Intent planning/rendering, provider invocations and categorized hashing have separate counters. See [0.8 design](efficiency-0.8-design.md) for additive views, source capture and client acknowledgement.

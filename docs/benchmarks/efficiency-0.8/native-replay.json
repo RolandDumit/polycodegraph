@@ -1,0 +1,247 @@
+{
+  "model_runs": 0,
+  "measurement": "compact Unicode JSON characters; structured representation explicitly selected by this replay; not model input or quota",
+  "candidate_sha256": "cc8bb9e6008be85479d3a22c8c4ec1d8ab3f04177cc305d0e01350db713a6d23",
+  "baseline_sha256": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d",
+  "conditions": {
+    "B": {
+      "full_schema_chars": 14032,
+      "tools": 16,
+      "cold_index_ms": 823.9014960126951,
+      "update_ms": 841.9728580047376,
+      "warm_queries": {
+        "samples": 31,
+        "p50_ms": 0.19141699885949492,
+        "p95_ms": 0.3031850210390985,
+        "scope": "within reconciliation interval; includes revision read; source/render verification depends on operation"
+      },
+      "rss": {
+        "sample_interval_ms": 25,
+        "server_peak_bytes": 45383680,
+        "provider_tree_peak_bytes": 281358336,
+        "total_tree_peak_bytes": 326742016,
+        "scope": "Linux sampled resident peaks during matched cold/index/search/update phases; excludes initialization and unequal feature replays; may miss transients; not allocations"
+      },
+      "signature_legacy": {
+        "pages": 1,
+        "chars": 3839,
+        "records": 3
+      }
+    },
+    "C": {
+      "full_schema_chars": 15589,
+      "tools": 16,
+      "cold_index_ms": 791.9336389750242,
+      "update_ms": 836.4703830447979,
+      "warm_queries": {
+        "samples": 31,
+        "p50_ms": 0.19705697195604444,
+        "p95_ms": 0.2909119939431548,
+        "scope": "within reconciliation interval; includes revision read; source/render verification depends on operation"
+      },
+      "rss": {
+        "sample_interval_ms": 25,
+        "server_peak_bytes": 45449216,
+        "provider_tree_peak_bytes": 278663168,
+        "total_tree_peak_bytes": 319602688,
+        "scope": "Linux sampled resident peaks during matched cold/index/search/update phases; excludes initialization and unequal feature replays; may miss transients; not allocations"
+      },
+      "signature_legacy": {
+        "pages": 1,
+        "chars": 4017,
+        "records": 3
+      },
+      "signature_views": {
+        "locations": {
+          "pages": 1,
+          "chars": 3741,
+          "records": 3
+        },
+        "contracts": {
+          "pages": 1,
+          "chars": 4564,
+          "records": 3
+        },
+        "edit_context": {
+          "pages": 1,
+          "chars": 4649,
+          "records": 3
+        },
+        "full_evidence": {
+          "pages": 1,
+          "chars": 4650,
+          "records": 3
+        }
+      },
+      "exploratory_estimate_budgets": {
+        "512": {
+          "error": "Intent record/metadata cannot fit the response budget (max_chars/max_tokens) at this offset; start a new request with view=locations or a larger max_chars/max_tokens budget; retrieve source via snippet and diagnostics via status. No cursor was advanced",
+          "recovery_explicit": true
+        },
+        "1024": {
+          "pages": 1,
+          "chars": 3923,
+          "records": 3
+        },
+        "2048": {
+          "pages": 1,
+          "chars": 3923,
+          "records": 3
+        }
+      },
+      "acknowledgement": {
+        "first_chars": 4649,
+        "acknowledged_chars": 4506,
+        "rehydrated_chars": 4653,
+        "windows": 1
+      },
+      "destination_trace": {
+        "chars": 3731,
+        "records": 3
+      },
+      "lexical": {
+        "none": {
+          "chars": 1402,
+          "candidates": 3,
+          "relations": 0,
+          "index": {
+            "files": 9,
+            "source_bytes": 3865,
+            "max_bytes": 8388608,
+            "max_lines": 100000,
+            "max_term_bytes": 16777216,
+            "term_bytes": 5184,
+            "build_work": 1458,
+            "incomplete": false,
+            "ranking": "line-document term overlap weighted by inverse document frequency; deterministic lexical baseline, not embeddings/BM25"
+          }
+        },
+        "dependencies": {
+          "chars": 1410,
+          "candidates": 3,
+          "relations": 0,
+          "index": {
+            "files": 9,
+            "source_bytes": 3865,
+            "max_bytes": 8388608,
+            "max_lines": 100000,
+            "max_term_bytes": 16777216,
+            "term_bytes": 5184,
+            "build_work": 1458,
+            "incomplete": false,
+            "ranking": "line-document term overlap weighted by inverse document frequency; deterministic lexical baseline, not embeddings/BM25"
+          }
+        },
+        "current_name_search": {
+          "matches": 0
+        },
+        "anchored_expansion": {
+          "chars": 2543,
+          "relations": 6
+        }
+      },
+      "server": {
+        "scans": 4,
+        "extractions": 13,
+        "graph_builds": 2,
+        "scan_ms": 88.78614499999999,
+        "extraction_ms": 1333.7366299999999,
+        "storage_ms": 2.48483,
+        "query_ms": 4.090069,
+        "hashing": {
+          "source": {
+            "files": 49,
+            "bytes": 20094
+          },
+          "dependency": {
+            "files": 8,
+            "bytes": 2732
+          },
+          "provider_asset": {
+            "files": 220,
+            "bytes": 169352924
+          }
+        },
+        "refresh_wait_ms": 201.23302700000002,
+        "snapshot_read_ms": 0.26080600000000004,
+        "snapshot_clone_ms": 0.08200299999999999,
+        "graph_build_ms": 0.6337119999999999,
+        "changed_sources": 10,
+        "emitted_sources": 13,
+        "retries": {},
+        "providers": {
+          "dart": {
+            "starts": 1,
+            "duration_ms": 165.95069600000002,
+            "analyzed_context_files": 5,
+            "emitted_files": 5,
+            "failures": 0
+          },
+          "typescript": {
+            "starts": 2,
+            "duration_ms": 1167.7097720000002,
+            "analyzed_context_files": 8,
+            "emitted_files": 8,
+            "failures": 0
+          }
+        },
+        "tools": {
+          "get_architecture": {
+            "calls": 1,
+            "response_bytes": 1491,
+            "response_chars": 1491,
+            "errors": 0
+          },
+          "index_repository": {
+            "calls": 1,
+            "response_bytes": 766,
+            "response_chars": 766,
+            "errors": 0
+          },
+          "inspect_change": {
+            "calls": 14,
+            "response_bytes": 55116,
+            "response_chars": 55116,
+            "errors": 1
+          },
+          "search_symbol": {
+            "calls": 38,
+            "response_bytes": 23058,
+            "response_chars": 23058,
+            "errors": 0
+          },
+          "status": {
+            "calls": 1,
+            "response_bytes": 0,
+            "response_chars": 0,
+            "errors": 0
+          }
+        },
+        "generation": "f801fa599b8416f2a02c",
+        "health_fingerprint": "9a1655540df0f24bc096",
+        "intents": {
+          "plan_calls": 14,
+          "render_calls": 14,
+          "intent_plan_ms": 0.146883,
+          "intent_render_ms": 0.808843,
+          "candidate_records": 42,
+          "selected_records": 39,
+          "required_records": 39,
+          "optional_records": 0,
+          "source_files_hashed": 20,
+          "source_bytes_hashed": 6237
+        },
+        "response_bytes_scope": "one compact JSON representation per MCP result, excluding framing/schema/model tokens",
+        "extractions_scope": "emitted file records including retries/failure records; not provider processes",
+        "hashing_scope": "index discovery/incremental verification, dependency inputs and provider assets; intent capture/render counters are separate; primitive snippets and lexical query verification are not included",
+        "provider_starts_scope": "attempted provider invocations; analyzed_context_files is requested semantic context, not compiler work"
+      }
+    }
+  },
+  "agent_profile": {
+    "schema_chars": 8940,
+    "tools": 5,
+    "discovery_chars": 784,
+    "hidden_alias_call_verified": true
+  }
+}

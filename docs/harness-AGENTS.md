@@ -1,29 +1,86 @@
 # PolyCodeGraph code intelligence
 
-Use the `polycodegraph` MCP server configured for this repository (Dart/Flutter, TypeScript/JavaScript, Java, Go, Python, Rust, Swift, Objective-C and Kotlin).
+Use the configured native PolyCodeGraph MCP server when the task needs structural
+or semantic evidence. It supports Dart/Flutter, TS/JS, Java, Go, Python, Rust,
+Swift, Objective-C and Kotlin. The server does not run application code/build hooks.
 
-- Check `status` once at task start; repeat only after changes to sources, environment, freshness or diagnostics. Inspect freshness and coverage, provider health, errors/warnings, skipped files and unresolved calls. With the experimental compact profile retrieve omitted diagnostics using `status(section: diagnostics, offset, limit)`; `detail: full` expands a call. If imports fail to resolve, run the project's normal dependency setup and reindex. Use `index_repository` with `force: true` after dependency setup when lock/config files did not change.
-- Use `search_symbol` to find stable IDs, initially with limit 5–10. Prefer returned IDs to ambiguous names. Filter by language/kind/tag/file; file prefixes are relative to the graph root, including nested package prefixes.
-- Before changing a symbol, use `inspect_change` for callers, implementations and impact in one snapshot (initial limit 10–20). Do not immediately repeat those included sections; expand with paged tools only when omissions or a specific question require it. For exploration use the relevant relation directly. Calls point to static semantic targets; inspect implementations for interface dispatch. Treat blast radius as conservative and incomplete if depth/coverage limits are reported.
-- Follow pagination while the generation is unchanged. Restart an exploration if the repository changes.
-- Use `snippet` for focused source reads, initially 20–40 lines. Expand truncation with explicit line windows. Use textual search for a specific gap in graph coverage, rather than repeating the entire exploration.
-- After editing, call `index_repository`; subsequent queries refresh automatically too. Re-check important callers and affected files.
-- Run the project's normal compiler/static analysis and tests. Use source search/manual inspection for dynamic calls, callbacks, reflection, runtime routing and missing generated code.
-- For Python, inspect unresolved callback/dynamic coverage. For Rust, check external-crate/macro diagnostics and the active crate/cfg model; generated/build-script results require an explicitly prepared model.
-- Flutter tags help locate likely layers; verify the actual code before relying on a naming or annotation hint.
+## Route to the question
 
-Keep `.polycodegraph/` out of version control. Never paste the entire cached graph into an agent prompt.
+| Task | First useful operation |
+| --- | --- |
+| Known file/position, local edit | Focused file read; zero graph calls are allowed |
+| Reliable stable ID or unique target | Use that target directly; no preliminary search required |
+| Ambiguous rename | Resolve identity, then rename intent with `view: locations`; retain all required sites and review DTO/wire keys separately |
+| Public signature | change_signature with requested parameter/return/async options and `view: contracts` or edit_context; retain consumers/contracts |
+| Bug described by symptom | Content search or search_symbol(mode: lexical); anchor_id can go directly into an intent; expand only the needed relation |
+| Flow toward a component | trace_flow with destination and explicit direction/depth; qualified static path, not runtime ordering |
+| Dynamic/generated boundary | Static evidence plus focused search/SDK checks for the declared gap |
+| Review | Capture explicit files before editing, capture_mode: minimal; compare the captured working tree with the same scope after refresh |
 
-- For Swift/Objective-C/Kotlin repositories, inspect `polycodegraph.mobile.json` for the active module/target, SDK, bridging header and prepared dependencies. iOS SDK analysis belongs on macOS/Xcode; Android JAR analysis is portable. Prepare builds/dependencies through the project's normal workflow, then force indexing when external artifacts changed. Do not interpret the graph as running Gradle, SwiftPM manifests, KAPT/KSP, macros or compiler plugins. Swift/Objective-C and Kotlin/Java cross-language calls remain incomplete; use source/SDK tooling at those boundaries.
+Intent results include generation, health_fingerprint, freshness, provider coverage
+and errors. If the first useful operation supplies these, a separate status call
+is unnecessary. Use status for changed health or detailed omitted diagnostics.
+For sensitive impact assessments reconcile explicitly with index_repository, or
+use watch:false for per-query full hash scans. Watcher events can be lost until
+periodic reconciliation; freshness is not a compiler/test result.
 
-Use the Rust executable as the MCP command. Watcher freshness can lag until reconciliation if events are missed; call index_repository before a sensitive impact assessment, or configure watch:false for per-query full scans. Neither the graph nor its freshness metadata replaces compiler checks/tests.
+## Select and expand
 
-## Intent context on 0.7+
+Use `locations` for usage manifests without source, `contracts` for declaration
+headers, `edit_context` for a primary declaration and AST/site windows, and
+`full_evidence` when deeper verification needs it. Missing boundaries are labelled
+fallbacks: use snippet with precise file/line windows for the gap. Without view,
+0.7 intent source windows remain available; primitive detail: compact/full is
+separate. Default budgets are 12000 characters, 40 records, 12 files, depth two.
+max_tokens is a declared local estimate, never provider-accounted model usage.
 
-- Prefer `inspect_change` with the intent matching the task: rename, change_signature, find_tests, review_change, explain_symbol, trace_flow, move_symbol, remove_symbol, replace_dependency or extract_symbol. Start with the default global budget and depth two. Without intent the existing primitive workflow stays available.
-- Read every pertinent evidence page and omission; repeat identical arguments with next_cursor. Expand truncated windows through snippet. Restart when generation/health changes, or handles expire. Do not repeat primitive sections already returned unless a specific gap needs investigation.
-- Capture review_change baseline before editing with an explicit file list; retain its session handle; full new/resolved diagnostics are available in evidence details pages. After edits reconcile and compare with the same file scope. Missing baselines cannot establish a before/after diff.
-- For extraction select whole AST statements in one block. Treat local captures/writes/control events as constraints; suggested_signature remains unknown. Check aliases, callbacks, async, lifetime/exception behavior and hypothetical compatibility with source/compiler/tests.
-- Rename domain symbols by resolved identity; review DTO/JSON keys separately. Naming candidates, zero static consumers and bounded paths never establish correct business behavior, safe deletion or runtime coverage.
+Read required evidence until remaining_after_page is zero and collection_complete
+is true, or record the exploration/collection limit and take its precise recovery.
+Optional pages/sections need a concrete question. Do not fetch primitive callers,
+implementations, impact or snippets already supplied by the intent. Expand for a
+missing necessary site, pertinent source truncation, or a specific uncertainty.
+Legacy omitted means absent from this page, even on the final page. Check the new
+completion fields and source_windows_incomplete separately. Static collection
+completion never proves full runtime coverage, safe deletion or correct behavior.
 
-[Options and response contract](intents.md).
+Repeat identical arguments plus next_cursor. Root, view, budgets, generation,
+health and client context bind handles; changed identity/expired handles require
+restart. A collection cap requires a new explicit larger collection, not an
+automatic retry loop. New errors must remain visible during delta responses.
+
+A client implementing acknowledgement may send only windows it actually retains.
+Reset epoch and known_windows after compaction, new agent/root or lost state;
+rehydrate forces full source restoration. Ordinary clients use self-contained
+responses. Never infer retained context merely from a previous server response.
+
+After edits, the next graph query applies the configured freshness policy; avoid
+an additional index when that already meets the task's needs. Explicit scans are
+still appropriate for sensitive impact or after prepared dependencies change;
+use force:true when external artifacts changed without a tracked lock/config edit.
+Complete the project's authorized compiler/static analysis/tests. Empty static
+results do not establish absence of consumers/tests/effects. Inspect dynamic calls,
+callbacks, reflection, macros, FFI and runtime routing at declared boundaries.
+
+## Provider and tool access
+
+Use IDs from search when names are ambiguous. Prefixes are indexed root-relative,
+including nested packages. Retrieval scores/tags are discovery hints; semantic
+relations keep provider confidence and distinct same-line offsets. Declaration
+ranges/reference sites are not automatically editable name spans.
+
+For mobile, inspect the prepared module/SDK/classpath model. UIKit belongs on
+macOS/Xcode; Android JAR analysis is portable. Indexed Gradle/SwiftPM manifests,
+plugins, KAPT/KSP and macros are not executed. Python dynamic callbacks, Rust
+external crates/cfg/build results, and cross-language mobile calls remain qualified.
+Extraction requires complete AST statements; bound locals/control exits are
+constraints, not a proposed signature, lifetime proof or automatic refactoring.
+
+Optional `tool_profile: agent` advertises status, search_symbol, inspect_change,
+snippet and index_repository. Original tools/aliases stay accepted. Discover a
+schema through status(section: tools, tool: "neighbors") when needed. The full
+profile is default. Client discovery/loading behavior must be measured; do not
+assume the server alone controls the model's actual schema prompt.
+
+Keep .polycodegraph caches and raw traces out of Git. Never paste the whole graph
+into a prompt. See [intent contracts](intents.md), [0.8 activation/rollback](migration-0.8.md)
+and the [efficiency protocol](benchmarks/efficiency-0.8/protocol.md).

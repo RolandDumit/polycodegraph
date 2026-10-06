@@ -1,0 +1,51 @@
+{
+  "binary_sha256": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d",
+  "model_runs": 0,
+  "measurement": "one JSON representation with Python default spaces; characters are not model tokens",
+  "cases": [
+    {
+      "functions": 1,
+      "default_error": null,
+      "limits": 4,
+      "distinct_limits": 4,
+      "limits_chars": 505,
+      "pages": 1,
+      "result_chars": 3939,
+      "evidence": 2,
+      "schema_chars": 15219
+    },
+    {
+      "functions": 40,
+      "default_error": null,
+      "limits": 43,
+      "distinct_limits": 4,
+      "limits_chars": 4054,
+      "pages": 2,
+      "result_chars": 23579,
+      "evidence": 41,
+      "schema_chars": 15219
+    },
+    {
+      "functions": 100,
+      "default_error": "Intent record/metadata cannot fit max_chars; increase budget or use primitive details",
+      "limits": 103,
+      "distinct_limits": 4,
+      "limits_chars": 9514,
+      "pages": 0,
+      "result_chars": 0,
+      "evidence": 0,
+      "schema_chars": 15219
+    },
+    {
+      "functions": 140,
+      "default_error": "Intent record/metadata cannot fit max_chars; increase budget or use primitive details",
+      "limits": 143,
+      "distinct_limits": 4,
+      "limits_chars": 13154,
+      "pages": 0,
+      "result_chars": 0,
+      "evidence": 0,
+      "schema_chars": 15219
+    }
+  ]
+}

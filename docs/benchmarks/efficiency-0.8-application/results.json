@@ -1,0 +1,338 @@
+{
+  "pilot_date": "2026-10-06",
+  "candidate_version": "0.8.0-rc.1",
+  "final_release_version": "0.8.0",
+  "final_release_retested_AI": false,
+  "primary_metric": "uncached_input_per_accepted_task",
+  "monetary_cost": null,
+  "manifest_sha256": "64547b0d5785032abf6f9c0866ba2f7112bd89c8e1752b5d78fdd09864cdeb1b",
+  "results_source_sha256": "072b579256b360767f11495bf8eec22417a6ed5a4cd31d3d0dbff02c6a39d330",
+  "normalized_attempts_sha256": "4d0c90bbad679858e683585181a3fb06c0617a172f60ffac53b8e4785498604c",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "client": "Codex CLI 0.159.2",
+  "replicas_per_cell": 1,
+  "executions": 18,
+  "all_18_accepted": true,
+  "orders": [
+    "ABC",
+    "ACB",
+    "BAC",
+    "BCA",
+    "CAB",
+    "CBA"
+  ],
+  "binary_sha256": {
+    "B": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d",
+    "C": "cc8bb9e6008be85479d3a22c8c4ec1d8ab3f04177cc305d0e01350db713a6d23"
+  },
+  "aggregates": {
+    "A": {
+      "attempts": 6,
+      "accepted_tasks": 6,
+      "completed_cells": 6,
+      "components": {
+        "input_tokens": 1010585,
+        "uncached_input_tokens": 151833,
+        "cached_input_tokens": 858752,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 19311,
+        "reasoning_output_tokens": 3632,
+        "total_tokens": 1029896
+      },
+      "monetary_cost": null,
+      "primary_per_accepted_task": 25305.5,
+      "duration_ms": 540829
+    },
+    "B": {
+      "attempts": 6,
+      "accepted_tasks": 6,
+      "completed_cells": 6,
+      "components": {
+        "input_tokens": 3178206,
+        "uncached_input_tokens": 333790,
+        "cached_input_tokens": 2844416,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 30862,
+        "reasoning_output_tokens": 6285,
+        "total_tokens": 3209068
+      },
+      "monetary_cost": null,
+      "primary_per_accepted_task": 55631.666666666664,
+      "duration_ms": 1103343
+    },
+    "C": {
+      "attempts": 6,
+      "accepted_tasks": 6,
+      "completed_cells": 6,
+      "components": {
+        "input_tokens": 1788788,
+        "uncached_input_tokens": 287988,
+        "cached_input_tokens": 1500800,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 29676,
+        "reasoning_output_tokens": 7297,
+        "total_tokens": 1818464
+      },
+      "monetary_cost": null,
+      "primary_per_accepted_task": 47998.0,
+      "duration_ms": 951133
+    }
+  },
+  "per_task": [
+    {
+      "task_id": "local",
+      "task_class": "local",
+      "values": {
+        "A": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 5715,
+          "attempts": 1
+        },
+        "B": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 37448,
+          "attempts": 1
+        },
+        "C": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 8832,
+          "attempts": 1
+        }
+      },
+      "comparisons": {
+        "C/A": 1.5454068241469816,
+        "C/B": 0.23584704123050632
+      }
+    },
+    {
+      "task_id": "rename",
+      "task_class": "ambiguous_dto_member_rename",
+      "values": {
+        "A": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 29320,
+          "attempts": 1
+        },
+        "B": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 46466,
+          "attempts": 1
+        },
+        "C": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 45421,
+          "attempts": 1
+        }
+      },
+      "comparisons": {
+        "C/A": 1.5491473396998636,
+        "C/B": 0.9775104377394224
+      }
+    },
+    {
+      "task_id": "signature",
+      "task_class": "interface_signature_and_consumers",
+      "values": {
+        "A": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 19790,
+          "attempts": 1
+        },
+        "B": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 51467,
+          "attempts": 1
+        },
+        "C": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 78647,
+          "attempts": 1
+        }
+      },
+      "comparisons": {
+        "C/A": 3.974077817079333,
+        "C/B": 1.528105387918472
+      }
+    },
+    {
+      "task_id": "bug",
+      "task_class": "symptom_calendar_date",
+      "values": {
+        "A": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 22476,
+          "attempts": 1
+        },
+        "B": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 53763,
+          "attempts": 1
+        },
+        "C": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 25388,
+          "attempts": 1
+        }
+      },
+      "comparisons": {
+        "C/A": 1.1295604200035594,
+        "C/B": 0.47222067220951214
+      }
+    },
+    {
+      "task_id": "trace",
+      "task_class": "destination_and_side_branches",
+      "values": {
+        "A": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 37768,
+          "attempts": 1
+        },
+        "B": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 71130,
+          "attempts": 1
+        },
+        "C": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 46262,
+          "attempts": 1
+        }
+      },
+      "comparisons": {
+        "C/A": 1.2248993857233637,
+        "C/B": 0.6503866160551104
+      }
+    },
+    {
+      "task_id": "review",
+      "task_class": "large_file_scoped_review",
+      "values": {
+        "A": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 36764,
+          "attempts": 1
+        },
+        "B": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 73516,
+          "attempts": 1
+        },
+        "C": {
+          "accepted": true,
+          "status": "accepted",
+          "primary": 83438,
+          "attempts": 1
+        }
+      },
+      "comparisons": {
+        "C/A": 2.2695571754977695,
+        "C/B": 1.1349638174002938
+      }
+    }
+  ],
+  "comparisons": {
+    "C/A": 1.89674181502045,
+    "C/B": 0.8627819886755146
+  },
+  "local_no_regression": false,
+  "descriptive_numeric_target_met": false,
+  "qualified_target_status": "not_measured",
+  "gates": {
+    "G0": {
+      "status": "passed",
+      "reason": "Product/source/binary/provider/config/harness/server-schema identities verified before launch and preserved after; C is rc.1, not final 0.8.0. Model insertion gap belongs to G2."
+    },
+    "G1": {
+      "status": "passed",
+      "reason": "Relevant application Linux subset: equal deterministic graph inventory, declared identical MCP metadata adapter, real tools B16/C5, task regression/oracle checks pass. iOS provider unavailable and Flutter launcher cache writes prevent full platform/release compatibility claims."
+    },
+    "G2": {
+      "status": "failed",
+      "reason": "Actual per-response usage cross-verified for all 18 cells, independent mount/proc probes pass, A graph surface absent. Full per-request model schema and external/source-window identity/retention ledger unexposed; unknown counters retained as null. G2 fails on telemetry, not isolation."
+    },
+    "G3": {
+      "status": "not_measured",
+      "reason": "All 18 isolated pilot cells executed and independently accepted, C/A and C/B descriptively available. Full qualifying comparability cannot pass because G2 fails."
+    },
+    "G4": {
+      "status": "not_measured",
+      "reason": "extended corpus, replicas and holdout need separate preregistration"
+    }
+  },
+  "aggregate_runtime": {
+    "A": {
+      "model_requests": 47,
+      "mcp_calls": 0,
+      "mcp_protocol_requests": 0,
+      "mcp_errors": 0,
+      "pages": 0,
+      "exposed_budget_expansion_requests": 0,
+      "compactions_exposed": 0,
+      "reconnect_retry_events": 0,
+      "setup_seconds": 0.17258612491423264,
+      "peak_process_tree_rss_bytes": 1100783616
+    },
+    "B": {
+      "model_requests": 81,
+      "mcp_calls": 114,
+      "mcp_protocol_requests": 127,
+      "mcp_errors": 11,
+      "pages": 46,
+      "exposed_budget_expansion_requests": 0,
+      "compactions_exposed": 0,
+      "reconnect_retry_events": 0,
+      "setup_seconds": 0.18041839805664495,
+      "peak_process_tree_rss_bytes": 3977854976
+    },
+    "C": {
+      "model_requests": 58,
+      "mcp_calls": 25,
+      "mcp_protocol_requests": 37,
+      "mcp_errors": 2,
+      "pages": 6,
+      "exposed_budget_expansion_requests": 10,
+      "compactions_exposed": 0,
+      "reconnect_retry_events": 0,
+      "setup_seconds": 0.19231948792003095,
+      "peak_process_tree_rss_bytes": 4235743232
+    }
+  },
+  "counter_recheck": {
+    "status": "passed",
+    "per_response_usage_verified": 18,
+    "aggregate_components_and_task_totals_recomputed": true
+  },
+  "prior_campaigns": {
+    "first_invalid_transport_cost": null,
+    "interrupted_observed_uncached": 147620,
+    "observed_operational_uncached_subtotal": 921231,
+    "scope": "Partial operational total; unknown earlier costs and unmetered coordination/verification/preparation are not zero and not allocated to condition means"
+  },
+  "limits": [
+    "G2 failed on incomplete model schema and retained-source/external-read telemetry; G3/G4 not measured",
+    "One replica per cell, no statistical significance or causal attribution",
+    "Standard metadata adapter identical in B/C; final release fixes server discovery but is not remeasured as AI C",
+    "Graph cold per solver; prompt cache observed rather than controlled",
+    "Three concurrent task pipelines; summed task durations are not campaign wall time; RSS samples can miss peaks",
+    "Raw sources, logs, oracles, conversations, paths and SDK configuration stay private/ignored"
+  ]
+}

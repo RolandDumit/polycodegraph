@@ -1,0 +1,135 @@
+{
+  "version": "0.8.0",
+  "local_date": "2026-10-06",
+  "base_commit": "06e0a72741d2370b74888b86311709dfd9c3f286",
+  "linux_local_binary_sha256": "4daeebfe3408b33d20a55586973f37ef98b4ade38bc270384eb3972ed3c5eecf",
+  "rust_tests": 72,
+  "python_accounting_tests": 13,
+  "core_check": "passed: cargo xtask check (format, clippy warnings denied, regressions)",
+  "native_intents_mixed": {
+    "languages": {
+      "dart": 5,
+      "go": 4,
+      "java": 5,
+      "javascript": 3,
+      "kotlin": 3,
+      "objectivec": 5,
+      "python": 5,
+      "rust": 4,
+      "swift": 4,
+      "typescript": 4
+    },
+    "symbols": 200,
+    "edges": 438,
+    "verified": [
+      {
+        "extension": ".dart",
+        "intents": 10
+      },
+      {
+        "extension": ".kt",
+        "intents": 10
+      },
+      {
+        "extension": ".m",
+        "intents": 10
+      },
+      {
+        "extension": ".swift",
+        "intents": 10
+      },
+      {
+        "extension": ".go",
+        "intents": 10
+      },
+      {
+        "extension": ".java",
+        "intents": 10
+      },
+      {
+        "extension": ".ts",
+        "intents": 10
+      },
+      {
+        "extension": ".js",
+        "intents": 10
+      },
+      {
+        "extension": ".py",
+        "intents": 10
+      },
+      {
+        "extension": ".rs",
+        "intents": 10
+      }
+    ]
+  },
+  "native_intents_flutter": {
+    "languages": {
+      "dart": 2
+    },
+    "symbols": 24,
+    "edges": 75,
+    "verified": [
+      {
+        "extension": ".dart",
+        "intents": 10
+      }
+    ]
+  },
+  "native_primitives": "passed differential versus frozen 0.6 on ten-language fixture",
+  "android": {
+    "sdk_fixture": "android_sdk",
+    "symbols": 5,
+    "edges": 6
+  },
+  "profile_metadata_compatibility": "passed native tools/list with request metadata and core framing/EOF, invalid metadata/arguments remain rejected",
+  "no_dart": "passed",
+  "linux_package": "passed relocation/setup/version checks",
+  "rename": {
+    "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+    "original_files": 385,
+    "model_runs": 0,
+    "baseline": {
+      "collection_calls": 13,
+      "characters": 36167,
+      "utf8_bytes": 36167
+    },
+    "intent": {
+      "pages": 2,
+      "expansion_calls": 1,
+      "collection_calls": 3,
+      "characters": 22394,
+      "utf8_bytes": 22394,
+      "evidence": 24,
+      "reference_edges_preserved": 19,
+      "oracle_line_patterns": 17,
+      "query_ms": [
+        2.417815034277737,
+        0.6776130758225918
+      ],
+      "warm_scan_delta": 0,
+      "warm_extraction_delta": 0,
+      "warm_graph_build_delta": 0
+    },
+    "schema": {
+      "baseline_characters": 10277,
+      "intent_characters": 16855,
+      "added_characters": 6578,
+      "baseline_utf8_bytes": 10277,
+      "intent_utf8_bytes": 16855
+    },
+    "excluded_startup_calls": {
+      "status": 2,
+      "search_symbol": 2,
+      "index_repository": 1
+    },
+    "character_reduction_percent": 38.0816766665745,
+    "gate_passed": true
+  },
+  "release_CI": "Exact commit CI/platform/package identities are recorded in the GitHub release after passing; local results do not assert cross-platform coverage",
+  "AI_release_retest": false,
+  "AI_evidence": "../benchmarks/efficiency-0.8-application/report.md",
+  "preserved_stash_sha256": "10ec8cca20a08b882f508569acfed18f3617c4f3",
+  "previous_candidate_imports": []
+}

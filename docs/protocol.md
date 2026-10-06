@@ -29,3 +29,21 @@ Version 0.7 extends the existing inspect_change with optional typed intent/optio
 budget and opaque cursor; no-intent calls retain the 0.6 contract. Shared evidence
 tables, AST region constraints and explicit session review baselines are described
 in [intents.md](intents.md). No resources, sampling, source-edit or build tools are added.
+
+Version 0.8 adds opt-in intent views, estimated token/collection budgets and
+explicit retained-window acknowledgement; missing options keep self-contained
+results. Intent completion is separate from source/exploration limits. The default
+full tool list remains sixteen; tool_profile: agent advertises five while the
+accepted registry/validation retains all sixteen. status(section: tools, tool?)
+provides schema discovery. Wire text/structured duplication is unchanged and
+client prompt insertion must be observed separately. See migration-0.8.md.
+
+## Request metadata (0.8)
+
+Standard `params._meta` is accepted independently of tool arguments, including optional
+string/number progressToken and vendor metadata. The server may omit progress
+notifications; this does not require a client envelope adapter. tools/list returns one
+page and still rejects cursor/unknown list parameters. `_meta` inside tool arguments
+remains invalid unless explicitly defined by that tool. Metadata uses the existing
+frame/queue limits and does not change schemas or result representations.
+See the [negotiated MCP schema](https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/2025-11-25/schema.ts) and [optional progress behavior](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/progress).

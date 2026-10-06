@@ -37,3 +37,13 @@ python tool/end_to_end.py --rust target/release/polycodegraph --dart work/baseli
 Use `.exe` on Windows; memory sampling currently requires Linux. The CI benchmark uploads its own report. Native package smoke tests are separate from performance measurements.
 
 [0.7 intent replay and validation](intents-0.7/report.md) records complete evidence, schema costs, zero model runs and skipped host checks.
+
+[0.8 efficiency candidate](efficiency-0.8/report.md) has its own preregistered
+protocol, six-task manifest, deterministic/native replays and runtime measurements.
+Historical protocols above remain frozen. AI cost gates are reported separately;
+missing model usage/isolation is never replaced with payload characters.
+
+[Application AI pilot, 2026-10-06](efficiency-0.8-application/report.md) reports all 18
+accepted cells and actual usage: rc.1 improves descriptively over 0.7, remains more
+expensive than no graph, and fails G2 on incomplete client telemetry. This is a
+separate pilot, not a revision of the historical fixture protocols.

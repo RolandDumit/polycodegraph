@@ -18,6 +18,18 @@ impl ResponseProfile {
         *self == Self::Legacy
     }
 }
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ToolProfile {
+    #[default]
+    Full,
+    Agent,
+}
+impl ToolProfile {
+    fn is_full(&self) -> bool {
+        *self == Self::Full
+    }
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
@@ -54,6 +66,10 @@ pub struct Config {
     pub reconcile_interval_seconds: u64,
     #[serde(skip_serializing_if = "ResponseProfile::is_legacy")]
     pub response_profile: ResponseProfile,
+    #[serde(skip_serializing_if = "ToolProfile::is_full")]
+    pub tool_profile: ToolProfile,
+    #[serde(skip)]
+    pub tool_profile_override: Option<ToolProfile>,
     #[serde(skip)]
     pub response_profile_override: Option<ResponseProfile>,
 }
@@ -101,6 +117,8 @@ impl Default for Config {
             watch_debounce_ms: 200,
             reconcile_interval_seconds: 30,
             response_profile: ResponseProfile::Legacy,
+            tool_profile: ToolProfile::Full,
+            tool_profile_override: None,
             response_profile_override: None,
         }
     }
@@ -255,6 +273,10 @@ impl Config {
             .as_object_mut()
             .expect("configuration object")
             .remove("response_profile");
+        value
+            .as_object_mut()
+            .expect("configuration object")
+            .remove("tool_profile");
         Ok(hash(serde_json::to_vec(&value)?))
     }
     pub fn compact(&self, args: &serde_json::Value) -> bool {

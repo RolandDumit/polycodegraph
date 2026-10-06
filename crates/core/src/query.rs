@@ -71,6 +71,10 @@ pub struct Graph {
     pub incoming: Vec<Vec<usize>>,
     pub outgoing: Vec<Vec<usize>>,
     pub dropped: usize,
+    pub(crate) accounted_bytes: std::sync::OnceLock<usize>,
+    pub(crate) lexical: std::sync::OnceLock<crate::retrieval::LexicalIndex>,
+    pub(crate) incoming_kinds: HashMap<usize, BTreeMap<String, Vec<usize>>>,
+    pub(crate) outgoing_kinds: HashMap<usize, BTreeMap<String, Vec<usize>>>,
     names: HashMap<String, Vec<usize>>,
     qualified: HashMap<String, Vec<usize>>,
     file_edges: HashMap<String, Vec<usize>>,
@@ -160,7 +164,27 @@ impl Graph {
                     .push(i);
             }
         }
+        let mut incoming_kinds: HashMap<usize, BTreeMap<String, Vec<usize>>> = HashMap::new();
+        let mut outgoing_kinds: HashMap<usize, BTreeMap<String, Vec<usize>>> = HashMap::new();
+        for (i, e) in edges.iter().enumerate() {
+            incoming_kinds
+                .entry(ids[&e.target])
+                .or_default()
+                .entry(e.kind.clone())
+                .or_default()
+                .push(i);
+            outgoing_kinds
+                .entry(ids[&e.source])
+                .or_default()
+                .entry(e.kind.clone())
+                .or_default()
+                .push(i);
+        }
         Self {
+            lexical: Default::default(),
+            accounted_bytes: Default::default(),
+            incoming_kinds,
+            outgoing_kinds,
             context: crate::intents::ContextIndex::new(&snapshot),
             health: crate::responses::Health::new(
                 &snapshot,
@@ -663,6 +687,14 @@ impl Graph {
         Ok(out)
     }
     pub fn call(&self, c: &Config, name: &str, a: &Value) -> Result<Value> {
+        if ["search_symbol", "search"].contains(&name) && a["mode"] == "lexical" {
+            let filter = self.file_filter(c, a)?;
+            let mut result = crate::retrieval::search(self, c, a)?;
+            for (key, value) in filter.as_object().expect("file filter") {
+                result[key] = value.clone();
+            }
+            return Ok(result);
+        }
         match name {
             "search_symbol" | "search" => {
                 let filter = self.file_filter(c, a)?;

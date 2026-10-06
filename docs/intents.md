@@ -9,7 +9,7 @@ MCP tools.
 
 ## Calls
 
-Find a stable ID with `search_symbol`, check coverage/freshness once, then request:
+Use a reliable ID/unique target directly; search_symbol is needed only for discovery or ambiguity. Intent results include coverage/freshness:
 
 ```json
 {"name":"inspect_change","arguments":{"target":"<stable-id>","intent":"rename","options":{"new_name":"recordedAt"},"budget":{"max_chars":12000,"max_items":40,"max_files":12},"detail":"compact"}}
@@ -20,8 +20,8 @@ Find a stable ID with `search_symbol`, check coverage/freshness once, then reque
 | `rename` | `new_name?`, `scope?`, `include_impact=false` | Declaration, static uses, linked overrides/parameters/accessors, exports/parts. Homonyms excluded by identity; conflicts are candidates. No editable token spans or wire-key replacements. |
 | `change_signature` | `added_parameters=[]`, `removed_parameters=[]`, `renamed_parameters={}`, `required?`, `return_type?`, `asynchronous?` | Contracts, callers, forwarding context and test candidates. Hypothetical compatibility stays conditional. |
 | `find_tests` | `test_scope?`, `framework?` | Resolved paths to recognized test cases, or explicitly heuristic test files. Imports alone are excluded. Runner and runtime coverage stay unknown. |
-| `review_change` | `files=[]`, `capture_baseline=false`, `baseline?` | Explicit before/after source hashes, symbols, edges and diagnostic changes. Missing baseline gives current context, not a fabricated diff. |
-| `explain_symbol` | `focus=contract\|implementation\|dependencies` | Declaration/container, implementations, contract, direct dependencies and consumers. Selected focus receives priority; no generated business narrative. |
+| `review_change` | `files=[]`, `capture_baseline=false`, `capture_mode=minimal|context`, `baseline?` | Explicit before/after source hashes, symbols, edges and diagnostic changes. Missing baseline gives current context, not a fabricated diff. |
+| `explain_symbol` | `focus=contract\|implementation\|dependencies` | Declaration/container, implementations, contract, direct dependencies and consumers. Explicit focus selects evidence, absent focus retains the broad recipe; other focuses are optional expansions. No generated business narrative. |
 | `trace_flow` | `destination?`, `direction=out\|in` | Bounded directed calls and bidirectional override alternatives, with cycles/depth limits and qualified file-level unresolved frontiers. No runtime ordering or value dataflow. |
 | `move_symbol` | `destination` | Consumers, contract, import/export/part context; destination indexed/proposed distinction. Build and private visibility compatibility unverified. |
 | `remove_symbol` | `group=[]` | Internal versus external consumers, contracts, exports and candidate tests. `safe_to_delete` stays unknown. |
@@ -67,6 +67,8 @@ context. Display whitespace added by a broker, JSON-RPC framing, duplicated
 text/structured content and tool schemas are outside `max_chars` and must be
 accounted for separately in client measurements.
 
+See the additive [0.8 views, collection budgets and acknowledgement contract](efficiency-0.8-design.md). Legacy omitted/truncated remain per-page; use page_count, remaining_after_page and collection_complete to stop. Source windows and exploration incompleteness are separate.
+
 Repeat identical arguments plus the returned `next_cursor`. Handles are opaque,
 session-only, bound to arguments/budget/root/generation/health, and expire after
 five minutes. At most sixteen handles and 64 MiB of accounted serialized plans
@@ -86,7 +88,7 @@ one server/root, and retain at most two immutable snapshots with a 128 MiB total
 serialized-snapshot budget. Oversized snapshots fail explicitly. Deleted files
 can still be reviewed with their captured baseline. Renamed/moved IDs remain
 added/removed; no identity correspondence or Git historical indexing is guessed.
-Source-hash changes are separate `source_changes` evidence with before/after hashes in `details`. Body-only edits can leave symbol/edge records unchanged: `file_context` then selects declarations and consumers conservatively, without claiming those declarations changed. This comparison is not a statement-level or Git diff.
+Source-hash changes are separate `source_changes` evidence with before/after hashes in `details`. Body-only edits can leave symbol/edge records unchanged. In 0.8 captured sources localize changed line ranges to containing declarations; file_context selects those seeds, with explicit file fallback for uncertain/global ranges. This is not a Git diff or behavioral approval.
 Diagnostic changes include bounded previews and explicit omissions. Follow the
 `diagnostic_changes` evidence pages: `details`, keyed by evidence ID, preserves
 complete original new/resolved messages from both snapshots. Retain baseline
@@ -142,5 +144,5 @@ outputs. Small fact previews have counts/omissions and evidence/snippet expansio
 no reliable `suggested_signature` is generated. Always run the project's normal
 compiler and tests after any change.
 
-See [migration](migration-0.7.md), [provider contract](providers.md),
+See [0.8 additive migration](migration-0.8.md), [historical 0.7 migration](migration-0.7.md), [provider contract](providers.md),
 [consumer harness](harness-AGENTS.md) and [measured validation](benchmarks/intents-0.7/report.md).

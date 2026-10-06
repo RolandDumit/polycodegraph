@@ -1,0 +1,6 @@
+{
+  "response_profile": "compact",
+  "tool_profile": "agent",
+  "watch": true,
+  "max_results": 200
+}

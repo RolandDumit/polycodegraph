@@ -16,22 +16,22 @@ Index a repository, explore its symbols and dependencies through compact graph q
 
 No embeddings, LLM API key or database service is required. The server is a native Rust executable. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
 
-**Version 0.7.0.** All ten [intent context services](docs/intents.md) are available through `inspect_change`: rename, change_signature, find_tests, review_change, explain_symbol, trace_flow, move_symbol, remove_symbol, replace_dependency and extract_symbol, across all ten languages. See [0.7 migration](docs/migration-0.7.md) and [validation](docs/benchmarks/intents-0.7/report.md).
+**Version 0.8.0.** Selective views, explicit collection completion, captured-source review, lexical discovery and optional agent tool exposure are described in [0.8 migration](docs/migration-0.8.md) and the [efficiency report](docs/benchmarks/efficiency-0.8/report.md). An application pilot observed 13.7% less uncached input per accepted task than 0.7, but 89.7% more than no graph; incomplete client telemetry and one replica per cell limit the conclusion. See the [pilot](docs/benchmarks/efficiency-0.8-application/report.md). Version 0.7.0 introduced all ten [intent context services](docs/intents.md), available through `inspect_change`: rename, change_signature, find_tests, review_change, explain_symbol, trace_flow, move_symbol, remove_symbol, replace_dependency and extract_symbol, across all ten languages. See [0.7 migration](docs/migration-0.7.md) and [validation](docs/benchmarks/intents-0.7/report.md).
 
 **Rust core.** Opt-in compact responses, paged diagnostics and per-tool metrics, on the Rust core with local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
 
 ## Install and run
 
-Download a prebuilt package from [release v0.7.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.7.0). **Rust is not required to run these packages.**
+Download a prebuilt package from [release v0.8.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.8.0). **Rust is not required to run these packages.**
 
 | System | Download |
 | --- | --- |
-| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-linux-x64.tar.gz) |
-| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-windows-x64.zip) |
-| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-macos-x64.tar.gz) |
-| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/polycodegraph-0.7.0-macos-arm64.tar.gz) |
+| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.8.0/polycodegraph-0.8.0-linux-x64.tar.gz) |
+| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.8.0/polycodegraph-0.8.0-windows-x64.zip) |
+| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.8.0/polycodegraph-0.8.0-macos-x64.tar.gz) |
+| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.8.0/polycodegraph-0.8.0-macos-arm64.tar.gz) |
 
-Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.7.0/SHA256SUMS) verifies the four archives.
+Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.8.0/SHA256SUMS) verifies the four archives.
 
 To build from source instead:
 
@@ -80,9 +80,10 @@ snippets to 30 lines; explicit limits/windows and pagination remain available.
 
 Paths are relative to the graph root; nonexistent indexed prefixes produce a
 warning and a unique suggestion when possible, never a silent correction.
-Check status once, use `inspect_change` before editing and avoid repeating its
-sections without a reason. Still scan explicitly before sensitive impact and
-after edits. See [profile contract and rollback](docs/response-profiles.md) and
+For known local edits use focused file reads; an exact target can go directly to
+`inspect_change`. Intent freshness/health can avoid a preliminary status call.
+Expand only for a concrete missing question and reconcile explicitly for sensitive
+impact; avoid another index when the next operation already supplies required freshness. See [profile contract and rollback](docs/response-profiles.md) and
 the [consumer harness template](docs/harness-AGENTS.md). Smaller response bytes
 do not prove savings in AI tokens or subscription quota; compact stays opt-in
 until the controlled token experiment meets its correctness and consumption gates.
@@ -303,6 +304,26 @@ Rust uses a [rust-analyzer project model](https://rust-analyzer.github.io/book/n
 
 Edits rebuild the affected Python or Rust language scope; additions/deletions, `pyproject.toml`, requirements/lock files, `Cargo.toml`, `Cargo.lock`, `rust-project.json` and provider/runtime changes invalidate the cache. External dependency/source changes without a changed lock/config require `index --force`.
 
+## Selective agent routing (0.8)
+
+Known local edits can use focused file reads with zero graph calls. Use reliable
+IDs directly; search when locating/disambiguating. Intent results include freshness
+and health, so status need not precede every task. Follow required inventory pages;
+expand optional context only for a specific gap. The next query refreshes according
+to policy; sensitive impacts still permit explicit reconciliation.
+
+```json
+{"name":"inspect_change","arguments":{"target":"lib/domain.dart::UserRepository.fetch#method","intent":"change_signature","options":{"added_parameters":["locale"]},"view":"edit_context","budget":{"max_chars":12000,"max_tokens":2048}}}
+{"name":"search_symbol","arguments":{"query":"negative quantity total","mode":"lexical","expand":"dependencies","limit":5}}
+```
+
+max_tokens uses unicode_chars_div4_v1, a local estimate of the entire compact JSON
+result. See the [view/budget/context contract](docs/efficiency-0.8-design.md) and
+[consumer template](docs/harness-AGENTS.md). Optional `serve --tool-profile agent`
+advertises five tools; full remains default. Hidden primitives/aliases remain
+callable and discoverable through `status(section: tools, tool: name)`. Actual
+client schema loading and model usage require separate executor measurements.
+
 ## MCP tools
 
 All graph queries apply pending watcher events and reconcile when due. `index_repository` explicitly scans source hashes. `detect_changes` reports pending changes without indexing. A fixed root prevents an agent from changing the repository or reading arbitrary paths through tool arguments.
@@ -310,10 +331,10 @@ All graph queries apply pending watcher events and reconcile when due. `index_re
 | Tool | Arguments | Purpose |
 | --- | --- | --- |
 | `index_repository` | `force?` | Refresh; report changed, deleted and reindexed files |
-| `status` | none | Fresh graph health, diagnostics and counts |
+| `status` | `section?`, `tool?`, `offset?`, `limit?` | Health, diagnostic/metric pages; accepted schemas via section=tools |
 | `detect_changes` | none | Pending edits and environment changes |
 | `get_architecture` | `limit?` | Counts, tags, directories, relationship kinds and hubs |
-| `search_symbol` / `search` | `query`, `kind?`, `tag?`, `file?`, `language?` | Case-insensitive substring symbol discovery |
+| `search_symbol` / `search` | `query`, `kind?`, `tag?`, `file?`, `language?`, `mode?`, `expand?` | Symbol discovery; opt-in lexical content candidates/semantic expansion |
 | `callers` | `target` | Resolved incoming call sites |
 | `callees` | `target` | Resolved outgoing call sites |
 | `references` | `target` | Resolved incoming identifier/type references |
@@ -321,8 +342,10 @@ All graph queries apply pending watcher events and reconcile when due. `index_re
 | `dependencies` | `target`, `direction?` | File-level directives and cross-file symbol dependencies |
 | `neighbors` | `target`, `direction?`, `kinds?` | Adjacent graph nodes and source sites |
 | `affected_by_change` / `blast_radius` | `target`, `depth?` | Conservative reverse closure, with reasons |
-| `inspect_change` | `target`, `depth?`, `limit?`, `include_snippet?` | Symbol, callers, implementations and impact in one generation |
+| `inspect_change` | `target`, `intent?`, `options?`, `view?`, `budget?`, `cursor?`, `context?` | Intent collection; absent intent retains legacy inspection |
 | `snippet` | `target?`, `file?`, `start_line?`, `end_line?`, `context?` | Bounded source window |
+
+Legacy no-intent `inspect_change` also retains `depth`, `limit` and `include_snippet`; these do not select the new intent views.
 
 List-returning tools accept `offset` (default 0) and `limit` (default 50, capped by `max_results`). `get_architecture` defaults to 20 hubs. `search_symbol.file` is a relative path prefix; `kind`/`tag` are exact filters. Filter `language` with `dart`, `typescript`, `javascript`, `java`, `go`, `python`, `rust`, `swift`, `objectivec` or `kotlin`. An empty `query` lists symbols. Search favors exact names, then prefixes, then substrings. A `target` is a returned stable ID, an unambiguous qualified name/name, or an indexed relative file path. Ambiguous names return candidate IDs instead of guessing.
 
@@ -340,7 +363,7 @@ Examples using the included Dart fixture:
 {"name":"snippet","arguments":{"target":"LoadUserUseCase.call","context":1}}
 ```
 
-The protocol returns one text content block containing compact JSON and an equivalent `structuredContent` object for clients that support it. Source is returned only by `snippet`. Tables use a single column header and arrays of rows:
+The protocol returns one text content block containing compact JSON and an equivalent `structuredContent` object for clients that support it. Sources are returned by `snippet` and intent views that request them. Tables use a single column header and arrays of rows:
 
 ```json
 {
@@ -382,7 +405,7 @@ Tags are discovery hints. Annotation and naming hints do not certify framework o
 
 ## Cache and incremental indexing
 
-The repository-local SQLite cache stores schema-3 records, symbols, edges, scopes, dependencies and diagnostics. Transactions publish a coherent generation. Incoming/outgoing indexes and an immutable in-memory graph are reused while the generation is unchanged; unchanged warm queries perform no extraction or graph reconstruction.
+The repository-local SQLite cache stores schema-4 records, symbols, edges, scopes, dependencies and diagnostics. Transactions publish a coherent generation. Incoming/outgoing indexes and an immutable in-memory graph are reused while the generation is unchanged; unchanged warm queries perform no extraction or graph reconstruction.
 
 `serve` watches the repository before initial indexing. Events are debounced for 200 ms and drained before queries. A complete hash reconciliation runs every 30 seconds, including configured environment/provider/dependency inputs. Lost events can leave a bounded freshness window until reconciliation: inspect `status.freshness`. Watcher errors/overflow force reconciliation; unavailable or disabled watchers scan on every query. `watch: false` restores the strict per-query scanning policy. CLI `index`/`status` perform explicit scans; MCP `index_repository` scans too, and `force: true` reconstructs all records.
 

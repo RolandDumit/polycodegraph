@@ -1,0 +1,27 @@
+{
+  "scope": "synthetic normalized edges: DELETE+reinsert+FULL commit; not whole index or AI task cost",
+  "edges": 100000,
+  "sqlite_version": "3.53.4",
+  "results": {
+    "scan": {
+      "plan": [
+        "SCAN edges"
+      ],
+      "initial_write_ms": 140.6773300259374,
+      "update_p50_ms": 3.4557480248622596,
+      "update_p95_ms": 4.484764998778701,
+      "database_bytes": 10596352,
+      "iterations": 31
+    },
+    "indexed": {
+      "plan": [
+        "SEARCH edges USING INDEX edge_file (file=?)"
+      ],
+      "initial_write_ms": 170.0889440253377,
+      "update_p50_ms": 0.8327519753947854,
+      "update_p95_ms": 1.2624519877135754,
+      "database_bytes": 12308480,
+      "iterations": 31
+    }
+  }
+}

@@ -19,6 +19,22 @@ pub fn tools(c: &Config) -> Vec<Value> {
     }
     tools
 }
+pub fn advertised_tools(c: &Config) -> Vec<Value> {
+    tools(c)
+        .into_iter()
+        .filter(|t| {
+            c.tool_profile == crate::config::ToolProfile::Full
+                || [
+                    "status",
+                    "search_symbol",
+                    "inspect_change",
+                    "snippet",
+                    "index_repository",
+                ]
+                .contains(&t["name"].as_str().unwrap_or(""))
+        })
+        .collect()
+}
 pub fn validate(spec: &Value, a: &Value) -> Result<()> {
     let obj = a
         .as_object()
@@ -77,11 +93,11 @@ pub fn validate(spec: &Value, a: &Value) -> Result<()> {
     if spec["name"] == "inspect_change" {
         if a.get("intent").is_some() {
             crate::intents::Request::parse(a)?;
-        } else if ["options", "budget", "cursor"]
+        } else if ["options", "budget", "cursor", "view", "context"]
             .iter()
             .any(|key| a.get(key).is_some())
         {
-            bail!("options/budget/cursor require intent")
+            bail!("options/budget/cursor/view/context require intent")
         }
     }
     Ok(())
@@ -121,6 +137,17 @@ impl Session {
         if !params.is_object() {
             return Some(error(id, -32602, "Params must be an object"));
         }
+        if let Some(meta) = params.get("_meta") {
+            if !meta.is_object() {
+                return Some(error(id, -32602, "Request _meta must be an object"));
+            }
+            if meta
+                .get("progressToken")
+                .is_some_and(|token| !token.is_string() && !token.is_number())
+            {
+                return Some(error(id, -32602, "Invalid request progressToken"));
+            }
+        }
         let result = match method {
             "initialize" => {
                 if self.initialized {
@@ -143,7 +170,7 @@ impl Session {
                 } else {
                     "2025-11-25"
                 };
-                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"polycodegraph","version":env!("CARGO_PKG_VERSION")},"instructions":"Check status freshness and coverage, find stable ids with search_symbol, then inspect_change. Static dispatch is incomplete; run compiler checks and tests."})
+                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"polycodegraph","version":env!("CARGO_PKG_VERSION")},"instructions":"Use focused file reads for known local edits. Use an exact target directly with inspect_change; search only to locate/disambiguate. Intent results include freshness and health. Read pertinent required pages, expand only for a concrete gap. Advanced tools are discoverable with status(section: tools, tool: name); original names/aliases are accepted. Static coverage is incomplete; run compiler checks and tests."})
             }
             "ping" => json!({}),
             "tools/list" | "tools/call" => {
@@ -156,14 +183,17 @@ impl Session {
                 }
                 let specs = tools(&index.config);
                 if method == "tools/list" {
-                    if params.as_object().is_some_and(|p| !p.is_empty()) {
+                    if params
+                        .as_object()
+                        .is_some_and(|p| p.keys().any(|key| key != "_meta"))
+                    {
                         return Some(error(
                             id,
                             -32602,
                             "tools/list has no cursor; all tools fit on one page",
                         ));
                     }
-                    json!({"tools":specs})
+                    json!({"tools":advertised_tools(&index.config)})
                 } else {
                     let Some(name) = params["name"].as_str() else {
                         return Some(error(id, -32602, "Invalid tool call"));
@@ -187,12 +217,9 @@ impl Session {
                     match result {
                         Ok(data) => {
                             let text = data.to_string();
-                            index
-                                .metrics
-                                .tools
-                                .entry(name.into())
-                                .or_default()
-                                .response_bytes += text.len() as u64;
+                            let metric = index.metrics.tools.entry(name.into()).or_default();
+                            metric.response_bytes += text.len() as u64;
+                            metric.response_chars += text.chars().count() as u64;
                             json!({"content":[{"type":"text","text":text}],"structuredContent":data,"isError":false})
                         }
                         Err(e) => {
@@ -200,6 +227,7 @@ impl Session {
                             let metrics = index.metrics.tools.entry(name.into()).or_default();
                             metrics.errors += 1;
                             metrics.response_bytes += text.len() as u64;
+                            metrics.response_chars += text.chars().count() as u64;
                             json!({"content":[{"type":"text","text":text}],"isError":true})
                         }
                     }

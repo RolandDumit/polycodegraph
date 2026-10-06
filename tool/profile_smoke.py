@@ -20,6 +20,7 @@ def run(binary):
         try:
             specs = client.request("tools/list", {})["tools"]
             assert len(specs) == 16
+            assert client.request("tools/list", {"_meta": {"progressToken": "native-list"}})["tools"] == specs
             status = client.call("status")
             assert status["outcome"] == "ok" and status["counts"]["files"] == 0
             full = client.call("status", detail="full")

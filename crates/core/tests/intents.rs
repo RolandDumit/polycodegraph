@@ -509,7 +509,7 @@ fn explain_focus_prioritizes_direct_dependencies_and_class_implementations() {
 }
 
 #[test]
-fn review_detects_body_only_source_edit_and_retains_conservative_consumers() {
+fn review_detects_source_edit_without_claiming_all_declarations_changed() {
     let (d, c, original) = fixture("ts");
     let mut state = State::default();
     let handle = state.prepare(&original, &c, &json!({"intent":"review_change","target":"api.ts","options":{"capture_baseline":true}}), json!({})).unwrap()["facts"]["baseline"]["handle"].clone();
@@ -531,11 +531,12 @@ fn review_detects_body_only_source_edit_and_retains_conservative_consumers() {
         .unwrap();
     assert_eq!(v["sections"]["source_changes"]["total"], 1);
     assert!(v["sections"]["file_context"]["total"].as_u64().unwrap() > 0);
-    assert!(
-        v["sections"]["affected_consumers"]["total"]
-            .as_u64()
+    assert_eq!(
+        v["facts"]["localization"][0]["seeds"]
+            .as_array()
             .unwrap()
-            > 0
+            .len(),
+        1
     );
     assert!(v["sections"].get("changed_symbols").is_none());
     assert_eq!(v["outcome"], "partial");
@@ -546,4 +547,530 @@ fn review_detects_body_only_source_edit_and_retains_conservative_consumers() {
             .values()
             .any(|v| v["before_hash"] != v["after_hash"])
     );
+}
+
+fn large_review(count: usize) -> (tempfile::TempDir, Config, Graph, String) {
+    let d = tempfile::tempdir().unwrap();
+    let c = Config::load(d.path(), None).unwrap();
+    let text: String = (0..count)
+        .map(|i| format!("function f{i}() {{ return 0; }}\n"))
+        .collect();
+    fs::write(d.path().join("sample.ts"), &text).unwrap();
+    let nodes = (0..count)
+        .map(|i| Node {
+            id: format!("sample.ts::f{i}#function"),
+            name: format!("f{i}"),
+            qualified: format!("f{i}"),
+            kind: "function".into(),
+            file: "sample.ts".into(),
+            line: i + 1,
+            end: i + 1,
+            offset: 0,
+            length: 1,
+            parent: None,
+            tags: vec![],
+            synthetic: false,
+        })
+        .collect();
+    let record = FileRecord {
+        file: "sample.ts".into(),
+        hash: hash(&text),
+        nodes,
+        edges: vec![],
+        dependencies: vec![],
+        diagnostics: vec![],
+        unresolved_calls: 0,
+        intent: Default::default(),
+    };
+    let g = Graph::new(Snapshot {
+        files: BTreeMap::from([("sample.ts".into(), record)]),
+        generation: "before".into(),
+        ..Default::default()
+    });
+    (d, c, g, text)
+}
+#[test]
+fn large_review_limits_stay_constant_and_pages_exhaust_the_inventory() {
+    let mut warning_count = None;
+    for count in [1, 40, 100, 140] {
+        let (d, c, g, text) = large_review(count);
+        let mut s = State::default();
+        let capture=s.prepare(&g,&c,&json!({"intent":"review_change","target":"sample.ts","options":{"capture_baseline":true},"budget":{"max_chars":100000}}),json!({})).unwrap();
+        let text = text.replacen("return 0", "return 1", 1);
+        fs::write(d.path().join("sample.ts"), &text).unwrap();
+        let mut snapshot = (*g.snapshot).clone();
+        snapshot.files.get_mut("sample.ts").unwrap().hash = hash(&text);
+        snapshot.generation = "after".into();
+        let after = Graph::new(snapshot);
+        let mut args = json!({"intent":"review_change","target":"sample.ts","options":{"baseline":capture["facts"]["baseline"]["handle"]}});
+        let mut ids = std::collections::BTreeSet::new();
+        let mut iterations = 0;
+        loop {
+            let v = s.prepare(&after, &c, &args, json!({})).unwrap();
+            iterations += 1;
+            assert!(iterations < 200);
+            let n = v["limits"].as_array().unwrap().len();
+            assert_eq!(*warning_count.get_or_insert(n), n);
+            for row in v["evidence"]["rows"].as_array().unwrap() {
+                assert!(ids.insert(row[0].as_str().unwrap().to_owned()));
+            }
+            assert_eq!(
+                v["evidence"]["page_count"].as_u64().unwrap() as usize,
+                v["evidence"]["rows"].as_array().unwrap().len()
+            );
+            if v["next_cursor"].is_null() {
+                assert_eq!(v["evidence"]["remaining_after_page"], 0);
+                assert_eq!(v["evidence"]["collection_complete"], true);
+                break;
+            }
+            assert!(v["evidence"]["remaining_after_page"].as_u64().unwrap() > 0);
+            args["cursor"] = v["next_cursor"].clone();
+        }
+        assert_eq!(ids.len(), 2, "one source event and one changed declaration");
+    }
+}
+
+fn edited_graph(g: &Graph, file: &str, text: &str) -> Graph {
+    let mut snapshot = (*g.snapshot).clone();
+    snapshot.files.get_mut(file).unwrap().hash = hash(text);
+    snapshot.generation = hash(text)[..20].into();
+    Graph::new(snapshot)
+}
+#[test]
+fn minimal_capture_uses_current_working_tree_and_localizes_body_contract_and_formatting() {
+    for (replacement, expected) in [
+        ("return 9", "body"),
+        ("function f0(value: number)", "contract_or_initializer"),
+        ("\nfunction f0", "formatting"),
+    ] {
+        let (d, c, g, text) = large_review(140);
+        // The captured baseline already differs from any putative clean checkout.
+        let before = text.replacen("return 0", "return 7", 1);
+        fs::write(d.path().join("sample.ts"), &before).unwrap();
+        let g = edited_graph(&g, "sample.ts", &before);
+        let mut s = State::default();
+        let capture=s.prepare(&g,&c,&json!({"target":"sample.ts","intent":"review_change","options":{"capture_baseline":true,"capture_mode":"minimal"}}),json!({})).unwrap();
+        assert!(capture["evidence"]["rows"].as_array().unwrap().is_empty());
+        let after = match expected {
+            "body" => before.replacen("return 7", replacement, 1),
+            "formatting" => before.replacen("function f0", replacement, 1),
+            _ => before.replacen("function f0()", replacement, 1),
+        };
+        fs::write(d.path().join("sample.ts"), &after).unwrap();
+        let mut updated = (*g.snapshot).clone();
+        updated.files.get_mut("sample.ts").unwrap().hash = hash(&after);
+        updated.generation = "new".into();
+        if expected == "formatting" {
+            for n in &mut updated.files.get_mut("sample.ts").unwrap().nodes {
+                n.line += 1;
+                n.end += 1;
+            }
+        }
+        let after = Graph::new(updated);
+        let v=s.prepare(&after,&c,&json!({"target":"sample.ts","intent":"review_change","options":{"baseline":capture["facts"]["baseline"]["handle"]},"view":"locations"}),json!({})).unwrap();
+        assert_eq!(v["facts"]["localization"][0]["kind"], expected);
+        assert_eq!(v["facts"]["baseline_generation"], g.snapshot.generation);
+        assert!(v["evidence"]["rows"].as_array().unwrap().len() <= 2);
+        for f in v["files"].as_array().unwrap() {
+            assert!(f["snippets"].as_array().unwrap().is_empty());
+        }
+    }
+}
+#[test]
+fn import_fallback_and_removed_declaration_keep_cross_file_consumers() {
+    let (d, c, g, text) = large_review(3);
+    let mut snapshot = (*g.snapshot).clone();
+    let caller = Node {
+        id: "use.ts::caller#function".into(),
+        name: "caller".into(),
+        qualified: "caller".into(),
+        file: "use.ts".into(),
+        line: 1,
+        end: 1,
+        kind: "function".into(),
+        offset: 0,
+        length: 1,
+        parent: None,
+        tags: vec![],
+        synthetic: false,
+    };
+    let edge = Edge {
+        source: caller.id.clone(),
+        target: "sample.ts::f0#function".into(),
+        kind: "calls".into(),
+        file: "use.ts".into(),
+        line: 1,
+        offset: 1,
+        confidence: "resolved".into(),
+    };
+    fs::write(d.path().join("use.ts"), "function caller() { f0(); }\n").unwrap();
+    snapshot.files.insert(
+        "use.ts".into(),
+        FileRecord {
+            file: "use.ts".into(),
+            hash: hash("function caller() { f0(); }\n"),
+            nodes: vec![caller],
+            edges: vec![edge],
+            dependencies: vec![],
+            diagnostics: vec![],
+            unresolved_calls: 0,
+            intent: Default::default(),
+        },
+    );
+    let g = Graph::new(snapshot);
+    let mut s = State::default();
+    let capture=s.prepare(&g,&c,&json!({"target":"sample.ts","intent":"review_change","options":{"capture_baseline":true,"capture_mode":"minimal"}}),json!({})).unwrap();
+    let new_text = format!("import './use';\n{text}");
+    fs::write(d.path().join("sample.ts"), &new_text).unwrap();
+    let mut snapshot = (*g.snapshot).clone();
+    let r = snapshot.files.get_mut("sample.ts").unwrap();
+    r.hash = hash(&new_text);
+    for n in &mut r.nodes {
+        n.line += 1;
+        n.end += 1;
+    }
+    snapshot.generation = "imports".into();
+    let after = Graph::new(snapshot);
+    let v=s.prepare(&after,&c,&json!({"target":"sample.ts","intent":"review_change","options":{"baseline":capture["facts"]["baseline"]["handle"]},"view":"locations"}),json!({})).unwrap();
+    assert!(v["facts"]["localization"][0]["fallback"].is_string());
+    assert_eq!(v["sections"]["affected_consumers"]["total"], 1);
+    let mut snapshot = (*g.snapshot).clone();
+    snapshot.files.remove("sample.ts");
+    snapshot.generation = "deleted".into();
+    fs::remove_file(d.path().join("sample.ts")).unwrap();
+    let after = Graph::new(snapshot);
+    let v=s.prepare(&after,&c,&json!({"target":"sample.ts","intent":"review_change","options":{"baseline":capture["facts"]["baseline"]["handle"]},"view":"locations"}),json!({})).unwrap();
+    assert!(
+        v["evidence"]["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|r| r[3] == "calls" && r[10] == "before")
+    );
+    assert_eq!(v["facts"]["files"], json!(["sample.ts"]));
+}
+#[test]
+fn explicit_missing_file_scope_can_compare_an_addition() {
+    let (d, c, g, _) = large_review(1);
+    let mut s = State::default();
+    let capture=s.prepare(&g,&c,&json!({"target":"new.ts","intent":"review_change","options":{"files":["new.ts"],"capture_baseline":true,"capture_mode":"minimal"}}),json!({})).unwrap();
+    fs::write(d.path().join("new.ts"), "function created() {}\n").unwrap();
+    let mut snapshot = (*g.snapshot).clone();
+    let mut record = snapshot.files["sample.ts"].clone();
+    record.file = "new.ts".into();
+    record.hash = hash("function created() {}\n");
+    for n in &mut record.nodes {
+        n.file = "new.ts".into();
+        n.id = "new.ts::created#function".into();
+        n.name = "created".into();
+        n.qualified = "created".into();
+    }
+    snapshot.files.insert("new.ts".into(), record);
+    let after = Graph::new(snapshot);
+    let v=s.prepare(&after,&c,&json!({"target":"new.ts","intent":"review_change","options":{"baseline":capture["facts"]["baseline"]["handle"]},"view":"locations"}),json!({})).unwrap();
+    assert_eq!(v["sections"]["added_symbols"]["total"], 1);
+    assert_eq!(v["sections"]["source_changes"]["total"], 1);
+}
+#[test]
+fn views_acknowledgement_rehydrate_and_semantic_invalidation_preserve_sites() {
+    let (_d, c, g) = fixture("dart");
+    let mut s = State::default();
+    let args = json!({"intent":"rename","target":"api","view":"contracts"});
+    let first = s.prepare(&g, &c, &args, json!({})).unwrap();
+    let windows: Vec<_> = first["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|f| f["snippets"].as_array().unwrap())
+        .map(|w| w["window_id"].clone())
+        .collect();
+    assert!(!windows.is_empty());
+    let mut context = json!({"epoch":"one","root_id":first["context"]["root_id"],"generation":first["generation"],"health_fingerprint":first["health_fingerprint"],"environment_fingerprint":g.snapshot.environment,"known_windows":windows});
+    let mut acknowledged = args.clone();
+    acknowledged["context"] = context.clone();
+    let second = s.prepare(&g, &c, &acknowledged, json!({})).unwrap();
+    assert!(second["context"]["suppressed_windows"].as_u64().unwrap() > 0);
+    assert_eq!(second["evidence"], first["evidence"]);
+    assert!(second.to_string().len() < first.to_string().len() + 300); // tiny fixture may be smaller than protocol overhead
+    for w in second["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|f| f["snippets"].as_array().unwrap())
+    {
+        assert!(w.get("text").is_none());
+    }
+    context["epoch"] = json!("after-compaction");
+    context["rehydrate"] = json!(true);
+    acknowledged["context"] = context.clone();
+    let rehydrated = s.prepare(&g, &c, &acknowledged, json!({})).unwrap();
+    assert_eq!(rehydrated["context"]["suppressed_windows"], 0);
+    for change in ["health", "dependency"] {
+        let mut snapshot = (*g.snapshot).clone();
+        if change == "health" {
+            snapshot
+                .files
+                .get_mut("api.dart")
+                .unwrap()
+                .diagnostics
+                .push(json!({"code":"new","severity":"error","message":"new coverage problem"}));
+        } else {
+            snapshot.environment = "new-dependency".into();
+        }
+        let new = Graph::new(snapshot);
+        context["rehydrate"] = json!(false);
+        acknowledged["context"] = context.clone();
+        let v = s.prepare(&new, &c, &acknowledged, json!({})).unwrap();
+        assert_eq!(v["context"]["reset_required"], true);
+        assert_eq!(v["context"]["suppressed_windows"], 0);
+    }
+    let locations = s
+        .prepare(
+            &g,
+            &c,
+            &json!({"intent":"rename","target":"api","view":"locations"}),
+            json!({}),
+        )
+        .unwrap();
+    assert_eq!(locations["evidence"], first["evidence"]);
+    assert!(
+        locations["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|f| f["snippets"].as_array().unwrap().is_empty())
+    );
+}
+#[test]
+fn collection_cap_is_explicit_and_token_budget_counts_the_whole_result() {
+    let (_d, c, g) = fixture("dart");
+    let mut s = State::default();
+    let v=s.prepare(&g,&c,&json!({"intent":"rename","target":"api","view":"locations","budget":{"max_collection_items":1,"max_tokens":2048}}),json!({})).unwrap();
+    assert_eq!(v["evidence"]["page_count"], 1);
+    assert_eq!(v["evidence"]["remaining_after_page"], 3);
+    assert_eq!(v["evidence"]["collection_complete"], false);
+    assert!(v["next_cursor"].is_null());
+    assert!(
+        v["limit_causes"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("collection_budget"))
+    );
+    assert_eq!(
+        v["token_budget"]["estimated_tokens"].as_u64().unwrap() as usize,
+        v.to_string().chars().count().div_ceil(4)
+    );
+    assert!(s.prepare(&g,&c,&json!({"intent":"rename","target":"api","view":"locations","budget":{"max_tokens":256}}),json!({})).is_err());
+}
+#[test]
+fn relation_budget_reaches_contracts_before_large_reference_fan_in() {
+    let (_d, c, g) = fixture("dart");
+    let mut snapshot = (*g.snapshot).clone();
+    let r = snapshot.files.get_mut("api.dart").unwrap();
+    r.edges.push(Edge {
+        source: r.nodes[3].id.clone(),
+        target: r.nodes[1].id.clone(),
+        kind: "overrides".into(),
+        file: "api.dart".into(),
+        line: 4,
+        offset: 44,
+        confidence: "resolved".into(),
+    });
+    for i in 0..1000 {
+        let mut edge = r.edges[1].clone();
+        edge.offset = 100 + i;
+        r.edges.push(edge);
+    }
+    let g = Graph::new(snapshot);
+    let v=State::default().prepare(&g,&c,&json!({"intent":"rename","target":"api","view":"locations","budget":{"max_traversal":1010,"max_chars":100000}}),json!({})).unwrap();
+    assert_eq!(v["evidence"]["exploration_limited"], false);
+    assert_eq!(v["sections"]["contracts"]["discovered_total"], 1);
+    assert_eq!(v["sections"]["usages"]["discovered_total"], 1003);
+}
+#[test]
+fn explicit_explain_focus_selects_sections_and_lexical_matches_do_not_invent_edges() {
+    let (_d, c, g) = fixture("ts");
+    let mut s = State::default();
+    let v=s.prepare(&g,&c,&json!({"intent":"explain_symbol","target":"api","options":{"focus":"dependencies"},"view":"locations"}),json!({})).unwrap();
+    assert!(v["sections"].get("consumers").is_none());
+    assert!(v["facts"]["optional_expansions"].is_array());
+    let before = g.edges.len();
+    let lexical = g
+        .call(
+            &c,
+            "search_symbol",
+            &json!({"query":"wire unchanged","mode":"lexical"}),
+        )
+        .unwrap();
+    assert!(!lexical["rows"].as_array().unwrap().is_empty());
+    assert_eq!(g.edges.len(), before);
+    assert!(
+        lexical["expansion"]["relations"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    let expanded = g
+        .call(
+            &c,
+            "search_symbol",
+            &json!({"query":"api declaration","mode":"lexical","expand":"callers"}),
+        )
+        .unwrap();
+    assert!(
+        !expanded["expansion"]["relations"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[test]
+fn destination_trace_excludes_large_reachable_side_branch() {
+    let (_d, c, g) = fixture("dart");
+    let mut snapshot = (*g.snapshot).clone();
+    let r = snapshot.files.get_mut("api.dart").unwrap();
+    r.edges.clear();
+    let prototype = r.nodes[1].clone();
+    for id in ["A", "B", "D", "C"]
+        .into_iter()
+        .map(str::to_owned)
+        .chain((0..100).map(|i| format!("side{i}")))
+    {
+        let mut n = prototype.clone();
+        n.id = id.clone();
+        n.name = id.clone();
+        n.qualified = id;
+        r.nodes.push(n);
+    }
+    for (i, (source, target)) in [
+        ("A".to_owned(), "B".to_owned()),
+        ("B".to_owned(), "D".to_owned()),
+        ("A".to_owned(), "C".to_owned()),
+    ]
+    .into_iter()
+    .chain((0..100).map(|i| {
+        (
+            if i == 0 {
+                "C".into()
+            } else {
+                format!("side{}", i - 1)
+            },
+            format!("side{i}"),
+        )
+    }))
+    .enumerate()
+    {
+        r.edges.push(Edge {
+            source,
+            target,
+            kind: "calls".into(),
+            file: "api.dart".into(),
+            line: 1,
+            offset: i,
+            confidence: "resolved".into(),
+        });
+    }
+    let g = Graph::new(snapshot);
+    let result=State::default().prepare(&g,&c,&json!({"intent":"trace_flow","target":"A","view":"locations","depth":10,"options":{"destination":"D"}}),json!({})).unwrap();
+    assert_eq!(result["facts"]["destination_found"], true);
+    let rows = result["evidence"]["rows"].as_array().unwrap();
+    let symbols = result["symbols"]["rows"].as_array().unwrap();
+    assert!(
+        rows.iter()
+            .any(|r| symbols[r[1].as_u64().unwrap() as usize][0] == "B"
+                && symbols[r[2].as_u64().unwrap() as usize][0] == "D")
+    );
+    assert!(
+        !symbols
+            .iter()
+            .any(|r| r[0] == "C" || r[0].as_str().unwrap().starts_with("side"))
+    );
+    assert!(
+        !rows
+            .iter()
+            .any(|r| r[1] == "C" || r[2] == "C" || r.to_string().contains("side"))
+    );
+}
+
+#[test]
+fn edit_context_keeps_a_late_review_hunk_in_a_large_function() {
+    let (d, c, g, _) = large_review(1);
+    let before = format!(
+        "function f0() {{\n{}return 0;\n}}\n",
+        (0..300)
+            .map(|i| format!("// line {i}\n"))
+            .collect::<String>()
+    );
+    fs::write(d.path().join("sample.ts"), &before).unwrap();
+    let mut snapshot = (*g.snapshot).clone();
+    let record = snapshot.files.get_mut("sample.ts").unwrap();
+    record.hash = hash(&before);
+    for n in &mut record.nodes {
+        n.line = 1;
+        n.end = 303;
+        n.offset = 0;
+        n.length = before.len();
+    }
+    let g = Graph::new(snapshot);
+    let mut state = State::default();
+    let captured=state.prepare(&g,&c,&json!({"intent":"review_change","target":"sample.ts","options":{"capture_baseline":true,"capture_mode":"minimal"}}),json!({})).unwrap();
+    let after = before.replace("return 0;", "return 1;");
+    fs::write(d.path().join("sample.ts"), &after).unwrap();
+    let g = edited_graph(&g, "sample.ts", &after);
+    let response=state.prepare(&g,&c,&json!({"intent":"review_change","target":"sample.ts","view":"edit_context","options":{"baseline":captured["facts"]["baseline"]["handle"]}}),json!({})).unwrap();
+    let windows = response["files"][0]["snippets"].as_array().unwrap();
+    assert!(
+        windows
+            .iter()
+            .any(|w| w["text"].as_str().unwrap().contains("return 1;"))
+    );
+    assert!(
+        windows
+            .iter()
+            .all(|w| w["text"].as_str().unwrap().lines().count() < 10)
+    );
+}
+
+#[test]
+fn lexical_no_match_does_not_return_unanchored_unrelated_lines() {
+    let (_d, c, g) = fixture("dart");
+    let response = g
+        .call(
+            &c,
+            "search_symbol",
+            &json!({"query":"notPresentAnywhere","mode":"lexical"}),
+        )
+        .unwrap();
+    assert!(response["rows"].as_array().unwrap().is_empty());
+    assert_eq!(response["discovered_total"], 0);
+}
+
+#[test]
+fn deleted_file_review_source_views_keep_historical_ids_without_current_windows() {
+    let (d, c, g) = fixture("dart");
+    let mut state = State::default();
+    let capture=state.prepare(&g,&c,&json!({"intent":"review_change","target":"api.dart","options":{"capture_baseline":true,"capture_mode":"minimal"}}),json!({})).unwrap();
+    fs::remove_file(d.path().join("api.dart")).unwrap();
+    let after = Graph::new(Snapshot {
+        generation: "deleted".into(),
+        ..Default::default()
+    });
+    for view in ["edit_context", "full_evidence"] {
+        let response=state.prepare(&after,&c,&json!({"intent":"review_change","target":"api.dart","options":{"baseline":capture["facts"]["baseline"]["handle"]},"view":view}),json!({})).unwrap();
+        assert!(
+            response["symbols"]["rows"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|r| r[0] == "api.dart::api#method" && r[5] == "before")
+        );
+        assert!(
+            response["files"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|f| f["snippets"].as_array().unwrap().is_empty())
+        );
+    }
 }

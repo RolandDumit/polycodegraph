@@ -16,10 +16,35 @@ pub enum Intent {
     ReplaceDependency,
     ExtractSymbol,
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum View {
+    Locations,
+    Contracts,
+    EditContext,
+    FullEvidence,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClientContext {
+    pub epoch: String,
+    pub root_id: String,
+    pub generation: String,
+    pub health_fingerprint: String,
+    pub environment_fingerprint: String,
+    #[serde(default)]
+    pub known_windows: Vec<String>,
+    #[serde(default)]
+    pub rehydrate: bool,
+}
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Budget {
     pub max_chars: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_tokens: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_collection_items: Option<usize>,
     pub max_items: usize,
     pub max_files: usize,
     pub max_traversal: usize,
@@ -28,6 +53,8 @@ impl Default for Budget {
     fn default() -> Self {
         Self {
             max_chars: 12000,
+            max_tokens: None,
+            max_collection_items: None,
             max_items: 40,
             max_files: 12,
             max_traversal: 10000,
@@ -63,6 +90,7 @@ pub struct Review {
     pub files: Vec<String>,
     pub baseline: Option<String>,
     pub capture_baseline: bool,
+    pub capture_mode: Option<String>,
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -120,6 +148,8 @@ pub struct Request {
     pub budget: Budget,
     pub depth: usize,
     pub detail: Option<String>,
+    pub view: Option<View>,
+    pub context: Option<ClientContext>,
 }
 impl Request {
     pub fn parse(a: &Value) -> Result<Self> {
@@ -153,6 +183,12 @@ impl Request {
             || !(1..=200).contains(&budget.max_items)
             || !(1..=32).contains(&budget.max_files)
             || !(1..=100000).contains(&budget.max_traversal)
+            || budget
+                .max_tokens
+                .is_some_and(|n| !(256..=32000).contains(&n))
+            || budget
+                .max_collection_items
+                .is_some_and(|n| !(1..=100000).contains(&n))
         {
             bail!(
                 "Impossible/out-of-range intent budget (chars 3000..100000, items 1..200, files 1..32, traversal 1..100000)"
@@ -209,7 +245,11 @@ impl Request {
                 bail!("direction must be in/out")
             }
             Options::Review(v)
-                if v.files.len() > 32 || (v.capture_baseline && v.baseline.is_some()) =>
+                if v.files.len() > 32
+                    || (v.capture_baseline && v.baseline.is_some())
+                    || v.capture_mode.as_ref().is_some_and(|mode| {
+                        !v.capture_baseline || !["minimal", "context"].contains(&mode.as_str())
+                    }) =>
             {
                 bail!("Invalid baseline/files options")
             }
@@ -225,6 +265,25 @@ impl Request {
             }
             _ => {}
         }
+        let view = a
+            .get("view")
+            .map(|v| serde_json::from_value(v.clone()))
+            .transpose()?;
+        let context: Option<ClientContext> = a
+            .get("context")
+            .map(|v| serde_json::from_value(v.clone()))
+            .transpose()?;
+        if context.as_ref().is_some_and(|v| {
+            v.epoch.is_empty()
+                || v.epoch.len() > 128
+                || v.root_id.len() != 64
+                || v.known_windows.len() > 256
+                || v.known_windows.iter().any(|id| id.len() != 64)
+                || v.generation.len() > 128
+                || v.health_fingerprint.len() > 128
+        }) {
+            bail!("Invalid client context identity/window acknowledgement");
+        }
         Ok(Self {
             intent,
             target,
@@ -232,6 +291,8 @@ impl Request {
             budget,
             depth,
             detail: a["detail"].as_str().map(str::to_owned),
+            view,
+            context,
         })
     }
 }

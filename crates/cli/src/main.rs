@@ -27,6 +27,8 @@ struct Args {
     dev: bool,
     #[arg(long, value_parser=["legacy","compact"])]
     response_profile: Option<String>,
+    #[arg(long)]
+    tool_profile: Option<String>,
 }
 #[tokio::main]
 async fn main() {
@@ -76,7 +78,11 @@ async fn main() {
         c.response_profile_override = Some(profile);
     }
     let result: anyhow::Result<()> = async {
-        match args.command.as_str() {
+        if let Some(profile)=args.tool_profile.as_deref() {
+        let profile=match profile {"full"=>polycodegraph_core::config::ToolProfile::Full,"agent"=>polycodegraph_core::config::ToolProfile::Agent,_=>anyhow::bail!("tool-profile must be full or agent")};
+        c.tool_profile=profile;c.tool_profile_override=Some(profile);
+    }
+    match args.command.as_str() {
             "doctor" => println!("{}", providers::doctor(&c)),
             "init" => {
                 for name in ["polycodegraph.yaml", "polycodegraph.yml", "polycodegraph.json"] {

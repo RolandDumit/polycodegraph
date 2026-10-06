@@ -1,0 +1,175 @@
+{
+  "base_commit": "06e0a72741d2370b74888b86311709dfd9c3f286",
+  "candidate_source_identity": "0b38b4bf1655334c059da5925d3b4e11404f71f8df85283c92c9f531dc2c19d2",
+  "candidate_binary_sha256": "cc8bb9e6008be85479d3a22c8c4ec1d8ab3f04177cc305d0e01350db713a6d23",
+  "baseline_binary_sha256": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d",
+  "provider_provenance_sha256": "e444db9eb07f1c07df4a3eb7e66bb647711e01eebc7d9e8e2c8dd094c3c99d21",
+  "checks": {
+    "baseline_cargo_xtask_check": {
+      "status": "passed",
+      "scope": "before edits, exact v0.7 tag locked build"
+    },
+    "candidate_cargo_xtask_check": {
+      "status": "passed",
+      "rust_tests": 72,
+      "scope": "format, warning-free clippy, Rust tests"
+    },
+    "python_usage_client_evaluator": {
+      "status": "passed",
+      "tests": 13,
+      "scope": "historical parser plus synthetic boundary/accounting tests; no model calls"
+    },
+    "dart_provider": {
+      "status": "passed",
+      "tests": 4,
+      "scope": "format/analyze/provider tests; Analyzer 13.3.0 unchanged"
+    },
+    "native_intents_mixed": {
+      "status": "passed",
+      "result": {
+        "languages": {
+          "dart": 5,
+          "go": 4,
+          "java": 5,
+          "javascript": 3,
+          "kotlin": 3,
+          "objectivec": 5,
+          "python": 5,
+          "rust": 4,
+          "swift": 4,
+          "typescript": 4
+        },
+        "symbols": 200,
+        "edges": 438,
+        "verified": [
+          {
+            "extension": ".dart",
+            "intents": 10
+          },
+          {
+            "extension": ".kt",
+            "intents": 10
+          },
+          {
+            "extension": ".m",
+            "intents": 10
+          },
+          {
+            "extension": ".swift",
+            "intents": 10
+          },
+          {
+            "extension": ".go",
+            "intents": 10
+          },
+          {
+            "extension": ".java",
+            "intents": 10
+          },
+          {
+            "extension": ".ts",
+            "intents": 10
+          },
+          {
+            "extension": ".js",
+            "intents": 10
+          },
+          {
+            "extension": ".py",
+            "intents": 10
+          },
+          {
+            "extension": ".rs",
+            "intents": 10
+          }
+        ]
+      }
+    },
+    "native_intents_flutter": {
+      "status": "passed",
+      "result": {
+        "languages": {
+          "dart": 2
+        },
+        "symbols": 24,
+        "edges": 75,
+        "verified": [
+          {
+            "extension": ".dart",
+            "intents": 10
+          }
+        ]
+      }
+    },
+    "native_primitive_differential": {
+      "status": "passed",
+      "baseline_version": "0.6.0",
+      "baseline_binary_sha256": "0ea3b2553c1702bf68ef87e49b7eeab786cf523756221bf7fcea6c4194fa2a9a",
+      "result": {
+        "fixture": "polycodegraph ten languages _x93c4z6",
+        "languages": {
+          "dart": 5,
+          "go": 4,
+          "java": 5,
+          "javascript": 3,
+          "kotlin": 3,
+          "objectivec": 5,
+          "python": 5,
+          "rust": 4,
+          "swift": 4,
+          "typescript": 4
+        },
+        "symbols": 200,
+        "edges": 438,
+        "differential": true
+      }
+    },
+    "android_sdk": {
+      "status": "passed",
+      "platform": "android-37.0",
+      "result": {
+        "sdk_fixture": "android_sdk",
+        "symbols": 5,
+        "edges": 6
+      }
+    },
+    "rename_evidence_B_C": {
+      "status": "passed",
+      "resolved_references_each": 19,
+      "expansions_each": 1,
+      "collection_calls_each": 3,
+      "scope": "deterministic collection/identity gate versus 0.6; zero new AI executions"
+    },
+    "profile_failure_and_no_dart": {
+      "status": "passed",
+      "scope": "native Linux stdio"
+    },
+    "linux_package_relocation": {
+      "status": "passed",
+      "binary_sha256": "cc8bb9e6008be85479d3a22c8c4ec1d8ab3f04177cc305d0e01350db713a6d23",
+      "scope": "adjacent TS/compiled Dart/Go workers, package/server/CLI version consistency"
+    },
+    "native_feature_runtime_replay": {
+      "status": "passed",
+      "scope": "views, estimated budgets, acknowledgement, trace, lexical, registry and one matched runtime fixture"
+    },
+    "providers_source_provenance": {
+      "status": "passed",
+      "tracked_assets_per_copy": 47,
+      "scope": "tag-byte-identical sources; separate Dart/Kotlin/Go workers rebuilt"
+    },
+    "cross_platform_UIKit_remote_CI": {
+      "status": "not_measured",
+      "reason": "no macOS/Xcode/Windows executor or exact candidate remote CI run"
+    },
+    "AI_pilot_ablations_extended_holdout": {
+      "status": "not_measured",
+      "reason": "no registered isolated executor with usage, independent oracle and actual model schema/instruction identities"
+    }
+  },
+  "limitations": [
+    "Kotlin tag plugin compilation retains a K1 API deprecation warning; it is not a new candidate resolver change",
+    "Platform-skipped checks are not passed coverage",
+    "Runtime/payload measurements do not establish AI accepted-task costs"
+  ]
+}

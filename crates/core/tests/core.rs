@@ -326,6 +326,12 @@ async fn real_framing_lifecycle_and_eof() {
         json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"future","capabilities":{},"clientInfo":{}}}),
         json!({"jsonrpc":"2.0","method":"notifications/initialized"}),
         json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        json!({"jsonrpc":"2.0","id":4,"method":"tools/list","params":{"_meta":{"progressToken":"codex-list","vendor/request":"metadata"}}}),
+        json!({"jsonrpc":"2.0","id":5,"method":"tools/list","params":{"cursor":"unknown","_meta":{"progressToken":12}}}),
+        json!({"jsonrpc":"2.0","id":6,"method":"tools/list","params":{"_meta":[]}}),
+        json!({"jsonrpc":"2.0","id":7,"method":"tools/list","params":{"_meta":{"progressToken":true}}}),
+        json!({"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"status","arguments":{"section":"tools","_meta":{}},"_meta":{"progressToken":13}}}),
+        json!({"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"status","arguments":{"section":"tools"},"_meta":{"progressToken":14}}}),
     ];
     for r in requests {
         client.write_all(format!("{r}\n").as_bytes()).await.unwrap();
@@ -364,6 +370,24 @@ async fn real_framing_lifecycle_and_eof() {
     assert_eq!(
         values.iter().find(|v| v["id"] == 3).unwrap()["result"],
         json!({})
+    );
+    assert_eq!(
+        values.iter().find(|v| v["id"] == 4).unwrap()["result"],
+        values.iter().find(|v| v["id"] == 2).unwrap()["result"]
+    );
+    for id in [5, 6, 7] {
+        assert_eq!(
+            values.iter().find(|v| v["id"] == id).unwrap()["error"]["code"],
+            -32602
+        );
+    }
+    assert_eq!(
+        values.iter().find(|v| v["id"] == 8).unwrap()["result"]["isError"],
+        true
+    );
+    assert_eq!(
+        values.iter().find(|v| v["id"] == 9).unwrap()["result"]["isError"],
+        false
     );
 }
 

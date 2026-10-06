@@ -21,12 +21,34 @@ impl Store {
         }
         let db = Connection::open(&self.path)?;
         db.busy_timeout(std::time::Duration::from_secs(120))?;
-        db.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY,hash TEXT NOT NULL,record TEXT NOT NULL); CREATE TABLE IF NOT EXISTS scopes(file TEXT PRIMARY KEY,scope TEXT NOT NULL); CREATE TABLE IF NOT EXISTS symbols(id TEXT PRIMARY KEY,file TEXT,name TEXT,qualified TEXT,kind TEXT,record TEXT); CREATE TABLE IF NOT EXISTS edges(key TEXT PRIMARY KEY,source TEXT,target TEXT,kind TEXT,file TEXT,record TEXT); CREATE INDEX IF NOT EXISTS edge_source ON edges(source,kind); CREATE INDEX IF NOT EXISTS edge_target ON edges(target,kind); CREATE INDEX IF NOT EXISTS symbol_name ON symbols(name); CREATE INDEX IF NOT EXISTS symbol_file ON symbols(file); CREATE INDEX IF NOT EXISTS symbol_qualified ON symbols(qualified); CREATE TABLE IF NOT EXISTS dependencies(file TEXT,target TEXT,PRIMARY KEY(file,target)); CREATE INDEX IF NOT EXISTS dependency_target ON dependencies(target); CREATE TABLE IF NOT EXISTS diagnostics(file TEXT,ordinal INTEGER,record TEXT,PRIMARY KEY(file,ordinal));")?;
+        db.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY,hash TEXT NOT NULL,record TEXT NOT NULL); CREATE TABLE IF NOT EXISTS scopes(file TEXT PRIMARY KEY,scope TEXT NOT NULL); CREATE TABLE IF NOT EXISTS symbols(id TEXT PRIMARY KEY,file TEXT,name TEXT,qualified TEXT,kind TEXT,record TEXT); CREATE TABLE IF NOT EXISTS edges(key TEXT PRIMARY KEY,source TEXT,target TEXT,kind TEXT,file TEXT,record TEXT); CREATE INDEX IF NOT EXISTS edge_source ON edges(source,kind); CREATE INDEX IF NOT EXISTS edge_target ON edges(target,kind); CREATE INDEX IF NOT EXISTS edge_file ON edges(file); CREATE INDEX IF NOT EXISTS symbol_name ON symbols(name); CREATE INDEX IF NOT EXISTS symbol_file ON symbols(file); CREATE INDEX IF NOT EXISTS symbol_qualified ON symbols(qualified); CREATE TABLE IF NOT EXISTS dependencies(file TEXT,target TEXT,PRIMARY KEY(file,target)); CREATE INDEX IF NOT EXISTS dependency_target ON dependencies(target); CREATE TABLE IF NOT EXISTS diagnostics(file TEXT,ordinal INTEGER,record TEXT,PRIMARY KEY(file,ordinal));")?;
         Ok(db)
     }
-    pub fn read(&self) -> Result<Option<Snapshot>> {
+    pub fn revision(&self) -> Result<Option<String>> {
         if !self.path.exists() {
             return Ok(None);
+        }
+        let db = self.open()?;
+        let schema: Option<String> = db
+            .query_row("SELECT value FROM metadata WHERE key='schema'", [], |r| {
+                r.get(0)
+            })
+            .optional()?;
+        if schema.as_deref().is_some_and(|s| !["3", "4"].contains(&s)) {
+            anyhow::bail!("incompatible cache schema");
+        }
+        Ok(db
+            .query_row("SELECT value FROM metadata WHERE key='revision'", [], |r| {
+                r.get(0)
+            })
+            .optional()?)
+    }
+    pub fn read(&self) -> Result<Option<Snapshot>> {
+        Ok(self.read_versioned()?.0)
+    }
+    pub fn read_versioned(&self) -> Result<(Option<Snapshot>, Option<String>)> {
+        if !self.path.exists() {
+            return Ok((None, None));
         }
         let mut connection = self.open()?;
         let db = connection.transaction()?;
@@ -35,7 +57,7 @@ impl Store {
                 r.get(0)
             })
             .optional()?;
-        if schema.as_deref().is_some_and(|s| s != "3") {
+        if schema.as_deref().is_some_and(|s| !["3", "4"].contains(&s)) {
             anyhow::bail!("incompatible cache schema")
         }
         let meta: Option<String> = db
@@ -43,7 +65,9 @@ impl Store {
                 r.get(0)
             })
             .optional()?;
-        let Some(meta) = meta else { return Ok(None) };
+        let Some(meta) = meta else {
+            return Ok((None, None));
+        };
         let mut s: Snapshot = serde_json::from_str(&meta)?;
         let mut st = db.prepare("SELECT path,record FROM files ORDER BY path")?;
         s.files = st
@@ -53,7 +77,12 @@ impl Store {
                 Ok((k, serde_json::from_str(&v)?))
             })
             .collect::<Result<BTreeMap<_, _>>>()?;
-        Ok(Some(s))
+        let revision = db
+            .query_row("SELECT value FROM metadata WHERE key='revision'", [], |r| {
+                r.get(0)
+            })
+            .optional()?;
+        Ok((Some(s), revision))
     }
     pub fn recover(&self) -> Result<()> {
         let suffix = std::time::SystemTime::now()
@@ -78,6 +107,13 @@ impl Store {
         s: &Snapshot,
         changed: &std::collections::BTreeSet<String>,
     ) -> Result<()> {
+        self.write_changed_revision(s, changed).map(|_| ())
+    }
+    pub fn write_changed_revision(
+        &self,
+        s: &Snapshot,
+        changed: &std::collections::BTreeSet<String>,
+    ) -> Result<String> {
         let mut db = self.open()?;
         let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
         let old: BTreeMap<String, String> = {
@@ -164,9 +200,16 @@ impl Store {
             "INSERT OR REPLACE INTO metadata VALUES('snapshot',?1)",
             [serde_json::to_string(&meta)?],
         )?;
-        tx.execute("INSERT OR REPLACE INTO metadata VALUES('schema','3')", [])?;
+        tx.execute("INSERT OR REPLACE INTO metadata VALUES('schema','4')", [])?;
+        let mut nonce = [0u8; 32];
+        getrandom::fill(&mut nonce).map_err(|e| anyhow::anyhow!("storage revision: {e}"))?;
+        let revision = crate::model::hash(nonce);
+        tx.execute(
+            "INSERT OR REPLACE INTO metadata VALUES('revision',?1)",
+            [&revision],
+        )?;
         tx.commit().context("publishing index transaction")?;
-        Ok(())
+        Ok(revision)
     }
 }
 use rusqlite::OptionalExtension;

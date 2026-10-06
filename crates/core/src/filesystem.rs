@@ -81,6 +81,7 @@ pub fn manifest(name: &str) -> bool {
 }
 #[derive(Debug, Clone, Default)]
 pub struct Scan {
+    pub hash_work: crate::telemetry::HashWork,
     pub hashes: BTreeMap<String, String>,
     pub environment: BTreeMap<String, String>,
     pub skipped: Vec<String>,
@@ -170,6 +171,11 @@ pub fn scan(c: &Config) -> Result<Scan> {
             continue;
         }
         let bytes = fs::read(e.path()).with_context(|| format!("reading {rel}"))?;
+        if lang != "unknown" && inc.is_match(&rel) && !exc.is_match(&rel) {
+            s.hash_work.source.record(bytes.len());
+        } else {
+            s.hash_work.dependency.record(bytes.len());
+        }
         let h = if matches!(
             name.as_ref(),
             "polycodegraph.yaml" | "polycodegraph.yml" | "polycodegraph.json"
@@ -207,13 +213,19 @@ pub fn scan(c: &Config) -> Result<Scan> {
         if e.file_type().is_dir() && e.file_name() == ".dart_tool" {
             let f = e.path().join("package_config.json");
             if f.is_file() && !fs::symlink_metadata(&f)?.file_type().is_symlink() {
-                s.environment
-                    .insert(relative(&c.root, &f), hash(fs::read(&f)?));
-                track_dart_dependencies(c, &f, &mut s.environment)?;
+                let bytes = fs::read(&f)?;
+                s.hash_work.dependency.record(bytes.len());
+                s.environment.insert(relative(&c.root, &f), hash(bytes));
+                track_dart_dependencies(c, &f, &mut s.environment, &mut s.hash_work.dependency)?;
             }
         }
     }
-    track_prepared_context(c, &s.scopes, &mut s.environment)?;
+    track_prepared_context(
+        c,
+        &s.scopes,
+        &mut s.environment,
+        &mut s.hash_work.dependency,
+    )?;
     s.skipped.sort_by(|a, b| crate::model::compare_text(a, b));
     Ok(s)
 }
@@ -222,6 +234,7 @@ fn track_dart_dependencies(
     c: &Config,
     config: &Path,
     environment: &mut BTreeMap<String, String>,
+    metric: &mut crate::telemetry::HashVolume,
 ) -> Result<()> {
     let bytes = fs::read(config)?;
     let package_config: serde_json::Value = serde_json::from_slice(&bytes)?;
@@ -256,7 +269,7 @@ fn track_dart_dependencies(
             {
                 environment.insert(
                     format!("external-dart:{}", entry.path().display()),
-                    hash_file(entry.path())?,
+                    hash_file_measured(entry.path(), metric)?,
                 );
             }
         }
@@ -362,6 +375,7 @@ fn track_tree(
     prefix: &str,
     extensions: &[&str],
     environment: &mut BTreeMap<String, String>,
+    metric: &mut crate::telemetry::HashVolume,
 ) -> Result<()> {
     if fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink()) {
         environment.insert(
@@ -391,7 +405,7 @@ fn track_tree(
         {
             environment.insert(
                 format!("{prefix}:{}", entry.path().display()),
-                hash_file(entry.path())?,
+                hash_file_measured(entry.path(), metric)?,
             );
         }
     }
@@ -401,10 +415,11 @@ fn track_prepared_context(
     c: &Config,
     scopes: &BTreeMap<String, String>,
     environment: &mut BTreeMap<String, String>,
+    metric: &mut crate::telemetry::HashVolume,
 ) -> Result<()> {
     // Explicit prepared contexts are data only: never resolve/download dependencies.
     if let Some(path) = &c.rust_sysroot_src {
-        track_tree(&c.path(path), "external-rust", &["rs"], environment)?;
+        track_tree(&c.path(path), "external-rust", &["rs"], environment, metric)?;
     }
     let model = c.safe(&c.mobile_project_path)?;
     if model.is_file() {
@@ -435,6 +450,7 @@ fn track_prepared_context(
                                 "swiftmodule",
                             ],
                             environment,
+                            metric,
                         )?;
                     }
                 }
@@ -444,13 +460,14 @@ fn track_prepared_context(
                         &format!("external-mobile:{lang}"),
                         &["h"],
                         environment,
+                        metric,
                     )?;
                 }
             }
         }
     }
     for input in &c.java_classpath {
-        track_tree(&c.path(input), "external-java", &[], environment)?;
+        track_tree(&c.path(input), "external-java", &[], environment, metric)?;
     }
     for input in &c.python_search_paths {
         track_tree(
@@ -458,6 +475,7 @@ fn track_prepared_context(
             "external-python",
             &["py", "pyi"],
             environment,
+            metric,
         )?;
     }
     let project = c.root.join("rust-project.json");
@@ -473,7 +491,7 @@ fn track_prepared_context(
             if !path.starts_with(&c.root)
                 && let Some(parent) = path.parent()
             {
-                track_tree(parent, "external-rust", &["rs"], environment)?;
+                track_tree(parent, "external-rust", &["rs"], environment, metric)?;
             }
         }
     }
@@ -491,6 +509,7 @@ fn track_prepared_context(
                     "external-node",
                     &["ts", "tsx", "js", "jsx", "json"],
                     environment,
+                    metric,
                 )?;
             }
         }
@@ -499,18 +518,27 @@ fn track_prepared_context(
 }
 
 pub fn hash_file(path: &Path) -> Result<String> {
+    hash_file_measured(path, &mut crate::telemetry::HashVolume::default())
+}
+pub fn hash_file_measured(
+    path: &Path,
+    metric: &mut crate::telemetry::HashVolume,
+) -> Result<String> {
     use sha2::{Digest, Sha256};
     use std::io::Read;
     let mut file = fs::File::open(path)?;
     let mut digest = Sha256::new();
     let mut buffer = [0; 65536];
+    let mut bytes = 0;
     loop {
         let count = file.read(&mut buffer)?;
         if count == 0 {
             break;
         }
         digest.update(&buffer[..count]);
+        bytes += count;
     }
+    metric.record(bytes);
     Ok(format!("{:x}", digest.finalize()))
 }
 /// Verify known semantic inputs without discovering/scanning the repository.
@@ -519,6 +547,19 @@ pub fn context_unchanged(
     c: &Config,
     inputs: &BTreeMap<String, String>,
     languages: &std::collections::BTreeSet<&str>,
+) -> Result<bool> {
+    context_unchanged_measured(
+        c,
+        inputs,
+        languages,
+        &mut crate::telemetry::HashWork::default(),
+    )
+}
+pub fn context_unchanged_measured(
+    c: &Config,
+    inputs: &BTreeMap<String, String>,
+    languages: &std::collections::BTreeSet<&str>,
+    metrics: &mut crate::telemetry::HashWork,
 ) -> Result<bool> {
     for (key, expected) in inputs {
         if !key.starts_with("external-")
@@ -533,7 +574,8 @@ pub fn context_unchanged(
             continue;
         }
         if key == "provider_runtime" {
-            if crate::providers::fingerprint(c)? != *expected {
+            if crate::providers::fingerprint_measured(c, &mut metrics.provider_asset)? != *expected
+            {
                 return Ok(false);
             }
             continue;
@@ -562,7 +604,7 @@ pub fn context_unchanged(
         } else if expected == "missing" && !path.exists() {
             Some("missing".into())
         } else {
-            hash_file(&path).ok()
+            hash_file_measured(&path, &mut metrics.dependency).ok()
         };
         if actual.as_ref() != Some(expected) {
             return Ok(false);

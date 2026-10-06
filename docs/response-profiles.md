@@ -43,7 +43,11 @@ legacy outputs are preserved except invalid path warnings/rejection. Compact
 coverage metadata records static precision limits; smaller pages do not assert
 completeness. `inspect_change` already includes callers, implementations and
 impact: request those again only for additional pages/limits or changed evidence.
-Session duplicate/overlap tracking is deferred until traces justify its cost.
+0.8 adds optional, explicit source-window acknowledgement for intents. Ordinary clients remain self-contained; primitive duplicate/overlap tracking remains deferred. See [the context contract](efficiency-0.8-design.md).
+
+## Historical 0.6 activation and acceptance gate
+
+The following activation/gate is historical. Current additive options and rollback are in [0.8 migration](migration-0.8.md); its [separate pilot](benchmarks/efficiency-0.8/protocol.md) does not rewrite this gate.
 
 Rollback: remove the profile override or set `response_profile: legacy`, then
 restart the client's MCP process. The presentation profile is excluded from the

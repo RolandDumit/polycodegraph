@@ -21,7 +21,7 @@ use std::{
     },
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
-#[derive(Default, Debug)]
+#[derive(Default, Debug, serde::Serialize)]
 pub struct Metrics {
     pub scans: u64,
     pub extractions: u64,
@@ -30,12 +30,22 @@ pub struct Metrics {
     pub extraction_ms: f64,
     pub storage_ms: f64,
     pub query_ms: f64,
+    pub hashing: crate::telemetry::HashWork,
+    pub refresh_wait_ms: f64,
+    pub snapshot_read_ms: f64,
+    pub snapshot_clone_ms: f64,
+    pub graph_build_ms: f64,
+    pub changed_sources: u64,
+    pub emitted_sources: u64,
+    pub retries: BTreeMap<String, u64>,
+    pub providers: BTreeMap<String, providers::ProviderMetrics>,
     pub tools: BTreeMap<String, ToolMetrics>,
 }
 #[derive(Default, Debug, serde::Serialize)]
 pub struct ToolMetrics {
     pub calls: u64,
     pub response_bytes: u64,
+    pub response_chars: u64,
     pub errors: u64,
 }
 struct Changes {
@@ -55,6 +65,7 @@ pub struct Indexer {
     last_reconciled: Option<u64>,
     pub watcher_error: Option<String>,
     config_disk_hash: String,
+    storage_revision: Option<String>,
     directory_stamps: BTreeMap<String, SystemTime>,
     last_update: Value,
     reported_errors: BTreeSet<String>,
@@ -71,7 +82,12 @@ fn watch(c: &Config) -> Result<Changes> {
             if matches!(e.kind, notify::EventKind::Access(_)) {
                 return;
             }
-            if !e.need_rescan() && !e.paths.iter().any(|p| relevant(&config, p)) {
+            if !e.need_rescan()
+                && !e
+                    .paths
+                    .iter()
+                    .any(|p| relevant(&config, p, directory_event(e)))
+            {
                 return;
             }
         }
@@ -89,7 +105,14 @@ fn watch(c: &Config) -> Result<Changes> {
         _watcher: w,
     })
 }
-fn relevant(c: &Config, p: &std::path::Path) -> bool {
+fn directory_event(e: &Event) -> bool {
+    matches!(
+        e.kind,
+        notify::EventKind::Create(notify::event::CreateKind::Folder)
+            | notify::EventKind::Remove(notify::event::RemoveKind::Folder)
+    ) || e.paths.iter().any(|p| p.is_dir())
+}
+fn relevant(c: &Config, p: &std::path::Path, directory: bool) -> bool {
     if !p.starts_with(&c.root) {
         return false;
     }
@@ -103,7 +126,28 @@ fn relevant(c: &Config, p: &std::path::Path) -> bool {
             return s == ".dart_tool" && rel.ends_with("package_config.json");
         }
     }
-    true
+    let name = p.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    if language(&rel) != "unknown"
+        || filesystem::manifest(name)
+        || rel == c.mobile_project_path
+        || rel.ends_with("package_config.json")
+    {
+        return true;
+    }
+    if c.config_file.as_ref().is_some_and(|f| p == f)
+        || p.starts_with(c.assets())
+        || c.java_classpath
+            .iter()
+            .chain(&c.python_search_paths)
+            .any(|f| p.starts_with(c.path(f)))
+    {
+        return true;
+    }
+    // Retain directory/rename/delete recovery, including unknown deleted directories.
+    directory
+        || p.is_dir()
+        || fs::symlink_metadata(p).is_ok_and(|m| m.file_type().is_symlink())
+        || (!p.exists() && p.extension().is_none())
 }
 
 impl Indexer {
@@ -120,12 +164,12 @@ impl Indexer {
             Err(e) => (None, config.watch.then(|| e.to_string())),
         };
         let mut metrics = Metrics::default();
-        let old = match store.read() {
+        let (old, storage_revision) = match store.read_versioned() {
             Ok(v) => v,
             Err(e) => {
                 eprintln!("cache rebuild: {e}");
                 store.recover()?;
-                None
+                (None, None)
             }
         };
         let graph = old
@@ -149,6 +193,7 @@ impl Indexer {
             last_reconciled: None,
             watcher_error,
             config_disk_hash,
+            storage_revision,
             directory_stamps: BTreeMap::new(),
             last_update: json!({}),
             reported_errors: BTreeSet::new(),
@@ -169,8 +214,10 @@ impl Indexer {
                         if e.need_rescan() {
                             full = true
                         }
+                        let directory = directory_event(&e);
                         for p in e.paths {
-                            if relevant(&self.config, &p) {
+                            if relevant(&self.config, &p, directory) {
+                                full |= directory;
                                 paths.insert(filesystem::relative(&self.config.root, &p));
                             }
                         }
@@ -199,8 +246,9 @@ impl Indexer {
         let mut scan = filesystem::scan(&self.config)?;
         scan.environment.insert(
             "provider_runtime".into(),
-            providers::fingerprint(&self.config)?,
+            providers::fingerprint_measured(&self.config, &mut scan.hash_work.provider_asset)?,
         );
+        self.metrics.hashing.add(&scan.hash_work);
         self.metrics.scans += 1;
         self.metrics.scan_ms += t.elapsed().as_secs_f64() * 1000.;
         Ok(scan)
@@ -233,7 +281,9 @@ impl Indexer {
     pub async fn refresh(&mut self, explicit: bool, force: bool) -> Result<Value> {
         let (mut dirty, mut full) = self.drain();
         if !dirty.is_empty() {
+            let waited = Instant::now();
             tokio::time::sleep(Duration::from_millis(self.config.watch_debounce_ms)).await;
+            self.metrics.refresh_wait_ms += waited.elapsed().as_secs_f64() * 1000.;
             let (d, f) = self.drain();
             dirty.extend(d);
             full |= f;
@@ -253,10 +303,15 @@ impl Indexer {
         if disk_hash != self.config_disk_hash {
             let mut updated = Config::load(&self.config.root, self.config.config_file.as_deref())?;
             updated.response_profile_override = self.config.response_profile_override;
+            updated.tool_profile_override = self.config.tool_profile_override;
+            if let Some(profile) = updated.tool_profile_override {
+                updated.tool_profile = profile;
+            }
             if let Some(profile) = updated.response_profile_override {
                 updated.response_profile = profile;
             }
             self.store = Store::new(&updated)?;
+            self.storage_revision = None;
             self.watcher = if updated.watch {
                 match watch(&updated) {
                     Ok(w) => {
@@ -292,7 +347,9 @@ impl Indexer {
                     if e.kind() == std::io::ErrorKind::WouldBlock
                         || e.raw_os_error() == fs2::lock_contended_error().raw_os_error() =>
                 {
-                    tokio::time::sleep(Duration::from_millis(10)).await
+                    let waited = Instant::now();
+                    tokio::time::sleep(Duration::from_millis(10)).await;
+                    self.metrics.refresh_wait_ms += waited.elapsed().as_secs_f64() * 1000.;
                 }
                 Err(e) => return Err(e.into()),
             }
@@ -308,11 +365,24 @@ impl Indexer {
         mut dirty: BTreeSet<String>,
     ) -> Result<Value> {
         // Reload another process's committed generation only under the writer lock.
-        let (saved, force) = match self.store.read() {
-            Ok(saved) => (saved, force),
+        let started = Instant::now();
+        let loaded = match self.store.revision() {
+            Ok(Some(revision)) if self.storage_revision.as_ref() == Some(&revision) => {
+                Ok((None, Some(revision)))
+            }
+            Ok(_) => self.store.read_versioned(),
+            Err(e) => Err(e),
+        };
+        self.metrics.snapshot_read_ms += started.elapsed().as_secs_f64() * 1000.;
+        let (saved, force) = match loaded {
+            Ok((saved, revision)) => {
+                self.storage_revision = revision;
+                (saved, force)
+            }
             Err(e) => {
-                eprintln!("cache rebuild: {e:#}");
+                eprintln!("cache rebuild: {e}");
                 self.store.recover()?;
+                self.storage_revision = None;
                 (None, true)
             }
         };
@@ -324,11 +394,15 @@ impl Indexer {
             && s.root == self.config.root.to_string_lossy()
             && s.fingerprint == self.config.fingerprint()?
         {
+            let started = Instant::now();
             self.graph = Some(Graph::new(s));
+            self.metrics.graph_build_ms += started.elapsed().as_secs_f64() * 1000.;
             self.metrics.graph_builds += 1;
         }
         for attempt in 0..3 {
+            let started = Instant::now();
             let old = self.graph.as_ref().map(|g| (*g.snapshot).clone());
+            self.metrics.snapshot_clone_ms += started.elapsed().as_secs_f64() * 1000.;
             let mut scan = if reconcile || attempt > 0 || old.is_none() {
                 self.scan()?
             } else {
@@ -336,6 +410,7 @@ impl Indexer {
                     .as_ref()
                     .ok_or_else(|| anyhow::anyhow!("missing snapshot"))?;
                 let mut s = Scan {
+                    hash_work: Default::default(),
                     hashes: o
                         .files
                         .iter()
@@ -383,6 +458,7 @@ impl Indexer {
                     }
                     if path.is_file() {
                         let bytes = fs::read(&path)?;
+                        self.metrics.hashing.source.record(bytes.len());
                         let (inc, exc) = self.config.globs()?;
                         if bytes.len() <= self.config.max_file_bytes
                             && inc.is_match(f)
@@ -515,8 +591,16 @@ impl Indexer {
                 return Ok(self.report(changed, deleted, vec![], false));
             }
             let t = Instant::now();
-            let extracted = providers::extract(&self.config, &scan.hashes, &affected).await?;
+            let extracted = providers::extract_measured(
+                &self.config,
+                &scan.hashes,
+                &affected,
+                &mut self.metrics.providers,
+            )
+            .await?;
             self.metrics.extractions += extracted.len() as u64;
+            self.metrics.emitted_sources += extracted.len() as u64;
+            self.metrics.changed_sources += changed.len() as u64;
             self.metrics.extraction_ms += t.elapsed().as_secs_f64() * 1000.;
             let (mut events, overflow) = self.drain();
             if self.config.disk_fingerprint()? != self.config_disk_hash {
@@ -530,7 +614,14 @@ impl Indexer {
                     language(a) == language(f)
                         || (["typescript", "javascript"].contains(&language(a))
                             && ["typescript", "javascript"].contains(&language(f)))
-                }) && fs::read(self.config.safe(f)?).map(hash).ok().as_ref() != Some(h)
+                }) && fs::read(self.config.safe(f)?)
+                    .map(|bytes| {
+                        self.metrics.hashing.source.record(bytes.len());
+                        hash(bytes)
+                    })
+                    .ok()
+                    .as_ref()
+                    != Some(h)
                 {
                     unstable = true;
                     events.insert(f.clone());
@@ -546,11 +637,21 @@ impl Indexer {
             }
             if !reconcile {
                 let languages = affected.iter().map(|f| language(f)).collect();
-                if !filesystem::context_unchanged(&self.config, &inputs, &languages)? {
+                if !filesystem::context_unchanged_measured(
+                    &self.config,
+                    &inputs,
+                    &languages,
+                    &mut self.metrics.hashing,
+                )? {
                     unstable = true;
                 }
             }
             if unstable {
+                *self
+                    .metrics
+                    .retries
+                    .entry("source_context_or_watcher_changed".into())
+                    .or_default() += 1;
                 dirty.extend(events);
                 continue;
             }
@@ -581,10 +682,12 @@ impl Indexer {
                 scopes: scan.scopes,
             };
             let t = Instant::now();
-            self.store.write_changed(&snapshot, &affected)?;
+            self.storage_revision = Some(self.store.write_changed_revision(&snapshot, &affected)?);
             self.metrics.storage_ms += t.elapsed().as_secs_f64() * 1000.;
             self.directory_stamps = scan.directory_stamps;
+            let started = Instant::now();
             self.graph = Some(Graph::new(snapshot));
+            self.metrics.graph_build_ms += started.elapsed().as_secs_f64() * 1000.;
             self.metrics.graph_builds += 1;
             if reconcile {
                 self.last_scan = Instant::now();
@@ -608,9 +711,24 @@ impl Indexer {
         let g = self.graph.as_ref();
         json!({"generation":g.map(|g|&g.snapshot.generation),"changed_total":changed.len(),"deleted_total":deleted.len(),"reindexed_total":reindexed.len(),"changed":changed,"deleted":deleted,"reindexed":reindexed,"full":full,"files":g.map_or(0,|g|g.snapshot.files.len()),"skipped":g.map_or(vec![],|g|g.snapshot.skipped.clone()),"skipped_total":g.map_or(0,|g|g.snapshot.skipped.len())})
     }
+    fn tool_specs(&self, args: &Value) -> Result<Value> {
+        let mut specs = crate::mcp::tools(&self.config);
+        if let Some(name) = args["tool"].as_str() {
+            specs.retain(|s| s["name"] == name);
+            if specs.is_empty() {
+                bail!("Unknown accepted tool: {name}");
+            }
+        }
+        Ok(
+            json!({"tools":specs,"advertised":crate::mcp::advertised_tools(&self.config).iter().map(|s|&s["name"]).collect::<Vec<_>>(),"profile":self.config.tool_profile,"registry":"all advertised and hidden tools use full runtime validation"}),
+        )
+    }
     pub async fn call(&mut self, name: &str, args: &Value) -> Result<Value> {
         if name == "inspect_change" && args.get("intent").is_some() {
             crate::intents::Request::parse(args)?;
+        }
+        if name == "status" && args["section"] == "tools" {
+            return self.tool_specs(args);
         }
         if name == "detect_changes" {
             let mut v = self.detect_changes()?;
@@ -645,12 +763,16 @@ impl Indexer {
             v["index"] = report;
             v["provider_health"] = providers::doctor(&self.config);
             v["freshness"] = self.freshness();
-            v["metrics"] = json!({"scans":self.metrics.scans,"extractions":self.metrics.extractions,"graph_builds":self.metrics.graph_builds,"scan_ms":self.metrics.scan_ms,"extraction_ms":self.metrics.extraction_ms,"storage_ms":self.metrics.storage_ms,"query_ms":self.metrics.query_ms});
+            v["metrics"] = serde_json::to_value(&self.metrics)?;
+            v["metrics"]["intents"] = json!(self.intents.metrics);
             return Ok(v);
         }
         if name == "inspect_change" && args.get("intent").is_some() {
             let freshness = self.freshness();
-            return self.intents.prepare(graph, &self.config, args, freshness);
+            let started = Instant::now();
+            let result = self.intents.prepare(graph, &self.config, args, freshness);
+            self.metrics.query_ms += started.elapsed().as_secs_f64() * 1000.;
+            return result;
         }
         let t = Instant::now();
         let r = graph.call(&self.config, name, args).map(|mut result| {
@@ -725,12 +847,29 @@ impl Indexer {
             Some("skipped") => Ok(page(
                 graph.snapshot.skipped.iter().map(|s| json!(s)).collect(),
             )),
+            Some("tools") => self.tool_specs(args),
             Some("providers") => Ok(
                 json!({"generation":generation,"health_fingerprint":health,"provider_health":providers::doctor(&self.config)}),
             ),
-            Some("metrics") => Ok(
-                json!({"generation":generation,"health_fingerprint":health,"scans":self.metrics.scans,"extractions":self.metrics.extractions,"graph_builds":self.metrics.graph_builds,"scan_ms":self.metrics.scan_ms,"extraction_ms":self.metrics.extraction_ms,"storage_ms":self.metrics.storage_ms,"query_ms":self.metrics.query_ms,"tools":self.metrics.tools,"response_bytes_scope":"one compact JSON representation per MCP tool result; excludes framing/schema and model tokens"}),
-            ),
+            Some("metrics") => {
+                let mut result = serde_json::to_value(&self.metrics)?;
+                result["generation"] = json!(generation);
+                result["health_fingerprint"] = json!(health);
+                result["intents"] = json!(self.intents.metrics);
+                result["response_bytes_scope"] = json!(
+                    "one compact JSON representation per MCP result, excluding framing/schema/model tokens"
+                );
+                result["extractions_scope"] = json!(
+                    "emitted file records including retries/failure records; not provider processes"
+                );
+                result["hashing_scope"] = json!(
+                    "index discovery/incremental verification, dependency inputs and provider assets; intent capture/render counters are separate; primitive snippets and lexical query verification are not included"
+                );
+                result["provider_starts_scope"] = json!(
+                    "attempted provider invocations; analyzed_context_files is requested semantic context, not compiler work"
+                );
+                Ok(result)
+            }
             Some("architecture") => graph.call(&self.config, "get_architecture", args),
             Some("update") => {
                 let mut result = json!({"generation":self.last_update["generation"],"health_fingerprint":health,"available":!self.last_update["generation"].is_null(),"summary":responses::update_summary(&self.last_update)});
@@ -787,6 +926,22 @@ mod tests {
             i.metrics.scans > scans,
             "actual directory changes must be reconciled"
         );
+    }
+    #[test]
+    fn deleted_dotted_directories_reconcile_but_plain_log_edits_do_not() {
+        let d = tempfile::tempdir().unwrap();
+        let c = Config::load(d.path(), None).unwrap();
+        let event = Event::new(notify::EventKind::Remove(notify::event::RemoveKind::Folder))
+            .add_path(d.path().join("src.v1"));
+        assert!(directory_event(&event));
+        assert!(relevant(&c, &event.paths[0], directory_event(&event)));
+        fs::write(d.path().join("build.log"), "irrelevant").unwrap();
+        assert!(!relevant(&c, &d.path().join("build.log"), false));
+        assert!(!relevant(
+            &c,
+            &d.path().join(".polycodegraph/cache.v1"),
+            true
+        ));
     }
     #[tokio::test]
     async fn overflow_forces_reconciliation() {

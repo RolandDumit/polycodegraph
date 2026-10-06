@@ -37,7 +37,10 @@ pub fn review_files(g: &Graph, c: &Config, r: &Request, v: &Review) -> Result<Ve
     files.dedup();
     for file in &files {
         path(c, file)?;
-        if !v.baseline.is_some() && !g.snapshot.files.contains_key(file) {
+        if v.baseline.is_none()
+            && !g.snapshot.files.contains_key(file)
+            && !(v.capture_baseline && !c.safe(file)?.exists())
+        {
             bail!("Baseline capture/current review requires indexed file: {file}")
         }
     }
@@ -86,8 +89,8 @@ impl Planner<'_> {
             true
         }
     }
-    fn edges(&mut self, id: &str, incoming: bool) -> Vec<Edge> {
-        let edges = self.g.context.edges(self.g, id, incoming);
+    fn edges(&mut self, id: &str, incoming: bool, kinds: &[&str]) -> Vec<Edge> {
+        let edges = self.g.context.edges(self.g, id, incoming, kinds);
         let remaining = self
             .plan
             .request
@@ -111,7 +114,7 @@ impl Planner<'_> {
         }
     }
     fn incoming(&mut self, id: &str, kinds: &[&str], section: &str) {
-        for e in self.edges(id, true) {
+        for e in self.edges(id, true, kinds) {
             if kinds.contains(&e.kind.as_str()) {
                 self.add(fact(&e, section, "resolved_static_site", 1));
             }
@@ -122,7 +125,16 @@ impl Planner<'_> {
         let mut queue = VecDeque::from([(start.to_owned(), 0usize)]);
         while let Some((id, depth)) = queue.pop_front() {
             for incoming in [true, false] {
-                for e in self.edges(&id, incoming) {
+                for e in self.edges(
+                    &id,
+                    incoming,
+                    &[
+                        "overrides",
+                        "binds_field",
+                        "accessor_pair",
+                        "super_parameter",
+                    ],
+                ) {
                     if ![
                         "overrides",
                         "binds_field",
@@ -166,6 +178,9 @@ impl Planner<'_> {
         section: &str,
         destination: Option<&str>,
     ) -> BTreeSet<String> {
+        if let Some(destination) = destination {
+            return self.path_to(start, destination, incoming, section);
+        }
         let mut found = BTreeSet::from([start.to_owned()]);
         let mut queue = VecDeque::from([(start.to_owned(), 0usize)]);
         while let Some((id, depth)) = queue.pop_front() {
@@ -175,7 +190,15 @@ impl Planner<'_> {
             // Calls retain their direction. Override links are dispatch alternatives
             // in either direction, never evidence that an implementation ran.
             for direction in [incoming, !incoming] {
-                for e in self.edges(&id, direction) {
+                for e in self.edges(
+                    &id,
+                    direction,
+                    if direction == incoming {
+                        &["calls", "overrides"]
+                    } else {
+                        &["overrides"]
+                    },
+                ) {
                     if e.kind != "overrides" && !(direction == incoming && e.kind == "calls") {
                         continue;
                     }
@@ -206,8 +229,82 @@ impl Planner<'_> {
         }
         found
     }
+    fn path_to(
+        &mut self,
+        start: &str,
+        destination: &str,
+        incoming: bool,
+        section: &str,
+    ) -> BTreeSet<String> {
+        let mut seen = BTreeSet::from([start.to_owned()]);
+        let mut parents: BTreeMap<String, (String, Edge, usize)> = BTreeMap::new();
+        let mut queue = VecDeque::from([(start.to_owned(), 0usize)]);
+        'search: while let Some((id, depth)) = queue.pop_front() {
+            if id == destination {
+                break;
+            }
+            for direction in [incoming, !incoming] {
+                for e in self.edges(
+                    &id,
+                    direction,
+                    if direction == incoming {
+                        &["calls", "overrides"]
+                    } else {
+                        &["overrides"]
+                    },
+                ) {
+                    if depth >= self.plan.request.depth {
+                        self.plan.depth_limited = true;
+                        continue;
+                    }
+                    let next = if direction {
+                        e.source.clone()
+                    } else {
+                        e.target.clone()
+                    };
+                    if seen.insert(next.clone()) {
+                        parents.insert(next.clone(), (id.clone(), e, depth + 1));
+                        if next == destination {
+                            break 'search;
+                        }
+                        queue.push_back((next, depth + 1));
+                    }
+                }
+            }
+        }
+        self.plan.facts["path_selection"] = json!(
+            "one shortest static path within depth/work bounds; optional alternatives via trace without destination"
+        );
+        let mut path = BTreeSet::from([start.to_owned()]);
+        if seen.contains(destination) {
+            let mut cursor = destination.to_owned();
+            path.insert(cursor.clone());
+            while cursor != start {
+                let Some((parent, e, distance)) = parents.get(&cursor) else {
+                    break;
+                };
+                self.add(fact(
+                    e,
+                    section,
+                    if e.kind == "calls" {
+                        "directed static path; runtime order unknown"
+                    } else {
+                        "possible override dispatch; not proven runtime call"
+                    },
+                    *distance,
+                ));
+                path.insert(parent.clone());
+                cursor = parent.clone();
+            }
+        }
+        path
+    }
     fn explain_dependencies(&mut self, id: &str) {
-        for e in self.edges(id, false) {
+        for e in self.edges(
+            id,
+            false,
+            &["calls", "references", "extends", "implements", "with", "on"],
+        ) {
             if ["calls", "references", "extends", "implements", "with", "on"]
                 .contains(&e.kind.as_str())
             {
@@ -221,7 +318,7 @@ impl Planner<'_> {
         }
     }
     fn explain_implementations(&mut self, id: &str) {
-        for e in self.edges(id, true) {
+        for e in self.edges(id, true, &["overrides", "implements", "extends", "with"]) {
             if ["overrides", "implements", "extends", "with"].contains(&e.kind.as_str()) {
                 self.add(fact(
                     &e,
@@ -235,7 +332,15 @@ impl Planner<'_> {
     fn directives(&mut self, file: &str, include_imports: bool) {
         let id = format!("{file}::file");
         for incoming in [true, false] {
-            for e in self.edges(&id, incoming) {
+            for e in self.edges(
+                &id,
+                incoming,
+                if include_imports {
+                    &["imports", "exports", "part", "part_of"]
+                } else {
+                    &["exports", "part", "part_of"]
+                },
+            ) {
                 if (["exports", "part", "part_of"].contains(&e.kind.as_str()))
                     || (include_imports && e.kind == "imports")
                 {
@@ -253,7 +358,7 @@ impl Planner<'_> {
         let mut found = BTreeSet::from([start.to_owned()]);
         let mut queue = VecDeque::from([(start.to_owned(), 0usize)]);
         while let Some((id, depth)) = queue.pop_front() {
-            for e in self.edges(&id, true) {
+            for e in self.edges(&id, true, &["references", "calls", "overrides"]) {
                 if !["references", "calls", "overrides"].contains(&e.kind.as_str()) {
                     continue;
                 }
@@ -294,7 +399,10 @@ impl Planner<'_> {
             }
         }
         self.plan.facts["test_runner"] = json!("unknown; consult project configuration");
-        self.plan.limits.push("Zero test results do not prove absence of coverage; imports alone are not test evidence".into());
+        let warning = "Zero test results do not prove absence of coverage; imports alone are not test evidence";
+        if !self.plan.limits.iter().any(|s| s == warning) {
+            self.plan.limits.push(warning.into());
+        }
     }
 }
 pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> Result<Plan> {
@@ -412,9 +520,19 @@ pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> 
             for symbol in &linked {
                 p.incoming(symbol, &["calls", "references"], "callers");
             }
-            p.walk(&id, true, "forwarding_context", None);
+            if v.return_type.is_some()
+                || v.asynchronous.is_some()
+                || !v.removed_parameters.is_empty()
+                || !v.renamed_parameters.is_empty()
+                || (v.added_parameters.is_empty() && v.required.is_none())
+            {
+                p.walk(&id, true, "forwarding_context", None);
+            } else {
+                p.plan.facts["optional_expansions"] =
+                    json!(["trace_flow direction=in for transitive forwarding"]);
+            }
             p.tests(&id, None, None);
-            for e in p.edges(&id, false) {
+            for e in p.edges(&id, false, &["contains"]) {
                 if e.kind == "contains" {
                     p.add(fact(&e, "contract", "indexed_member", 0));
                 }
@@ -444,21 +562,29 @@ pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> 
             if let Some(parent) = &n.parent {
                 p.declare(parent, "container");
             }
-            // Spend the bounded exploration allowance on the requested focus first.
-            if focus == "dependencies" {
-                p.explain_dependencies(&id);
-            }
-            if focus == "implementation" {
+            if v.focus.is_some() {
+                match focus {
+                    "dependencies" => p.explain_dependencies(&id),
+                    "implementation" => {
+                        p.explain_implementations(&id);
+                        p.contracts(&id);
+                    }
+                    _ => {
+                        p.contracts(&id);
+                        p.incoming(&id, &["calls", "references"], "consumers");
+                    }
+                }
+                p.plan.facts["optional_expansions"] = json!([
+                    "explain_symbol focus=contract",
+                    "explain_symbol focus=implementation",
+                    "explain_symbol focus=dependencies"
+                ]);
+            } else {
+                p.contracts(&id);
                 p.explain_implementations(&id);
-            }
-            p.contracts(&id);
-            if focus != "implementation" {
-                p.explain_implementations(&id);
-            }
-            if focus != "dependencies" {
                 p.explain_dependencies(&id);
+                p.incoming(&id, &["calls", "references"], "consumers");
             }
-            p.incoming(&id, &["calls", "references"], "consumers");
         }
         Options::Flow(v) => {
             let destination = v
@@ -585,6 +711,10 @@ pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> 
     finish(p)
 }
 fn finish(mut p: Planner<'_>) -> Result<Plan> {
+    // Exact messages include their scope/parameters; preserve first occurrence order.
+    let mut limits = BTreeSet::new();
+    p.plan.limits.retain(|limit| limits.insert(limit.clone()));
+    p.plan.facts["candidate_records"] = json!(p.plan.evidence.len());
     let mut unique: BTreeMap<(String, String), Evidence> = BTreeMap::new();
     for mut e in p.plan.evidence.drain(..) {
         if e.edge.confidence != "resolved" {
@@ -667,8 +797,17 @@ fn review(
         p.plan.outcome = "partial".into();
         p.plan.facts["comparison_verified"] = json!(false);
         p.plan.limits.push(if v.capture_baseline {"Baseline captured before edit; this is current-state context, not a verified diff"} else {"No explicit baseline: current-state context only; detect_changes does not constitute a Git/semantic diff"}.into());
+        if v.capture_mode.as_deref() == Some("minimal") {
+            return finish(p);
+        }
         for file in &files {
-            for node in &g.snapshot.files[file].nodes {
+            for node in g
+                .snapshot
+                .files
+                .get(file)
+                .into_iter()
+                .flat_map(|r| &r.nodes)
+            {
                 if !p.spend() {
                     break;
                 }
@@ -684,9 +823,9 @@ fn review(
     p.plan.facts["comparison_verified"] = json!(true);
     p.plan.facts["verification_status"] = json!("compiler/tests not executed");
     p.plan.facts["comparison_kind"] = json!(
-        "source hashes and indexed declarations/relations/diagnostics; not a statement or Git diff"
+        "captured working-tree source ranges and indexed semantic evidence; no Git history or correctness approval"
     );
-    p.plan.limits.push("Body/text edits can retain identical indexed symbols/relations; source_changes detects them and file_context conservatively selects unchanged declarations for review".into());
+    p.plan.facts["localization"] = json!([]);
     if old.snapshot.environment != g.snapshot.environment
         || old.snapshot.fingerprint != g.snapshot.fingerprint
     {
@@ -752,14 +891,64 @@ fn review(
                     .historical_symbols
                     .insert(id.clone(), (*node).clone());
                 p.add(e);
+                // Historical consumers outside comparison scope are context, not diffs.
+                for edge in old.snapshot.files.values().flat_map(|r| &r.edges) {
+                    if !p.spend() {
+                        break;
+                    }
+                    if &edge.target != id
+                        || !["calls", "references", "overrides"].contains(&edge.kind.as_str())
+                    {
+                        continue;
+                    }
+                    let mut e = fact(
+                        edge,
+                        "affected_consumers",
+                        "resolved historical consumer of removed declaration; related file is not in comparison scope",
+                        1,
+                    );
+                    e.phase = "before".into();
+                    for target in [&e.edge.source, &e.edge.target] {
+                        if let Some(n) = historical.get(target) {
+                            p.plan
+                                .historical_symbols
+                                .insert(target.clone(), (*n).clone());
+                        }
+                    }
+                    p.add(e);
+                }
             }
+        }
+        let localization = if source_changed {
+            super::review::localize(
+                c,
+                file,
+                old.sources.get(file).map(String::as_str),
+                after,
+                p.plan.request.budget.max_traversal.saturating_sub(p.work),
+            )?
+        } else {
+            super::review::Localization::default()
+        };
+        p.work += localization.work;
+        if localization.fallback.is_some() {
+            p.plan.limits.push(format!(
+                "Review file fallback for {file}: {}",
+                localization.fallback.as_deref().unwrap_or("unknown")
+            ));
+        }
+        if source_changed {
+            p.plan.facts["localization"].as_array_mut().expect("localizations").push(json!({"file":file,"hunks":localization.hunks,"kind":localization.kind,"fallback":localization.fallback,"seeds":localization.seeds}));
         }
         for (id, node) in &b {
             if !p.spend() {
                 break;
             }
-            let declaration_changed = a.get(id).is_none_or(|old| *old != *node);
-            if declaration_changed || (source_changed && node.kind != "file") {
+            let declaration_changed = a
+                .get(id)
+                .is_none_or(|old| !super::review::same_declaration(old, node));
+            let selected = localization.seeds.contains(id) || localization.fallback.is_some();
+            if node.kind != "file" && (declaration_changed || selected) {
                 p.declare(
                     id,
                     if !declaration_changed {
@@ -770,11 +959,21 @@ fn review(
                         "added_symbols"
                     },
                 );
-                p.incoming(
-                    id,
-                    &["calls", "references", "overrides"],
-                    "affected_consumers",
-                );
+                if declaration_changed
+                    || localization.kind != "body"
+                    || localization.fallback.is_some()
+                {
+                    let linked = p.contracts(id);
+                    for link in linked {
+                        p.incoming(
+                            &link,
+                            &["calls", "references", "overrides"],
+                            "affected_consumers",
+                        );
+                    }
+                } else {
+                    p.explain_dependencies(id);
+                }
                 p.tests(id, None, None);
             }
         }
