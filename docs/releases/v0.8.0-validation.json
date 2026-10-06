@@ -2,7 +2,7 @@
   "version": "0.8.0",
   "local_date": "2026-10-06",
   "base_commit": "06e0a72741d2370b74888b86311709dfd9c3f286",
-  "linux_local_binary_sha256": "2305c2d20ebe504326bbb7101850beb1a64da403a6996550f91dfa94b4dbf863",
+  "linux_local_binary_sha256": "b3f13434f15a1e2b497b135592a50b594a0c7c0c8d1033aefe98bdeb15f5e458",
   "rust_tests": 72,
   "python_accounting_tests": 13,
   "core_check": "passed: cargo xtask check (format, clippy warnings denied, regressions)",

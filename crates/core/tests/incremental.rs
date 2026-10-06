@@ -334,13 +334,18 @@ async fn irrelevant_file_edit_during_analysis_does_not_trigger_semantic_retry() 
     let mut i = Indexer::new(c).unwrap();
     i.refresh(true, false).await.unwrap();
     fs::write(root.path().join(".polycodegraph/slow.once"), "").unwrap();
+    let retries_before = i.metrics.retries.values().sum::<u64>();
     let edit = async {
         tokio::time::sleep(Duration::from_millis(80)).await;
         fs::write(root.path().join("README.md"), "unrelated documentation\n").unwrap();
     };
     let (updated, ()) = tokio::join!(i.refresh(true, true), edit);
     updated.unwrap();
-    assert_eq!(i.metrics.retries.values().sum::<u64>(), 0);
+    assert_eq!(
+        i.metrics.retries.values().sum::<u64>(),
+        retries_before,
+        "editing existing documentation must not add a semantic retry"
+    );
     let context_before = i.metrics.providers["typescript"].analyzed_context_files;
     fs::write(
         root.path().join("a/first.ts"),

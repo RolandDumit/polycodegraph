@@ -156,6 +156,22 @@ fn unchanged_directory(c: &Config, stamps: &BTreeMap<String, SystemTime>, f: &st
             .is_ok_and(|m| m.is_dir() && m.modified().ok().as_ref() == Some(stamp))
     })
 }
+fn changed_event_paths(
+    c: &Config,
+    stamps: &BTreeMap<String, SystemTime>,
+    event: &Event,
+) -> (BTreeSet<String>, bool) {
+    let directory = directory_event(event);
+    let paths: BTreeSet<_> = event
+        .paths
+        .iter()
+        .filter(|p| relevant(c, p, directory))
+        .map(|p| filesystem::relative(&c.root, p))
+        .filter(|f| !unchanged_directory(c, stamps, f))
+        .collect();
+    let reconcile = directory && !paths.is_empty();
+    (paths, reconcile)
+}
 
 impl Indexer {
     pub fn new(config: Config) -> Result<Self> {
@@ -224,13 +240,10 @@ impl Indexer {
                             full = true;
                             uncertain = true;
                         }
-                        let directory = directory_event(&e);
-                        for p in e.paths {
-                            if relevant(&self.config, &p, directory) {
-                                full |= directory;
-                                paths.insert(filesystem::relative(&self.config.root, &p));
-                            }
-                        }
+                        let (changed, directory) =
+                            changed_event_paths(&self.config, &self.directory_stamps, &e);
+                        full |= directory;
+                        paths.extend(changed);
                     }
                     Ok(Err(e)) => {
                         w.pending.fetch_sub(1, Ordering::AcqRel);
@@ -927,6 +940,21 @@ mod tests {
             &i.directory_stamps,
             "assets"
         ));
+        let hint = Event::new(notify::EventKind::Modify(notify::event::ModifyKind::Any))
+            .add_path(i.config.root.clone())
+            .add_path(i.config.root.join("assets"));
+        assert_eq!(
+            changed_event_paths(&i.config, &i.directory_stamps, &hint),
+            (BTreeSet::new(), false),
+            "duplicate hints must not force refresh to scan"
+        );
+        let file = Event::new(notify::EventKind::Remove(notify::event::RemoveKind::File))
+            .add_path(i.config.root.join("entry.ts"));
+        assert_eq!(
+            changed_event_paths(&i.config, &i.directory_stamps, &file),
+            (BTreeSet::from(["entry.ts".into()]), false),
+            "file notifications remain relevant even with unchanged directory stamps"
+        );
         let scans = i.metrics.scans;
         i.update(false, false, BTreeSet::from(["".into(), "assets".into()]))
             .await
@@ -943,6 +971,12 @@ mod tests {
             &i.directory_stamps,
             "missing"
         ));
+        let removed = Event::new(notify::EventKind::Remove(notify::event::RemoveKind::Folder))
+            .add_path(i.config.root.join("removed.v1"));
+        assert_eq!(
+            changed_event_paths(&i.config, &i.directory_stamps, &removed),
+            (BTreeSet::from(["removed.v1".into()]), true)
+        );
         i.update(false, false, BTreeSet::from(["assets".into()]))
             .await
             .unwrap();
