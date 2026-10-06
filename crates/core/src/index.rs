@@ -932,16 +932,12 @@ mod tests {
         let d = tempfile::tempdir().unwrap();
         let c = Config::load(d.path(), None).unwrap();
         let event = Event::new(notify::EventKind::Remove(notify::event::RemoveKind::Folder))
-            .add_path(d.path().join("src.v1"));
+            .add_path(c.root.join("src.v1"));
         assert!(directory_event(&event));
         assert!(relevant(&c, &event.paths[0], directory_event(&event)));
-        fs::write(d.path().join("build.log"), "irrelevant").unwrap();
-        assert!(!relevant(&c, &d.path().join("build.log"), false));
-        assert!(!relevant(
-            &c,
-            &d.path().join(".polycodegraph/cache.v1"),
-            true
-        ));
+        fs::write(c.root.join("build.log"), "irrelevant").unwrap();
+        assert!(!relevant(&c, &c.root.join("build.log"), false));
+        assert!(!relevant(&c, &c.root.join(".polycodegraph/cache.v1"), true));
     }
     #[tokio::test]
     async fn overflow_forces_reconciliation() {
