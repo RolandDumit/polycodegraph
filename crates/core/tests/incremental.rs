@@ -16,8 +16,9 @@ if config_marker.exists():
     config_marker.unlink(); p=root/'polycodegraph.json'; cfg=json.loads(p.read_text()); cfg['flutter']=not cfg['flutter']; p.write_text(json.dumps(cfg))
 if marker.exists():
     marker.unlink(); f=root/'a/first.ts';f.write_text(f.read_text()+'\n// concurrent edit')
-if (root/'slow.once').exists():
-    (root/'slow.once').unlink();time.sleep(.3)
+slow=root/'.polycodegraph'/'slow.once'
+if slow.exists():
+    slow.unlink();time.sleep(.3)
 if (root/'fail.once').exists(): sys.exit(2)
 for f in r['files']:
     if f['file'] not in r['options']['emit_files']:continue
@@ -234,7 +235,7 @@ async fn mcp_cancellation_duplicates_and_queue_bound() {
     let (root, _assets, c) = fixture();
     let mut i = Indexer::new(c).unwrap();
     i.refresh(true, false).await.unwrap();
-    fs::write(root.path().join("slow.once"), "").unwrap();
+    fs::write(root.path().join(".polycodegraph/slow.once"), "").unwrap();
     let (mut client, input) = tokio::io::duplex(1048576);
     let (output, mut responses) = tokio::io::duplex(1048576);
     let server = tokio::spawn(mcp::serve(input, output, i));
@@ -328,9 +329,11 @@ async fn corrupted_database_while_running_recovers_with_coherent_generation() {
 #[tokio::test]
 async fn irrelevant_file_edit_during_analysis_does_not_trigger_semantic_retry() {
     let (root, _assets, c) = fixture();
+    // Edit existing content so this test does not also change directory structure.
+    fs::write(root.path().join("README.md"), "initial documentation\n").unwrap();
     let mut i = Indexer::new(c).unwrap();
     i.refresh(true, false).await.unwrap();
-    fs::write(root.path().join("slow.once"), "").unwrap();
+    fs::write(root.path().join(".polycodegraph/slow.once"), "").unwrap();
     let edit = async {
         tokio::time::sleep(Duration::from_millis(80)).await;
         fs::write(root.path().join("README.md"), "unrelated documentation\n").unwrap();

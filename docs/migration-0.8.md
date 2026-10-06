@@ -97,4 +97,8 @@ See [measurement protocol](benchmarks/efficiency-0.8/protocol.md) and
 [actual gates/results](benchmarks/efficiency-0.8/report.md). Payload estimates and
 server runtime do not establish cheaper accepted AI tasks.
 
+Delayed directory notifications with unchanged directory stamps no longer trigger
+duplicate extraction retries. Source/context hashes are still verified; changed or
+deleted directories, watcher errors, rescan requests and overflow retain recovery.
+
 Review source views currently render current-state text; removed declarations/files retain before IDs, sites and hashes, but captured historical source text is not exposed as a separate source retrieval API. Line synchronization/classification and missing provider enrichment remain conservative limits, not language-level semantic equivalence proofs.

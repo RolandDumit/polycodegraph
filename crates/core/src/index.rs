@@ -149,6 +149,13 @@ fn relevant(c: &Config, p: &std::path::Path, directory: bool) -> bool {
         || fs::symlink_metadata(p).is_ok_and(|m| m.file_type().is_symlink())
         || (!p.exists() && p.extension().is_none())
 }
+fn unchanged_directory(c: &Config, stamps: &BTreeMap<String, SystemTime>, f: &str) -> bool {
+    // Only discard duplicate directory hints. File/context freshness still uses hashes.
+    stamps.get(f).is_some_and(|stamp| {
+        fs::symlink_metadata(c.root.join(f))
+            .is_ok_and(|m| m.is_dir() && m.modified().ok().as_ref() == Some(stamp))
+    })
+}
 
 impl Indexer {
     pub fn new(config: Config) -> Result<Self> {
@@ -199,11 +206,13 @@ impl Indexer {
             reported_errors: BTreeSet::new(),
         })
     }
-    fn drain(&mut self) -> (BTreeSet<String>, bool) {
+    fn drain(&mut self) -> (BTreeSet<String>, bool, bool) {
         let mut paths = BTreeSet::new();
         let mut full = false;
+        let mut uncertain = false;
         if let Some(w) = &self.watcher {
             full = w.overflow.swap(false, Ordering::AcqRel);
+            uncertain = full;
             loop {
                 match w.receiver.try_recv() {
                     Ok(Ok(e)) => {
@@ -212,7 +221,8 @@ impl Indexer {
                             continue;
                         }
                         if e.need_rescan() {
-                            full = true
+                            full = true;
+                            uncertain = true;
                         }
                         let directory = directory_event(&e);
                         for p in e.paths {
@@ -225,18 +235,20 @@ impl Indexer {
                     Ok(Err(e)) => {
                         w.pending.fetch_sub(1, Ordering::AcqRel);
                         full = true;
+                        uncertain = true;
                         self.watcher_error = Some(e.to_string());
                     }
                     Err(TryRecvError::Empty) => break,
                     Err(TryRecvError::Disconnected) => {
                         self.watcher_error = Some("watcher channel disconnected".into());
                         full = true;
+                        uncertain = true;
                         break;
                     }
                 }
             }
         }
-        (paths, full)
+        (paths, full, uncertain)
     }
     pub fn freshness(&self) -> Value {
         json!({"mode":if self.watcher.is_some() && self.watcher_error.is_none(){"watcher"}else{"full_scan"},"watcher_healthy":self.watcher.is_some()&&self.watcher_error.is_none(),"watcher_error":self.watcher_error,"last_reconciled":self.last_reconciled,"pending_updates":self.watcher.as_ref().map_or(0, |w|w.pending.load(Ordering::Acquire) + usize::from(w.overflow.load(Ordering::Acquire)))})
@@ -279,12 +291,12 @@ impl Indexer {
         )
     }
     pub async fn refresh(&mut self, explicit: bool, force: bool) -> Result<Value> {
-        let (mut dirty, mut full) = self.drain();
+        let (mut dirty, mut full, _) = self.drain();
         if !dirty.is_empty() {
             let waited = Instant::now();
             tokio::time::sleep(Duration::from_millis(self.config.watch_debounce_ms)).await;
             self.metrics.refresh_wait_ms += waited.elapsed().as_secs_f64() * 1000.;
-            let (d, f) = self.drain();
+            let (d, f, _) = self.drain();
             dirty.extend(d);
             full |= f;
         }
@@ -424,15 +436,7 @@ impl Indexer {
                 for f in &dirty {
                     // FSEvents may deliver pre-scan directory notifications later.
                     // Directory timestamps only suppress duplicate hints; source freshness uses hashes.
-                    let directory = if f.is_empty() {
-                        self.config.root.clone()
-                    } else {
-                        self.config.root.join(f)
-                    };
-                    if self.directory_stamps.get(f).is_some_and(|stamp| {
-                        fs::symlink_metadata(&directory)
-                            .is_ok_and(|m| m.is_dir() && m.modified().ok().as_ref() == Some(stamp))
-                    }) {
+                    if unchanged_directory(&self.config, &self.directory_stamps, f) {
                         continue;
                     }
                     let path = match self.config.safe(f) {
@@ -602,13 +606,17 @@ impl Indexer {
             self.metrics.emitted_sources += extracted.len() as u64;
             self.metrics.changed_sources += changed.len() as u64;
             self.metrics.extraction_ms += t.elapsed().as_secs_f64() * 1000.;
-            let (mut events, overflow) = self.drain();
+            let (mut events, _, uncertain) = self.drain();
+            // FSEvents/ReadDirectoryChangesW can deliver pre-scan directory hints
+            // during extraction. They request reconciliation, not necessarily a retry.
+            // Lost events/errors always retry; changed directories and file events remain.
+            events.retain(|f| !unchanged_directory(&self.config, &scan.directory_stamps, f));
             if self.config.disk_fingerprint()? != self.config_disk_hash {
                 bail!(
                     "Configuration changed during indexing; previous committed generation retained, retry"
                 );
             }
-            let mut unstable = overflow || !events.is_empty();
+            let mut unstable = uncertain || !events.is_empty();
             for (f, h) in &scan.hashes {
                 if affected.iter().any(|a| {
                     language(a) == language(f)
@@ -913,12 +921,28 @@ mod tests {
         c.providers_path = Some(d.path().join("assets").to_string_lossy().into());
         let mut i = Indexer::new(c).unwrap();
         i.refresh(true, false).await.unwrap();
+        assert!(unchanged_directory(&i.config, &i.directory_stamps, ""));
+        assert!(unchanged_directory(
+            &i.config,
+            &i.directory_stamps,
+            "assets"
+        ));
         let scans = i.metrics.scans;
         i.update(false, false, BTreeSet::from(["".into(), "assets".into()]))
             .await
             .unwrap();
         assert_eq!(i.metrics.scans, scans);
         fs::create_dir_all(d.path().join("assets/new-directory")).unwrap();
+        assert!(!unchanged_directory(
+            &i.config,
+            &i.directory_stamps,
+            "assets"
+        ));
+        assert!(!unchanged_directory(
+            &i.config,
+            &i.directory_stamps,
+            "missing"
+        ));
         i.update(false, false, BTreeSet::from(["assets".into()]))
             .await
             .unwrap();

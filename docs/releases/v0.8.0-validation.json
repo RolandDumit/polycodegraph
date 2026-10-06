@@ -2,7 +2,7 @@
   "version": "0.8.0",
   "local_date": "2026-10-06",
   "base_commit": "06e0a72741d2370b74888b86311709dfd9c3f286",
-  "linux_local_binary_sha256": "4daeebfe3408b33d20a55586973f37ef98b4ade38bc270384eb3972ed3c5eecf",
+  "linux_local_binary_sha256": "2305c2d20ebe504326bbb7101850beb1a64da403a6996550f91dfa94b4dbf863",
   "rust_tests": 72,
   "python_accounting_tests": 13,
   "core_check": "passed: cargo xtask check (format, clippy warnings denied, regressions)",
@@ -130,6 +130,7 @@
   "release_CI": "Exact commit CI/platform/package identities are recorded in the GitHub release after passing; local results do not assert cross-platform coverage",
   "AI_release_retest": false,
   "AI_evidence": "../benchmarks/efficiency-0.8-application/report.md",
-  "preserved_stash_sha256": "10ec8cca20a08b882f508569acfed18f3617c4f3",
-  "previous_candidate_imports": []
+  "previous_candidate_imports": [],
+  "preserved_stash_commit": "10ec8cca20a08b882f508569acfed18f3617c4f3",
+  "watcher": "passed local duplicate-directory hints, content edit during analysis, source races, missed events and overflow; exact cross-platform CI required before publication"
 }
