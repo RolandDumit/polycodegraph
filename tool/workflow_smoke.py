@@ -23,7 +23,9 @@ def compare_after_edit(client: Client, arguments: dict, max_wait_seconds: float 
     deadline = time.monotonic() + max_wait_seconds
     retries = 0
     while True:
-        response = client.request("tools/call", {"name": "inspect_change", "arguments": arguments})
+        response = client.request(
+            "tools/call", {"name": "inspect_change", "arguments": arguments}, deadline=deadline
+        )
         if not response.get("isError"):
             return response, retries
         try:
