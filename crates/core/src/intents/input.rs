@@ -24,6 +24,12 @@ pub enum View {
     EditContext,
     FullEvidence,
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Format {
+    Audit,
+    Lean,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ClientContext {
@@ -77,6 +83,7 @@ pub struct Signature {
     pub required: Option<bool>,
     pub return_type: Option<String>,
     pub asynchronous: Option<bool>,
+    pub include_tests: bool,
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -91,6 +98,8 @@ pub struct Review {
     pub baseline: Option<String>,
     pub capture_baseline: bool,
     pub capture_mode: Option<String>,
+    pub strict_scope: bool,
+    pub new_files: Vec<String>,
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -150,9 +159,17 @@ pub struct Request {
     pub detail: Option<String>,
     pub view: Option<View>,
     pub context: Option<ClientContext>,
+    pub format: Option<Format>,
 }
 impl Request {
+    pub fn lean(&self) -> bool {
+        self.format == Some(Format::Lean)
+    }
     pub fn parse(a: &Value) -> Result<Self> {
+        let format: Option<Format> = a
+            .get("format")
+            .map(|v| serde_json::from_value(v.clone()))
+            .transpose()?;
         let intent: Intent = serde_json::from_value(a["intent"].clone())?;
         let target = a["target"]
             .as_str()
@@ -246,6 +263,15 @@ impl Request {
             }
             Options::Review(v)
                 if v.files.len() > 32
+                    || v.new_files.len() > 32
+                    || v.new_files
+                        .iter()
+                        .collect::<std::collections::BTreeSet<_>>()
+                        .len()
+                        != v.new_files.len()
+                    || (!v.new_files.is_empty()
+                        && ((!v.strict_scope && format != Some(Format::Lean))
+                            || !v.capture_baseline))
                     || (v.capture_baseline && v.baseline.is_some())
                     || v.capture_mode.as_ref().is_some_and(|mode| {
                         !v.capture_baseline || !["minimal", "context"].contains(&mode.as_str())
@@ -284,6 +310,15 @@ impl Request {
         }) {
             bail!("Invalid client context identity/window acknowledgement");
         }
+        if format == Some(Format::Lean) && context.is_some() {
+            bail!("lean results are self-contained; retained-window context requires audit format")
+        }
+        let mut options = options;
+        if format == Some(Format::Lean)
+            && let Options::Review(v) = &mut options
+        {
+            v.strict_scope = true;
+        }
         Ok(Self {
             intent,
             target,
@@ -291,8 +326,9 @@ impl Request {
             budget,
             depth,
             detail: a["detail"].as_str().map(str::to_owned),
-            view,
+            view: view.or_else(|| (format == Some(Format::Lean)).then_some(View::EditContext)),
             context,
+            format,
         })
     }
 }

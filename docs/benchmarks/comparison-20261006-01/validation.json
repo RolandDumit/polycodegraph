@@ -1,0 +1,509 @@
+{
+  "status": "required_technical_gates_passed",
+  "model_runs": 0,
+  "candidate_product_unchanged": true,
+  "rust": {
+    "command": "cargo xtask check",
+    "exit": 0,
+    "passed_tests": 87,
+    "failed_tests": 0,
+    "log_sha256": "b714be3abae22c4c8eee3e080baa9ec97ec8487f8618721964a2c4e7b6501810"
+  },
+  "python": {
+    "command": "python3 -m unittest discover -s tool -p 'test_*.py'",
+    "exit": 0,
+    "passed_tests": 34,
+    "failed_tests": 0,
+    "log_sha256": "a89b60f0910a13e5f160e7479b7d1cc79b3ba9c8814bb4b560d5175fae76f195"
+  },
+  "native_intents": {
+    "mixed": {
+      "status": "passed",
+      "exit": 0,
+      "primitive_differential_baseline": "0.6.0",
+      "result": {
+        "languages": {
+          "dart": 5,
+          "go": 4,
+          "java": 5,
+          "javascript": 3,
+          "kotlin": 3,
+          "objectivec": 5,
+          "python": 5,
+          "rust": 4,
+          "swift": 4,
+          "typescript": 4
+        },
+        "symbols": 200,
+        "edges": 438,
+        "verified": [
+          {
+            "extension": ".dart",
+            "intents": 10
+          },
+          {
+            "extension": ".kt",
+            "intents": 10
+          },
+          {
+            "extension": ".m",
+            "intents": 10
+          },
+          {
+            "extension": ".swift",
+            "intents": 10
+          },
+          {
+            "extension": ".go",
+            "intents": 10
+          },
+          {
+            "extension": ".java",
+            "intents": 10
+          },
+          {
+            "extension": ".ts",
+            "intents": 10
+          },
+          {
+            "extension": ".js",
+            "intents": 10
+          },
+          {
+            "extension": ".py",
+            "intents": 10
+          },
+          {
+            "extension": ".rs",
+            "intents": 10
+          }
+        ]
+      }
+    },
+    "flutter": {
+      "status": "passed",
+      "exit": 0,
+      "primitive_differential_baseline": "0.6.0",
+      "result": {
+        "languages": {
+          "dart": 2
+        },
+        "symbols": 24,
+        "edges": 75,
+        "verified": [
+          {
+            "extension": ".dart",
+            "intents": 10
+          }
+        ]
+      }
+    },
+    "mobile": {
+      "status": "passed",
+      "exit": 0,
+      "primitive_differential_baseline": "0.6.0",
+      "result": {
+        "languages": {
+          "kotlin": 3,
+          "objectivec": 5,
+          "swift": 4
+        },
+        "symbols": 80,
+        "edges": 139,
+        "verified": [
+          {
+            "extension": ".kt",
+            "intents": 10
+          },
+          {
+            "extension": ".m",
+            "intents": 10
+          },
+          {
+            "extension": ".swift",
+            "intents": 10
+          }
+        ]
+      }
+    }
+  },
+  "android_sdk": {
+    "status": "passed",
+    "exit": 0,
+    "result": {
+      "sdk_fixture": "android_sdk",
+      "symbols": 5,
+      "edges": 6
+    }
+  },
+  "macos_uikit": {
+    "status": "not_run",
+    "reason": "Linux host; macOS and Xcode required; mobile fixtures are not UIKit SDK coverage"
+  },
+  "profiles": {
+    "status": "passed",
+    "exit": 0,
+    "log_sha256": "20ff7cf8c89e610fc72dc8db244dcb587cc24dbe5cfc7d05f7d1956a72125d23"
+  },
+  "post08_native": {
+    "binary_sha256": "4a6f1dbeac0b016336ecba72fcbca923f7cbb590d92179931672a327ad67d6b5",
+    "model_runs": 0,
+    "provider": "TypeScript compiler API",
+    "measurement": "one compact JSON result representation; not provider tokens or model input",
+    "relocation": {
+      "before_reference_sites": 100,
+      "after_reference_sites": 100,
+      "sections": {
+        "removed_relations": 0,
+        "added_relations": 0,
+        "source_changes": 1
+      },
+      "response": {
+        "pages": 1,
+        "unicode_characters": 3683,
+        "utf8_bytes": 3683,
+        "records": 1
+      },
+      "query_ms": 386.1332999076694,
+      "classification": [
+        {
+          "file": "sample.ts",
+          "unchanged": 0,
+          "relocated": 202,
+          "uncertain_mapping": 0,
+          "removed_multiplicity": 0,
+          "added_multiplicity": 0,
+          "mapping_limit": null
+        }
+      ],
+      "lean_response": {
+        "pages": 1,
+        "unicode_characters": 2512,
+        "utf8_bytes": 2512,
+        "records": 1
+      }
+    },
+    "schema_unicode_characters": 17620,
+    "schema_sha256": "6ead83e90c771098e72eb234c14099b5525a30672fb9ba017c1a304a27b98e22",
+    "strict_scope": {
+      "typo_rejected": true
+    },
+    "projection": {
+      "rename": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 29935,
+          "utf8_bytes": 29935,
+          "records": 201
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6035,
+          "utf8_bytes": 6035,
+          "records": 201
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 201,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "edit"
+        }
+      },
+      "change_signature": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 32828,
+          "utf8_bytes": 32828,
+          "records": 201
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6204,
+          "utf8_bytes": 6204,
+          "records": 201
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 201,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "edit"
+        }
+      },
+      "explain_symbol": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 30279,
+          "utf8_bytes": 30279,
+          "records": 202
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6237,
+          "utf8_bytes": 6237,
+          "records": 202
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 1,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "complete",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "none"
+        }
+      },
+      "trace_flow": {
+        "audit": {
+          "pages": 1,
+          "unicode_characters": 2803,
+          "utf8_bytes": 2803,
+          "records": 1
+        },
+        "lean": {
+          "pages": 1,
+          "unicode_characters": 1823,
+          "utf8_bytes": 1823,
+          "records": 1
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 1,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "none"
+        }
+      }
+    },
+    "adapter": {
+      "client": "efficiency_client.LeanAdapter/1, native stdio client; no model attached",
+      "complete": true,
+      "boundary": {
+        "actual_schema_sha256": null,
+        "loaded_graph_instructions_sha256": null,
+        "response_representation": [
+          "transformed"
+        ],
+        "model_requests": 0,
+        "mcp_calls": 11,
+        "external_reads": 0,
+        "new_context_chars": 1669,
+        "repeated_context_chars": 0,
+        "rehydrated_context_chars": 0,
+        "pages": 11,
+        "expansions": 0,
+        "compactions": 0,
+        "errors": 0,
+        "retries": 0,
+        "wire_bytes": 62872,
+        "injected_bytes": 29717,
+        "injected_chars": 29717,
+        "wire_duplicate_objects": 11,
+        "unidentified_context_chars": 0,
+        "context_identity_complete": true,
+        "source_ledger_entries": 12,
+        "source_ledger_omitted": 0,
+        "measurement_scope": "exact retained windows at explicit client prompt insertion and retained-window observations; characters are not model usage"
+      },
+      "automatic_pages": 11,
+      "codex_client_insertion": "not_run"
+    },
+    "signature_review": {
+      "same_symbol_id": true,
+      "contract_classification_retained": true,
+      "source_change_visible": true,
+      "classification": "contract_or_initializer"
+    },
+    "agent_surface": {
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ],
+      "advanced_intent_invoked": true,
+      "metadata_accepted": true,
+      "error_recovery": true,
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "schema_unicode_characters": 10426,
+      "initialization_instructions_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "native_reconnect": true,
+      "codex_tool_registration": "not_run"
+    }
+  },
+  "original_rename_gate": {
+    "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+    "original_files": 385,
+    "model_runs": 0,
+    "baseline": {
+      "collection_calls": 13,
+      "characters": 36167,
+      "utf8_bytes": 36167
+    },
+    "intent": {
+      "pages": 2,
+      "expansion_calls": 1,
+      "collection_calls": 3,
+      "characters": 23663,
+      "utf8_bytes": 23663,
+      "evidence": 24,
+      "reference_edges_preserved": 19,
+      "oracle_line_patterns": 17,
+      "query_ms": [
+        2.345344051718712,
+        0.7156949723139405
+      ],
+      "warm_scan_delta": 0,
+      "warm_extraction_delta": 0,
+      "warm_graph_build_delta": 0
+    },
+    "schema": {
+      "baseline_characters": 10277,
+      "intent_characters": 17620,
+      "added_characters": 7343,
+      "baseline_utf8_bytes": 10277,
+      "intent_utf8_bytes": 17620
+    },
+    "excluded_startup_calls": {
+      "status": 2,
+      "search_symbol": 2,
+      "index_repository": 1
+    },
+    "character_reduction_percent": 34.57295324467056,
+    "gate_passed": true
+  },
+  "supplementary_different_trace_replay": {
+    "status": "different_trace_not_original_gate",
+    "result": {
+      "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+      "original_files": 385,
+      "model_runs": 0,
+      "baseline": {
+        "collection_calls": 1,
+        "characters": 6662,
+        "utf8_bytes": 6662
+      },
+      "intent": {
+        "pages": 2,
+        "expansion_calls": 0,
+        "collection_calls": 2,
+        "characters": 21826,
+        "utf8_bytes": 21826,
+        "evidence": 24,
+        "reference_edges_preserved": 19,
+        "oracle_line_patterns": 17,
+        "query_ms": [
+          2.8903440106660128,
+          0.7674630032852292
+        ],
+        "warm_scan_delta": 0,
+        "warm_extraction_delta": 0,
+        "warm_graph_build_delta": 0
+      },
+      "schema": {
+        "baseline_characters": 10277,
+        "intent_characters": 17620,
+        "added_characters": 7343,
+        "baseline_utf8_bytes": 10277,
+        "intent_utf8_bytes": 17620
+      },
+      "excluded_startup_calls": {
+        "status": 1,
+        "search_symbol": 3,
+        "neighbors": 1,
+        "callers": 1
+      },
+      "character_reduction_percent": -227.61933353347342,
+      "gate_passed": false
+    },
+    "interpretation": "One primitive collection call differs from the original 13-call trace; volume threshold fails and is retained. Not an AI saving or a replacement for the original gate."
+  },
+  "retrieval_diagnostic": {
+    "C": {
+      "status": "diagnostic_limits_visible",
+      "model_runs": 0,
+      "ranked_rows": 10,
+      "unique_anchor_ids": 1,
+      "matched_source_included": false,
+      "scope_match_exists_in_source": true,
+      "scope_rows": 0,
+      "total": null,
+      "collection_complete": false,
+      "index_incomplete": true,
+      "declared_max_lines": 100000,
+      "query_ms": 435.956972069107,
+      "interpretation": "Repeated lines saturate top-k; requested late scope is not covered after global line cap. Incomplete/unknown total remain visible. No F3 optimization applied."
+    },
+    "D": {
+      "status": "diagnostic_limits_visible",
+      "model_runs": 0,
+      "ranked_rows": 10,
+      "unique_anchor_ids": 1,
+      "matched_source_included": false,
+      "scope_match_exists_in_source": true,
+      "scope_rows": 0,
+      "total": null,
+      "collection_complete": false,
+      "index_incomplete": true,
+      "declared_max_lines": 100000,
+      "query_ms": 429.3851340189576,
+      "interpretation": "Repeated lines saturate top-k; requested late scope is not covered after global line cap. Incomplete/unknown total remain visible. No F3 optimization applied."
+    }
+  },
+  "preserved_preflight_errors": [
+    {
+      "component": "historical MCP unknown-tool check",
+      "reason": "0.7 uses a JSON-RPC error; initial assertion expected isError. Probe corrected; raw first log retained."
+    },
+    {
+      "component": "graph isolation mount",
+      "reason": "Read-only graph mount initially lacked file target. Target prepared; repeated probe succeeds. Raw first log retained."
+    }
+  ],
+  "real_manifest_launch_guard": {
+    "status": "passed",
+    "result": "CLI run rejected before invoking executor; no attempt journal or results created",
+    "model_runs": 0,
+    "stderr_sha256": "82d8443c8623b870c757b675b3390b48027a9b3d4685d338d0ed22a2d8ffa7bf"
+  }
+}

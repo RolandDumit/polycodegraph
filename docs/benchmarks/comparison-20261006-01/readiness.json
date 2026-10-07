@@ -1,0 +1,110 @@
+{
+  "status": "HOLD_MEASUREMENT",
+  "launch_ready": false,
+  "model_runs": 0,
+  "blockers": [
+    "executor: model",
+    "executor: effort",
+    "executor: command_sha256",
+    "executor: isolation_verifier_sha256",
+    "executor: isolation_verified",
+    "executor: credential_channel_verified",
+    "executor: mcp_client_verified",
+    "executor: oracle_verified",
+    "AI execution not authorized",
+    "no approved AI phases",
+    "budget: explicit positive max_runs required",
+    "budget: explicit positive max_uncached_input_tokens required",
+    "explicit authorization accepting after-attempt control required"
+  ],
+  "representative_sandbox_probes": {
+    "A": {
+      "access_boundaries_verified": true,
+      "graph_visible": false,
+      "credential_channel_verified": false
+    },
+    "B": {
+      "access_boundaries_verified": true,
+      "graph_visible": true,
+      "credential_channel_verified": false
+    },
+    "C": {
+      "access_boundaries_verified": true,
+      "graph_visible": true,
+      "credential_channel_verified": false
+    },
+    "D": {
+      "access_boundaries_verified": true,
+      "graph_visible": true,
+      "credential_channel_verified": false
+    }
+  },
+  "sandbox_scope": "Four representative draft copies; production executor and every actual attempt still require probes.",
+  "credential_test": "Dummy sentinel only. Legacy copied-auth channel is readable by solver; no real credential was read or copied.",
+  "native_mcp": {
+    "B": {
+      "binary_sha256": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d",
+      "schema_sha256": "3f17de8a8a014d235d87234df3471817799a377d140f44999d1bf361d5fc41ec",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "detect_changes",
+        "get_architecture",
+        "search_symbol",
+        "search",
+        "callers",
+        "callees",
+        "references",
+        "implementations",
+        "dependencies",
+        "neighbors",
+        "affected_by_change",
+        "blast_radius",
+        "snippet",
+        "inspect_change"
+      ],
+      "native_intent_invoked": true,
+      "metadata_accepted": false,
+      "error_recovery": true,
+      "instructions_sha256": "accd574353ce8f33cfb36214dc84c338b3e8265c363406316cfaccf01bf55bee",
+      "codex_registration": "not_run",
+      "eof_exit": 0
+    },
+    "C": {
+      "binary_sha256": "f37a9ff9ab5d56fd5206dac404aa5f7907f9f842556464315ca9376480d7395d",
+      "schema_sha256": "67c0cdc0a8e6f889ef6f978b45dad4fe348d0aa9ad292ba15a5cd84c57f2cc0b",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ],
+      "native_intent_invoked": true,
+      "metadata_accepted": true,
+      "error_recovery": true,
+      "instructions_sha256": "b35a1cf8c099c91969e2191990c0e0ca92a6d6468941ac4d8f851882ba8fc92c",
+      "codex_registration": "not_run",
+      "eof_exit": 0
+    },
+    "D": {
+      "binary_sha256": "4a6f1dbeac0b016336ecba72fcbca923f7cbb590d92179931672a327ad67d6b5",
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ],
+      "native_intent_invoked": true,
+      "metadata_accepted": true,
+      "error_recovery": true,
+      "instructions_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "codex_registration": "not_run",
+      "eof_exit": 0
+    }
+  },
+  "independent_oracles": "Recipes and manual rubrics frozen privately; not executed against new AI solutions because no solver run started.",
+  "integration_status": "LeanAdapter native collection verified; Codex binding/insertion and historical metadata compatibility remain unverified in this campaign."
+}

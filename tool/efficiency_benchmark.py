@@ -13,6 +13,7 @@ import signal
 import shutil
 import subprocess
 import time
+import statistics
 from pathlib import Path
 from efficiency_usage import requests, verify, codex_metadata
 
@@ -35,12 +36,41 @@ def write(path: Path, value: dict) -> None:
 
 
 def validate_manifest(manifest: dict, repository: Path, launch: bool = False) -> list[str]:
+    if manifest.get('protocol_revision') == 'comparison-v1':
+        from efficiency_comparison import validate
+        return validate(manifest, repository, launch)
     missing = []
     if manifest['primary_metric'] not in ('uncached_input_per_accepted_task', 'money_per_accepted_task'):
         raise ValueError('unregistered primary metric')
-    if len(manifest['tasks']) != 6 or tuple(t['order'] for t in manifest['tasks']) != ORDERS:
+    post08 = manifest.get('protocol_revision') == 'post08-v1'
+    if post08:
+        if manifest['primary_metric'] != 'uncached_input_per_accepted_task':
+            raise ValueError('post08-v1 freezes uncached input as its primary metric')
+        if not 1 <= len(manifest['tasks']) <= 32 or any(t['order'] not in ORDERS for t in manifest['tasks']):
+            raise ValueError('bounded registered ABC schedule required')
+        replicas = set()
+        for task in manifest['tasks']:
+            key = (task['base_task_id'], task['replica'])
+            if type(task['replica']) is not int or not 1 <= task['replica'] <= 3 or key in replicas:
+                raise ValueError('duplicate/invalid task replica')
+            replicas.add(key)
+        limits = manifest['limits']
+        if type(limits.get('attempts_per_cell')) is not int or not 1 <= limits['attempts_per_cell'] <= 3:
+            raise ValueError('bounded attempt count 1..3 required')
+        if type(limits.get('timeout_seconds')) is not int or not 1 <= limits['timeout_seconds'] <= 1200:
+            raise ValueError('bounded executor timeout 1..1200 required')
+        for key in ('authorized_runs', 'authorized_model_requests', 'authorized_uncached_input_tokens'):
+            if type(limits.get(key)) is not int or limits[key] < 0:
+                raise ValueError('explicit nonnegative campaign authorization required')
+            if limits[key] == 0:
+                missing.append(f'limits: {key} is zero; model execution not authorized')
+        if limits['authorized_runs'] < len(manifest['tasks']) * 3 * limits['attempts_per_cell']:
+            missing.append('limits: execution schedule exceeds authorized runs')
+        if manifest['executor'].get('budget_enforcement_verified') is not True:
+            missing.append('executor: verified enforcement of registered model request/token budgets')
+    elif len(manifest['tasks']) != 6 or tuple(t['order'] for t in manifest['tasks']) != ORDERS:
         raise ValueError('six counterbalanced tasks required')
-    if len({t['id'] for t in manifest['tasks']}) != 6:
+    if len({t['id'] for t in manifest['tasks']}) != len(manifest['tasks']):
         raise ValueError('duplicate task identity')
     for task in manifest['tasks']:
         base = repository / task['snapshot']
@@ -115,6 +145,9 @@ def bounded_process(command: Path, payload: dict, local: Path, label: str, timeo
 
 
 def prepare(manifest: dict, repository: Path, work: Path) -> dict:
+    if manifest.get('protocol_revision') == 'comparison-v1':
+        from efficiency_comparison import prepare_campaign
+        return prepare_campaign(manifest, repository, work)
     jobs = []
     for task in manifest['tasks']:
         for condition in task['order']:
@@ -128,6 +161,8 @@ def prepare(manifest: dict, repository: Path, work: Path) -> dict:
                            model=manifest['executor']['model'], effort=manifest['executor']['effort'],
                            graph=manifest['conditions'][condition],
                            limits=manifest['limits'], client_measurement=manifest['client_measurement'])
+            if manifest.get('protocol_revision') == 'post08-v1':
+                request.update(base_task_id=task['base_task_id'], replica=task['replica'])
             # The oracle criteria and other cells never enter executor input.
             write(destination / 'request.json', request)
             jobs.append(dict(id=identity, task_id=task['id'], condition=condition,
@@ -138,6 +173,11 @@ def prepare(manifest: dict, repository: Path, work: Path) -> dict:
 
 
 def run(manifest: dict, jobs: dict, command: Path, oracle: Path, work: Path) -> list[dict]:
+    if manifest.get('protocol_revision') == 'comparison-v1':
+        from efficiency_comparison import run_campaign
+        return run_campaign(manifest, jobs, command, oracle, work)
+    if manifest.get('protocol_revision') == 'post08-v1':
+        validate_manifest(manifest, Path(__file__).resolve().parent.parent, launch=True)
     if jobs['manifest_sha256'] != hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest():
         raise ValueError('jobs prepared from a different manifest')
     expected_jobs = [(t['id'], c) for t in manifest['tasks'] for c in t['order']]
@@ -208,6 +248,14 @@ def run(manifest: dict, jobs: dict, command: Path, oracle: Path, work: Path) -> 
                 (local / f'measurement-error-{attempt}.txt').write_text(str(error))
             record['duration_ms'] = (time.monotonic() - started) * 1000
             runs.append(record); write(local / f'result-{attempt}.json', record)
+            if manifest.get('protocol_revision') == 'post08-v1':
+                # Unknown usage aborts this campaign; it can never be a cheap retry.
+                if record.get('measurement_error'):
+                    return runs
+                limits = manifest['limits']
+                if (sum(r['usage']['model_requests'] for r in runs) >= limits['authorized_model_requests']
+                        or sum(r['usage']['totals']['uncached_input_tokens'] for r in runs) >= limits['authorized_uncached_input_tokens']):
+                    return runs
             if record['success']:
                 break
     return runs
@@ -222,6 +270,11 @@ def valid_money(value: object) -> bool:
 
 
 def evaluate(manifest: dict, runs: list[dict]) -> dict:
+    if manifest.get('protocol_revision') == 'comparison-v1':
+        from efficiency_comparison import evaluate_campaign
+        return evaluate_campaign(manifest, runs)
+    if manifest.get('protocol_revision') == 'post08-v1':
+        return evaluate_post08(manifest, runs)
     expected = {(t['id'], c) for t in manifest['tasks'] for c in 'ABC'}
     cells = {}
     failures = []
@@ -334,6 +387,116 @@ def evaluate(manifest: dict, runs: list[dict]) -> dict:
                        'G4': {'status': 'not_measured', 'reason': 'extended corpus, replicas and holdout need separate preregistration'}},
                 model_runs=sum(r.get('usage', {}).get('model_requests', 0) for r in runs),
                 limits='one pilot replica per cell; no significance, robustness or subscription-quota inference')
+
+
+def evaluate_post08(manifest: dict, runs: list[dict]) -> dict:
+    """New protocol: consumption and attribution are separate evidence levels."""
+    expected = [(t['id'], c) for t in manifest['tasks'] for c in t['order']]
+    cells = {}
+    encountered = []
+    accounting_errors = []
+    attribution_errors = []
+    settings = set()
+    measured = set()
+    for record in runs:
+        key = (record['task_id'], record['condition'])
+        if key not in expected or type(record.get('success')) is not bool:
+            raise ValueError('unexpected run/correctness identity')
+        if key not in cells:
+            encountered.append(key)
+            if encountered != expected[:len(encountered)]:
+                raise ValueError('runs differ from preregistered order')
+        elif encountered[-1] != key:
+            raise ValueError('non-contiguous retry')
+        attempts = cells.setdefault(key, [])
+        if record['attempt'] != len(attempts) + 1 or len(attempts) >= manifest['limits']['attempts_per_cell'] or (attempts and attempts[-1]['success']):
+            raise ValueError('invalid attempt sequence')
+        attempts.append(record)
+        try:
+            usage = verify(record['usage'])
+            measured.add(id(record))
+            settings.add(tuple(usage['model_settings']))
+        except (KeyError, ValueError, TypeError):
+            accounting_errors.append(f'{key}: usage unknown or invalid')
+        isolation = record.get('isolation', {})
+        if isolation.get('verified') is not True or not isolation.get('probe_artifact_sha256') or isolation.get('verifier_sha256') != manifest['executor']['isolation_verifier_sha256']:
+            accounting_errors.append(f'{key}: isolation not independently verified')
+        if record.get('oracle_sha256') != next(t['oracle_digest'] for t in manifest['tasks'] if t['id'] == key[0]):
+            accounting_errors.append(f'{key}: independent oracle identity missing/different')
+        client = record.get('client', {})
+        if key[1] == 'A':
+            if client.get('mcp_calls', 0) or client.get('actual_schema_sha256') is not None or client.get('loaded_graph_instructions_sha256') is not None:
+                accounting_errors.append(f'{key}: no-graph condition contaminated')
+        else:
+            condition = manifest['conditions'][key[1]]
+            if any(client.get(k) is None or client.get(k) != condition[v] for k,v in [('actual_schema_sha256','model_schema_sha256'),('loaded_graph_instructions_sha256','loaded_graph_instructions_sha256')]):
+                accounting_errors.append(f'{key}: actual graph surface unidentified/different')
+        if client.get('context_identity_complete') is not True or not client.get('response_representation'):
+            attribution_errors.append(f'{key}: source/insertion trace incomplete')
+    if settings and (len(settings) != 1 or next(iter(settings))[1:] != (manifest['executor']['model'],manifest['executor']['effort'])):
+        accounting_errors.append('model/effort not identical to preregistration')
+    aggregates = {}
+    per_task = []
+    for condition in 'ABC':
+        selected = [r for (task,c),attempts in cells.items() if c == condition for r in attempts]
+        valid = bool(selected) and all(id(r) in measured for r in selected)
+        components = {k:sum(r['usage']['totals'][k] for r in selected) if valid and all(r['usage']['totals'].get(k) is not None for r in selected) else None for k in COMPONENTS}
+        accepted = sum(attempts[-1]['success'] for (task,c),attempts in cells.items() if c == condition)
+        assigned = len(manifest['tasks'])
+        cost = components['uncached_input_tokens']
+        aggregates[condition] = dict(label=manifest['conditions'][condition]['label'],assigned_tasks=assigned,executed_tasks=sum(c == condition for task,c in cells),attempts=len(selected),accepted_tasks=accepted,
+            success_rate=accepted/assigned if selected else None,components=components,
+            primary_per_accepted_task=cost/accepted if accepted and cost is not None else None,
+            consumption_per_assigned_task={k:v/assigned if v is not None else None for k,v in components.items()},
+            monetary_cost=None,
+            model_requests=sum(r['usage']['model_requests'] for r in selected) if valid else None,
+            duration_ms=sum(r['duration_ms'] for r in selected) if selected and all(r.get('duration_ms') is not None for r in selected) else None)
+    for task in manifest['tasks']:
+        values = {}
+        for condition in 'ABC':
+            attempts = cells.get((task['id'],condition),[])
+            valid = bool(attempts) and all(id(r) in measured for r in attempts)
+            components = {k:sum(r['usage']['totals'][k] for r in attempts) if valid and all(r['usage']['totals'].get(k) is not None for r in attempts) else None for k in COMPONENTS}
+            values[condition] = dict(accepted=attempts[-1]['success'] if attempts else None,attempts=len(attempts),components=components,
+                uncached_input_tokens=sum(r['usage']['totals']['uncached_input_tokens'] for r in attempts) if valid else None,
+                graph_calls=sum(r.get('client',{}).get('mcp_calls',0) for r in attempts) if attempts else None,
+                client_counters=[{k:r.get('client',{}).get(k) for k in ('model_requests','mcp_calls','pages','errors','retries','expansions','external_reads','compactions','new_context_chars','repeated_context_chars','rehydrated_context_chars')} for r in attempts])
+        per_task.append(dict(task_id=task['id'],base_task_id=task['base_task_id'],replica=task['replica'],task_class=task['class'],values=values))
+    medians = {}
+    per_family = {}
+    for base in sorted({t['base_task_id'] for t in manifest['tasks']}):
+        members = [t for t in per_task if t['base_task_id'] == base]
+        medians[base] = {}
+        per_family[base] = {}
+        for condition in 'ABC':
+            costs = [t['values'][condition]['uncached_input_tokens'] for t in members]
+            medians[base][condition] = statistics.median(costs) if all(v is not None for v in costs) else None
+            values = [t['values'][condition] for t in members]
+            components = {k:sum(v['components'][k] for v in values) if all(v['components'][k] is not None for v in values) else None for k in COMPONENTS}
+            accepted = sum(v['accepted'] is True for v in values)
+            per_family[base][condition] = dict(assigned=len(values),accepted=accepted,attempts=sum(v['attempts'] for v in values),components=components,
+                primary_per_accepted_task=components['uncached_input_tokens']/accepted if accepted and components['uncached_input_tokens'] is not None else None,
+                consumption_per_assigned_task={k:v/len(values) if v is not None else None for k,v in components.items()},
+                replica_range_uncached_input=[min(costs),max(costs)] if all(v is not None for v in costs) else None,
+                graph_used_tasks=sum(v['graph_calls'] is not None and v['graph_calls']>0 for v in values),
+                graph_avoided_tasks=sum(v['graph_calls']==0 for v in values))
+    ratios = {f'C/{base}':aggregates['C']['primary_per_accepted_task']/aggregates[base]['primary_per_accepted_task'] if aggregates['C']['primary_per_accepted_task'] is not None and aggregates[base]['primary_per_accepted_task'] else None for base in 'AB'}
+    complete = set(cells) == set(expected)
+    quality = complete and all(attempts[-1]['success'] for attempts in cells.values())
+    comparable = complete and not accounting_errors
+    non_regressing = sum(v['C'] is not None and v['A'] is not None and v['C'] <= v['A'] for v in medians.values())
+    decision = 'inconclusive'
+    if comparable and quality and ratios['C/A'] is not None:
+        useful_segment = any(v['C']['graph_used_tasks'] > 0 and v['C']['primary_per_accepted_task'] is not None and v['A']['primary_per_accepted_task'] is not None
+                             and v['C']['primary_per_accepted_task'] < v['A']['primary_per_accepted_task'] for v in per_family.values())
+        decision = ('continue' if ratios['C/A'] <= 1 and non_regressing >= 2 else
+                    'segment_only' if ratios['C/A'] > 1.10 and useful_segment else
+                    'stop' if ratios['C/A'] > 1.10 else 'inconclusive')
+    return dict(protocol_revision='post08-v1',status='not_run' if not runs else 'measured',primary_metric=manifest['primary_metric'],
+        consumption_evidence=dict(comparable=comparable,errors=accounting_errors),attribution_evidence=dict(complete=comparable and not attribution_errors,errors=attribution_errors),
+        aggregates=aggregates,per_task=per_task,per_family=per_family,replica_medians=medians,comparisons=ratios,quality_equal=quality,decision=decision,
+        executions=len(runs),model_requests=sum(r.get('usage',{}).get('model_requests',0) for r in runs) if all(id(r) in measured for r in runs) else None,
+        limits='diagnostic tasks; replicas are not independent repositories; money unmeasured; no general advantage established')
 
 
 def main() -> None:

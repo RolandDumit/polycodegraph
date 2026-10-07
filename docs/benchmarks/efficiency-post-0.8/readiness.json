@@ -1,0 +1,28 @@
+{
+  "launch_ready": false,
+  "missing": [
+    "limits: authorized_runs is zero; model execution not authorized",
+    "limits: authorized_model_requests is zero; model execution not authorized",
+    "limits: authorized_uncached_input_tokens is zero; model execution not authorized",
+    "limits: execution schedule exceeds authorized runs",
+    "executor: verified enforcement of registered model request/token budgets",
+    "negative-total-r1: independent oracle identity",
+    "negative-total-r2: independent oracle identity",
+    "negative-total-r3: independent oracle identity",
+    "trace-entry-r1: independent oracle identity",
+    "trace-entry-r2: independent oracle identity",
+    "trace-entry-r3: independent oracle identity",
+    "review-relocation-r1: independent oracle identity",
+    "review-relocation-r2: independent oracle identity",
+    "review-relocation-r3: independent oracle identity",
+    "B: model_schema_sha256",
+    "B: loaded_graph_instructions_sha256",
+    "C: model_schema_sha256",
+    "C: loaded_graph_instructions_sha256",
+    "executor: model",
+    "executor: effort",
+    "executor: version",
+    "executor: isolation_verifier_sha256",
+    "executor: command_sha256"
+  ]
+}

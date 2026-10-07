@@ -40,6 +40,15 @@ client prompt insertion must be observed separately. See migration-0.8.md.
 
 ## Request metadata (0.8)
 
+Version 0.9 opt-in intent requests may select `format: lean`; both MCP `content`
+and `structuredContent` then contain that same selected lean projection, with
+no hidden full audit payload. The wire still has two fields. A client must
+explicitly select one insertion representation; server payload size does not
+establish model input size. The optional bounded adapter and its unverified model insertion boundary are
+documented in [activation/rollback](migration-0.9.md). Error/restart envelopes retain
+their existing contract. Omitted `format` and explicit `audit` retain audit
+rendering and retention options.
+
 Standard `params._meta` is accepted independently of tool arguments, including optional
 string/number progressToken and vendor metadata. The server may omit progress
 notifications; this does not require a client envelope adapter. tools/list returns one

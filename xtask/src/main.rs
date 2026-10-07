@@ -65,6 +65,12 @@ fn main() -> Result<()> {
             std::fs::copy(target.join("release").join(binary), output.join(binary))?;
             copy_assets(&assets, &output.join("providers"))?;
             copy_assets(&root.join("docs"), &output.join("docs"))?;
+            let clients = output.join("clients");
+            std::fs::create_dir_all(&clients)?;
+            std::fs::copy(
+                root.join("tool/efficiency_client.py"),
+                clients.join("efficiency_client.py"),
+            )?;
             for name in ["README.md", "LICENSE"] {
                 std::fs::copy(root.join(name), output.join(name))?;
             }

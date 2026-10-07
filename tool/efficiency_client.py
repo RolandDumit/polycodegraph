@@ -7,6 +7,7 @@ published summary. This module neither calls a model nor guesses client behavior
 from __future__ import annotations
 import hashlib
 import json
+import time
 
 
 def compact(value: object) -> str:
@@ -63,6 +64,8 @@ class Observer:
         self.representations: set[str] = set()
         self.wire_duplicate_objects = 0
         self.context_inventory_verified = True
+        self.source_ledger: list[dict] = []
+        self.source_ledger_omitted = 0
 
     def load_schema(self, actual_prompt_schema: str) -> None:
         self.schema_hash = hashlib.sha256(actual_prompt_schema.encode()).hexdigest()
@@ -94,9 +97,22 @@ class Observer:
         else:
             self.ledger.unidentified_chars += len(window['text'])
             return
+        entry = dict(file=file, root_id=root_id, source_hash=file_hash,
+                                       start_line=window.get('start_line'), end_line=window.get('end_line'),
+                                       text_sha256=hashlib.sha256(window['text'].encode()).hexdigest(),
+                                       origin='graph', state='repeated' if key in self.ledger.retained else
+                                       'rehydrated' if key in self.ledger.seen else 'new', epoch=self.ledger.epoch)
+        if len(self.source_ledger) < 8192:
+            self.source_ledger.append(entry)
+        else:
+            self.source_ledger_omitted += 1
+            self.context_inventory_verified = False
         self.ledger.window(key, window['text'])
 
     def _source(self, value: dict) -> None:
+        for source in value.get('sources', []):
+            for window in source.get('windows', []):
+                self._window(source['file'], window, value.get('snapshot', {}).get('root_id'), source.get('source_hash'))
         for file in value.get('files', []):
             for window in file.get('snippets', []):
                 self._window(file['file'], window, value.get('context', {}).get('root_id'), file.get('source_hash'))
@@ -166,4 +182,94 @@ class Observer:
                     injected_chars=self.injected_chars, wire_duplicate_objects=self.wire_duplicate_objects,
                     unidentified_context_chars=self.ledger.unidentified_chars,
                     context_identity_complete=self.ledger.unidentified_chars == 0 and self.context_inventory_verified,
+                    source_ledger_entries=len(self.source_ledger),
+                    source_ledger_omitted=self.source_ledger_omitted,
                     measurement_scope='exact retained windows at explicit client prompt insertion and retained-window observations; characters are not model usage')
+
+
+class LeanAdapter:
+    """One opt-in MCP integration for an executor with an actual insertion callback.
+
+    register the server's advertised tools, route inspect_change through collect,
+    and insert only its returned string. This is not a Codex client installation.
+    The adapter never retains/suppresses source and never loads hidden tool schemas.
+    """
+    def __init__(self, call, observer: Observer, max_pages=16, max_chars=64000,
+                 max_seconds=60, max_wire_bytes=8*1024*1024, cancelled=None):
+        if (not 1 <= max_pages <= 64 or not 3000 <= max_chars <= 256000
+                or not 1 <= max_seconds <= 600 or not 1024 <= max_wire_bytes <= 16*1024*1024):
+            raise ValueError('collector budget out of range')
+        self.call = call
+        self.observer = observer
+        self.max_pages = max_pages
+        self.max_chars = max_chars
+        self.max_seconds = max_seconds
+        self.max_wire_bytes = max_wire_bytes
+        self.cancelled = cancelled or (lambda: False)
+
+    def collect(self, arguments: dict) -> dict:
+        if arguments.get('format') == 'audit':
+            raw = self.call('inspect_change', arguments)
+            self.observer.observe_wire(raw)
+            text = compact(raw.get('structuredContent')) if raw.get('structuredContent') is not None else ''.join(c.get('text', '') for c in raw.get('content', []) if c.get('type') == 'text')
+            if len(text) > self.max_chars:
+                inserted = self.observer.inject({}, 'transformed', compact(dict(complete=False,limit='collector_context_budget',requested_format='audit')))
+                return dict(text=inserted, complete=False, reason='collector_context_budget')
+            return dict(text=self.observer.inject(raw, 'text'), complete=False, reason='explicit_audit')
+        if not arguments.get('intent') or 'context' in arguments or 'cursor' in arguments:
+            raise ValueError('lean adapter requires intent and owns pagination; no retention context')
+        arguments = dict(arguments, format='lean')
+        want_optional = arguments.get('options', {}).get('include_tests') is True
+        values = []
+        identity = None
+        stopped = None
+        started = time.monotonic()
+        wire_bytes = 0
+        for _ in range(self.max_pages):
+            if self.cancelled():
+                stopped = 'cancelled'
+                break
+            if time.monotonic() - started >= self.max_seconds:
+                stopped = 'collector_time_budget'
+                break
+            raw = self.call('inspect_change', arguments)
+            self.observer.observe_wire(raw)
+            wire_bytes += len(compact(raw).encode())
+            if self.cancelled() or time.monotonic() - started >= self.max_seconds or wire_bytes > self.max_wire_bytes:
+                stopped = ('cancelled' if self.cancelled() else 'collector_wire_budget' if wire_bytes > self.max_wire_bytes else 'collector_time_budget')
+                break
+            if raw.get('isError'):
+                # Errors remain in the cost/sequence and are returned once.
+                return dict(text=self.observer.inject(raw, 'text'), complete=False, reason='tool_error')
+            page = raw['structuredContent']
+            if page.get('restart_required'):
+                stopped = 'restart_required'
+                values.clear()
+                break
+            if page.get('format') != 'pcg-lean-1':
+                raise ValueError('server did not return the registered lean contract')
+            if identity is None:
+                identity = page['snapshot']
+            elif page['snapshot'] != identity:
+                stopped = 'snapshot_changed'
+                values.clear()
+                break
+            if len(compact(dict(pages=values + [page]))) + 512 > self.max_chars:
+                stopped = 'collector_context_budget'
+                break
+            values.append(page)
+            if not page['next_cursor'] or (not want_optional and page['completion']['required_inventory']['remaining_known'] == 0):
+                break
+            arguments = dict(arguments, cursor=page['next_cursor'])
+        else:
+            stopped = 'collector_page_budget'
+        complete = (stopped is None and bool(values)
+                    and values[-1]['completion']['required_inventory']['state'] == 'complete')
+        windows = [dict(window, file=source['file'], root_id=page['snapshot']['root_id'], source_hash=source['source_hash'])
+                   for page in values for source in page['sources'] for window in source['windows']]
+        text = compact(dict(format='pcg-lean-collection-1', pages=values,
+                            collection=dict(complete=complete, limit=stopped, max_pages=self.max_pages, max_chars=self.max_chars,
+                                            max_seconds=self.max_seconds,max_wire_bytes=self.max_wire_bytes)))
+        self.observer.pages += len(values)
+        inserted = self.observer.inject({}, 'transformed', text, prompt_windows=windows)
+        return dict(text=inserted, complete=complete, reason=stopped)

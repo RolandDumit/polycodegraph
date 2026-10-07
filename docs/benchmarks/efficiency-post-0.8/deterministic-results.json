@@ -1,0 +1,567 @@
+{
+  "recorded_date": "2026-10-06",
+  "candidate_binary_sha256": "4a6f1dbeac0b016336ecba72fcbca923f7cbb590d92179931672a327ad67d6b5",
+  "baseline_binary_sha256": "f37a9ff9ab5d56fd5206dac404aa5f7907f9f842556464315ca9376480d7395d",
+  "measurement_units": [
+    "records",
+    "pages",
+    "unicode_characters",
+    "utf8_bytes",
+    "milliseconds"
+  ],
+  "provider_tokens": null,
+  "model_usage": null,
+  "relocation": {
+    "fixture": "native TypeScript compiler API, 100 call expressions plus resolver reference evidence, Unicode leading comment and CRLF",
+    "baseline_final08": {
+      "before_reference_sites": 100,
+      "after_reference_sites": 100,
+      "sections": {
+        "removed_relations": 202,
+        "added_relations": 202,
+        "source_changes": 1
+      },
+      "response": {
+        "pages": 11,
+        "unicode_characters": 101474,
+        "utf8_bytes": 101474,
+        "records": 407
+      },
+      "query_ms": 553.7093599559739
+    },
+    "candidate_audit": {
+      "before_reference_sites": 100,
+      "after_reference_sites": 100,
+      "sections": {
+        "removed_relations": 0,
+        "added_relations": 0,
+        "source_changes": 1
+      },
+      "response": {
+        "pages": 1,
+        "unicode_characters": 3683,
+        "utf8_bytes": 3683,
+        "records": 1
+      },
+      "query_ms": 358.53904695250094,
+      "classification": [
+        {
+          "file": "sample.ts",
+          "unchanged": 0,
+          "relocated": 202,
+          "uncertain_mapping": 0,
+          "removed_multiplicity": 0,
+          "added_multiplicity": 0,
+          "mapping_limit": null
+        }
+      ],
+      "lean_response": {
+        "pages": 1,
+        "unicode_characters": 2512,
+        "utf8_bytes": 2512,
+        "records": 1
+      }
+    },
+    "source_change_retained": true,
+    "references_before_and_after": 100,
+    "audit_character_reduction_percent": 96.37049884699529,
+    "lean_character_reduction_percent": 97.52448903167313,
+    "runtime_interpretation": "single full query durations including other work; no isolated diff/projection overhead or statistical speed claim"
+  },
+  "projection": {
+    "rename": {
+      "audit": {
+        "pages": 2,
+        "unicode_characters": 29935,
+        "utf8_bytes": 29935,
+        "records": 201
+      },
+      "lean": {
+        "pages": 2,
+        "unicode_characters": 6035,
+        "utf8_bytes": 6035,
+        "records": 201
+      },
+      "same_sites_confidence_and_multiplicity": true,
+      "completion": {
+        "required_inventory": {
+          "state": "complete",
+          "known_count": 201,
+          "remaining_known": 0,
+          "exploration_incomplete": false,
+          "provider_incomplete": false
+        },
+        "optional_context": "not_requested",
+        "verification": {
+          "compiler": "not_run",
+          "tests": "not_run",
+          "static_semantics_only": true
+        },
+        "next_required_action": "edit"
+      }
+    },
+    "change_signature": {
+      "audit": {
+        "pages": 2,
+        "unicode_characters": 32828,
+        "utf8_bytes": 32828,
+        "records": 201
+      },
+      "lean": {
+        "pages": 2,
+        "unicode_characters": 6204,
+        "utf8_bytes": 6204,
+        "records": 201
+      },
+      "same_sites_confidence_and_multiplicity": true,
+      "completion": {
+        "required_inventory": {
+          "state": "complete",
+          "known_count": 201,
+          "remaining_known": 0,
+          "exploration_incomplete": false,
+          "provider_incomplete": false
+        },
+        "optional_context": "not_requested",
+        "verification": {
+          "compiler": "not_run",
+          "tests": "not_run",
+          "static_semantics_only": true
+        },
+        "next_required_action": "edit"
+      }
+    },
+    "explain_symbol": {
+      "audit": {
+        "pages": 2,
+        "unicode_characters": 30279,
+        "utf8_bytes": 30279,
+        "records": 202
+      },
+      "lean": {
+        "pages": 2,
+        "unicode_characters": 6237,
+        "utf8_bytes": 6237,
+        "records": 202
+      },
+      "same_sites_confidence_and_multiplicity": true,
+      "completion": {
+        "required_inventory": {
+          "state": "complete",
+          "known_count": 1,
+          "remaining_known": 0,
+          "exploration_incomplete": false,
+          "provider_incomplete": false
+        },
+        "optional_context": "complete",
+        "verification": {
+          "compiler": "not_run",
+          "tests": "not_run",
+          "static_semantics_only": true
+        },
+        "next_required_action": "none"
+      }
+    },
+    "trace_flow": {
+      "audit": {
+        "pages": 1,
+        "unicode_characters": 2803,
+        "utf8_bytes": 2803,
+        "records": 1
+      },
+      "lean": {
+        "pages": 1,
+        "unicode_characters": 1823,
+        "utf8_bytes": 1823,
+        "records": 1
+      },
+      "same_sites_confidence_and_multiplicity": true,
+      "completion": {
+        "required_inventory": {
+          "state": "complete",
+          "known_count": 1,
+          "remaining_known": 0,
+          "exploration_incomplete": false,
+          "provider_incomplete": false
+        },
+        "optional_context": "not_requested",
+        "verification": {
+          "compiler": "not_run",
+          "tests": "not_run",
+          "static_semantics_only": true
+        },
+        "next_required_action": "none"
+      }
+    }
+  },
+  "adapter": {
+    "client": "efficiency_client.LeanAdapter/1, native stdio client; no model attached",
+    "complete": true,
+    "boundary": {
+      "actual_schema_sha256": null,
+      "loaded_graph_instructions_sha256": null,
+      "response_representation": [
+        "transformed"
+      ],
+      "model_requests": 0,
+      "mcp_calls": 11,
+      "external_reads": 0,
+      "new_context_chars": 1669,
+      "repeated_context_chars": 0,
+      "rehydrated_context_chars": 0,
+      "pages": 11,
+      "expansions": 0,
+      "compactions": 0,
+      "errors": 0,
+      "retries": 0,
+      "wire_bytes": 62872,
+      "injected_bytes": 29717,
+      "injected_chars": 29717,
+      "wire_duplicate_objects": 11,
+      "unidentified_context_chars": 0,
+      "context_identity_complete": true,
+      "source_ledger_entries": 12,
+      "source_ledger_omitted": 0,
+      "measurement_scope": "exact retained windows at explicit client prompt insertion and retained-window observations; characters are not model usage"
+    },
+    "automatic_pages": 11,
+    "codex_client_insertion": "not_run"
+  },
+  "agent_surface": {
+    "advertised_tools": [
+      "index_repository",
+      "status",
+      "search_symbol",
+      "snippet",
+      "inspect_change"
+    ],
+    "advanced_intent_invoked": true,
+    "metadata_accepted": true,
+    "error_recovery": true,
+    "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+    "schema_unicode_characters": 10426,
+    "initialization_instructions_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+    "native_reconnect": true,
+    "codex_tool_registration": "not_run"
+  },
+  "server_surfaces": {
+    "B": {
+      "schema_sha256": "67c0cdc0a8e6f889ef6f978b45dad4fe348d0aa9ad292ba15a5cd84c57f2cc0b",
+      "schema_utf8_bytes": 8940,
+      "instruction_sha256": "b35a1cf8c099c91969e2191990c0e0ca92a6d6468941ac4d8f851882ba8fc92c",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ]
+    },
+    "C": {
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "schema_utf8_bytes": 9671,
+      "instruction_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ]
+    }
+  },
+  "original_rename_gate": {
+    "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+    "original_files": 385,
+    "model_runs": 0,
+    "baseline": {
+      "collection_calls": 13,
+      "characters": 36167,
+      "utf8_bytes": 36167
+    },
+    "intent": {
+      "pages": 2,
+      "expansion_calls": 1,
+      "collection_calls": 3,
+      "characters": 23789,
+      "utf8_bytes": 23789,
+      "evidence": 24,
+      "reference_edges_preserved": 19,
+      "oracle_line_patterns": 17,
+      "query_ms": [
+        2.5470840046182275,
+        0.6555430591106415
+      ],
+      "warm_scan_delta": 0,
+      "warm_extraction_delta": 0,
+      "warm_graph_build_delta": 0
+    },
+    "schema": {
+      "baseline_characters": 10277,
+      "intent_characters": 17620,
+      "added_characters": 7343,
+      "baseline_utf8_bytes": 10277,
+      "intent_utf8_bytes": 17620
+    },
+    "excluded_startup_calls": {
+      "status": 2,
+      "search_symbol": 2,
+      "index_repository": 1
+    },
+    "character_reduction_percent": 34.224569358807756,
+    "gate_passed": true
+  },
+  "supplemental_rename_replay": {
+    "status": "diagnostic_not_original_gate",
+    "measurement": {
+      "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+      "original_files": 385,
+      "model_runs": 0,
+      "baseline": {
+        "collection_calls": 4,
+        "characters": 22646,
+        "utf8_bytes": 22646
+      },
+      "intent": {
+        "pages": 2,
+        "expansion_calls": 0,
+        "collection_calls": 2,
+        "characters": 21826,
+        "utf8_bytes": 21826,
+        "evidence": 24,
+        "reference_edges_preserved": 19,
+        "oracle_line_patterns": 17,
+        "query_ms": [
+          2.3912539472803473,
+          0.8012950420379639
+        ],
+        "warm_scan_delta": 0,
+        "warm_extraction_delta": 0,
+        "warm_graph_build_delta": 0
+      },
+      "schema": {
+        "baseline_characters": 10277,
+        "intent_characters": 17620,
+        "added_characters": 7343,
+        "baseline_utf8_bytes": 10277,
+        "intent_utf8_bytes": 17620
+      },
+      "excluded_startup_calls": {
+        "status": 1,
+        "search_symbol": 1,
+        "index_repository": 1
+      },
+      "character_reduction_percent": 3.6209485118784746,
+      "gate_passed": false
+    },
+    "interpretation": "smaller four-call legacy trace preserves all sites but fails the 25% replay-volume threshold; retained, not substituted for the original gate"
+  },
+  "validation": {
+    "baseline_xtask": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "37ab69352e7b6b6bda6f918d7dca0a0bb9cb5371d66c766cebb973021b7f951a",
+      "model_campaign_runs": 0,
+      "tests_passed": 72
+    },
+    "candidate_xtask": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "2834fee497ed74aa3346cbf7e2d4b6044767c815c0385047254fc5dd994f3d15",
+      "model_campaign_runs": 0,
+      "tests_passed": 87
+    },
+    "python_accounting_and_adapter": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "6f8afb37792466e8ea62b9b94ea2bd420e28c32503b2e97f4cc286ae8b7b186a",
+      "model_campaign_runs": 0,
+      "tests_passed": 20
+    },
+    "native_all_ten_plus_primitive_differential_0_6": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "1119e16ee9318e827881779ac3ded4d8b59d3e45c4f9f163c44ae9e198258e64",
+      "model_campaign_runs": 0,
+      "summary": {
+        "languages": {
+          "dart": 5,
+          "go": 4,
+          "java": 5,
+          "javascript": 3,
+          "kotlin": 3,
+          "objectivec": 5,
+          "python": 5,
+          "rust": 4,
+          "swift": 4,
+          "typescript": 4
+        },
+        "symbols": 200,
+        "edges": 438,
+        "verified": [
+          {
+            "extension": ".dart",
+            "intents": 10
+          },
+          {
+            "extension": ".kt",
+            "intents": 10
+          },
+          {
+            "extension": ".m",
+            "intents": 10
+          },
+          {
+            "extension": ".swift",
+            "intents": 10
+          },
+          {
+            "extension": ".go",
+            "intents": 10
+          },
+          {
+            "extension": ".java",
+            "intents": 10
+          },
+          {
+            "extension": ".ts",
+            "intents": 10
+          },
+          {
+            "extension": ".js",
+            "intents": 10
+          },
+          {
+            "extension": ".py",
+            "intents": 10
+          },
+          {
+            "extension": ".rs",
+            "intents": 10
+          }
+        ]
+      }
+    },
+    "flutter_intents_plus_primitive_differential_0_6": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "4d9e42d7584d74a8264ccb6c7e8fafb4f6e15d22bf312bd73fd266717b2ebc68",
+      "model_campaign_runs": 0,
+      "summary": {
+        "languages": {
+          "dart": 2
+        },
+        "symbols": 24,
+        "edges": 75,
+        "verified": [
+          {
+            "extension": ".dart",
+            "intents": 10
+          }
+        ]
+      }
+    },
+    "android_sdk": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "802773c7f952ef0b7c3fba1a7f37ac677f3b5020b6130499a0f955717895b488",
+      "model_campaign_runs": 0,
+      "summary": {
+        "sdk_fixture": "android_sdk",
+        "symbols": 5,
+        "edges": 6
+      }
+    },
+    "mcp_profiles_transport": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "20ff7cf8c89e610fc72dc8db244dcb587cc24dbe5cfc7d05f7d1956a72125d23",
+      "model_campaign_runs": 0
+    },
+    "typescript_post08": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "model_campaign_runs": 0
+    },
+    "original_rename_evidence_gate": {
+      "status": "passed",
+      "exit_code": 0,
+      "execution_record_sha256": "ace94f4cd9f21e9aad75cad3d252bcbb2db07b1401903a68e701958bb9040754",
+      "model_campaign_runs": 0
+    },
+    "macos_uikit_sdk": {
+      "status": "not_run",
+      "reason": "Linux host; macOS SDK required; Objective-C/Swift native fixtures do not provide UIKit coverage"
+    },
+    "codex_model_prompt_insertion": {
+      "status": "not_run",
+      "reason": "native transformation tested without a model; Codex adapter installation/forwarding unverified"
+    },
+    "cross_platform_release_checks": {
+      "status": "not_run",
+      "reason": "no release requested; Windows/macOS build and CI not run"
+    },
+    "economic_E1": {
+      "status": "not_run",
+      "reason": "zero authorized model budget; no isolated executor/oracle/client identity"
+    },
+    "economic_E2": {
+      "status": "not_run",
+      "reason": "same; prepare created 27 isolated jobs without executing them"
+    }
+  },
+  "earlier_failures": [
+    {
+      "status": "corrected_setup_failure",
+      "component": "Go/Swift native fixtures",
+      "reason": "missing Go PATH and Swift ncurses compatibility runtime; rerun passed",
+      "execution_record_sha256": "9de64d7b818e6c2653a07a26f9de214a1b702737e96b66b8901c2074f0e64b9c"
+    },
+    {
+      "status": "corrected_setup_failure",
+      "component": "Android SDK",
+      "reason": "SDK environment absent; explicit local SDK environment rerun passed",
+      "execution_record_sha256": "0271d02dc5b12cb0059b84014c75b65ab03b505eb23795dcb44ca9903f351f3b"
+    },
+    {
+      "status": "reproduction_confirmed_before_fix",
+      "component": "core positional comparison",
+      "reason": "expected failing regression before implementing correspondence",
+      "execution_record_sha256": "6ad388b90b99c390847029139d42442f489459899e37ead2023edd86b2b5d3d5"
+    },
+    {
+      "status": "test_driver_error_corrected",
+      "component": "native strict capture comparison",
+      "reason": "legacy non-strict capture cannot be compared through strict lean mode; driver now retains strict scope"
+    },
+    {
+      "status": "invalid_gate_input_preserved",
+      "component": "rename replay",
+      "reason": "an intent-enabled trace cannot be replayed through 0.6 primitive calls; original 0.6 trace was located and rerun",
+      "execution_record_sha256": "b6b4a0917c78988c2877c921f4033cf82bd08801833b1b2f28f2cc21f0afd5c9"
+    }
+  ],
+  "dry_run": {
+    "status": "prepared_not_executed",
+    "jobs": 27,
+    "model_calls": 0,
+    "launch_ready": false,
+    "execution_record_sha256": "be6074d4a516588d49411de1fec73a26a5b6e67eb0f27020a700069344c6005c"
+  },
+  "limitations": [
+    "Small synthetic TypeScript fixture; no representative task-level efficiency inference",
+    "Legacy/full wire has two copies of the selected projection; only native adapter insertion verified",
+    "Real model schemas/cache/usage/money unknown; null rather than invented zero consumption",
+    "Original rename replay includes all pages, one expansion and separate schema accounting; not an AI campaign",
+    "No indexed application code/hooks/plugins/codegen executed; external snapshot read/copied only",
+    "Provider sources unchanged, Analyzer pinned; no provider installs performed",
+    "No standalone microbenchmark isolates diff/projection overhead; whole-query durations recorded only"
+  ],
+  "signature_review": {
+    "same_symbol_id": true,
+    "contract_classification_retained": true,
+    "source_change_visible": true,
+    "classification": "contract_or_initializer"
+  }
+}

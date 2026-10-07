@@ -1,16 +1,18 @@
 //! Intent-only planning; primitive graph APIs and resolver identities stay unchanged.
 mod extraction;
 mod input;
+mod lean;
 mod planner;
 mod render;
 mod review;
+mod site_map;
 use crate::{
     config::Config,
     model::{Edge, Node, Snapshot, hash},
     query::Graph,
 };
 use anyhow::{Result, bail};
-pub use input::{Budget, Intent, Options, Request, View};
+pub use input::{Budget, Format, Intent, Options, Request, View};
 pub(crate) use planner::path as validate_path;
 use serde_json::{Value, json};
 use std::{
@@ -112,6 +114,12 @@ pub(super) struct Evidence {
 }
 impl Evidence {
     fn required(&self, request: &Request) -> bool {
+        if request.lean()
+            && (self.section == "relocated_relations"
+                || (request.intent != Intent::FindTests && self.section == "tests"))
+        {
+            return false;
+        }
         if let Options::Explain(v) = &request.options
             && let Some(focus) = v.focus.as_deref()
             && ((focus == "dependencies" && self.section == "dependencies")
@@ -161,6 +169,7 @@ pub(super) struct Plan {
     pub outcome: String,
     pub exploration_limited: bool,
     pub depth_limited: bool,
+    pub optional_limited: bool,
 }
 struct Cursor {
     request: String,
@@ -177,6 +186,7 @@ pub struct Baseline {
     pub snapshot: Arc<Snapshot>,
     pub files: Vec<String>,
     pub health: String,
+    pub strict_scope: bool,
     pub sources: BTreeMap<String, String>,
     pub created: Instant,
     bytes: usize,
@@ -296,11 +306,12 @@ impl State {
                             sources,
                             files: files.clone(),
                             health: health.clone(),
+                            strict_scope: v.strict_scope,
                             created: Instant::now(),
                             bytes,
                         },
                     );
-                    baseline_info = json!({"handle":key,"generation":g.snapshot.generation,"health_fingerprint":health,"expires_after_seconds":600,"retained_bytes":bytes,"capacity":2,"session_only":true,"files":files,"capture_mode":v.capture_mode.as_deref().unwrap_or("context")});
+                    baseline_info = json!({"handle":key,"generation":g.snapshot.generation,"health_fingerprint":health,"expires_after_seconds":600,"retained_bytes":bytes,"capacity":2,"session_only":true,"files":files,"capture_mode":v.capture_mode.as_deref().unwrap_or("context"),"existing_files_captured":files.iter().filter(|f|g.snapshot.files.contains_key(*f)).count(),"new_files_admitted":v.new_files.len(),"strict_scope":v.strict_scope});
                 } else if let Some(key) = &v.baseline {
                     let Some(old) = self.baselines.get(key) else {
                         return restart(
@@ -319,6 +330,9 @@ impl State {
                         bail!(
                             "Baseline file scope does not match; capture a baseline with exactly these files"
                         )
+                    }
+                    if old.strict_scope != v.strict_scope {
+                        bail!("Baseline strict_scope does not match the captured contract")
                     }
                     baseline = Some(old);
                 }
@@ -347,19 +361,17 @@ impl State {
         self.metrics.render_calls += 1;
         match page {
             Ok((mut result, next)) => {
-                self.metrics.selected_records +=
-                    result["evidence"]["page_count"].as_u64().unwrap_or(0);
-                self.metrics.required_records += result["requirements"]["page_required"]
+                self.metrics.selected_records += result["evidence"]["page_count"]
                     .as_u64()
-                    .unwrap_or(0);
+                    .unwrap_or_else(|| result["page"]["records"].as_u64().unwrap_or(0));
+                let required = result["requirements"]["page_required"]
+                    .as_u64()
+                    .unwrap_or_else(|| result["page"]["required"].as_u64().unwrap_or(0));
+                self.metrics.required_records += required;
                 self.metrics.optional_records += result["evidence"]["page_count"]
                     .as_u64()
-                    .unwrap_or(0)
-                    .saturating_sub(
-                        result["requirements"]["page_required"]
-                            .as_u64()
-                            .unwrap_or(0),
-                    );
+                    .unwrap_or_else(|| result["page"]["records"].as_u64().unwrap_or(0))
+                    .saturating_sub(required);
                 if let Some(offset) = next {
                     let bytes = serde_json::to_vec(plan.as_ref())?.len();
                     if bytes > 64 * 1024 * 1024 {
@@ -456,6 +468,7 @@ mod lifecycle_tests {
             outcome: "partial".into(),
             exploration_limited: false,
             depth_limited: false,
+            optional_limited: false,
         });
         let mut state = State::default();
         state.cursors.insert(
@@ -479,6 +492,7 @@ mod lifecycle_tests {
                 sources: BTreeMap::new(),
                 files: vec![],
                 health: String::new(),
+                strict_scope: false,
                 created: Instant::now() - Duration::from_secs(601),
                 bytes: 1,
             },

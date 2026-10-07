@@ -35,8 +35,37 @@ pub fn review_files(g: &Graph, c: &Config, r: &Request, v: &Review) -> Result<Ve
     };
     files.sort();
     files.dedup();
+    for file in &v.new_files {
+        path(c, file)?;
+        if !files.contains(file) || c.safe(file)?.exists() {
+            bail!("new_files must be exact absent files in the requested review scope: {file}")
+        }
+    }
     for file in &files {
         path(c, file)?;
+        if v.strict_scope && !g.snapshot.files.contains_key(file) {
+            if c.safe(file)?.exists() {
+                bail!(
+                    "review scope {file}: existing file is outside the indexed scope; not a future creation"
+                )
+            }
+            if v.baseline.is_none() && !(v.capture_baseline && v.new_files.contains(file)) {
+                let candidates: Vec<_> = g
+                    .snapshot
+                    .files
+                    .keys()
+                    .filter(|candidate| {
+                        candidate.ends_with(&format!("/{file}"))
+                            || candidate.rsplit('/').next() == file.rsplit('/').next()
+                    })
+                    .take(3)
+                    .collect();
+                bail!(
+                    "review scope {file}: not indexed and not explicitly declared in new_files; root-relative candidates: {}",
+                    serde_json::to_string(&candidates)?
+                )
+            }
+        }
         if v.baseline.is_none()
             && !g.snapshot.files.contains_key(file)
             && !(v.capture_baseline && !c.safe(file)?.exists())
@@ -78,6 +107,7 @@ struct Planner<'a> {
     g: &'a Graph,
     plan: Plan,
     work: usize,
+    optional_tests: BTreeSet<String>,
 }
 impl Planner<'_> {
     fn spend(&mut self) -> bool {
@@ -355,6 +385,15 @@ impl Planner<'_> {
         }
     }
     fn tests(&mut self, start: &str, scope: Option<&str>, framework: Option<&str>) {
+        if self.plan.request.lean() && self.plan.request.intent != super::Intent::FindTests {
+            if matches!(&self.plan.request.options, Options::Signature(v) if v.include_tests) {
+                self.optional_tests.insert(start.into());
+            }
+            return;
+        }
+        self.collect_tests(start, scope, framework);
+    }
+    fn collect_tests(&mut self, start: &str, scope: Option<&str>, framework: Option<&str>) {
         let mut found = BTreeSet::from([start.to_owned()]);
         let mut queue = VecDeque::from([(start.to_owned(), 0usize)]);
         while let Some((id, depth)) = queue.pop_front() {
@@ -406,7 +445,7 @@ impl Planner<'_> {
     }
 }
 pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> Result<Plan> {
-    let mut plan=Plan {request:r,target:Value::Null,historical_symbols:BTreeMap::new(),details:BTreeMap::new(),evidence:vec![],facts:json!({}),limits:vec!["Static semantic evidence only; dynamic calls, callbacks, reflection, external consumers and cross-language flow may be incomplete".into()],outcome:"ok".into(),exploration_limited:false,depth_limited:false};
+    let mut plan=Plan {request:r,target:Value::Null,historical_symbols:BTreeMap::new(),details:BTreeMap::new(),evidence:vec![],facts:json!({}),limits:vec!["Static semantic evidence only; dynamic calls, callbacks, reflection, external consumers and cross-language flow may be incomplete".into()],outcome:"ok".into(),exploration_limited:false,depth_limited:false,optional_limited:false};
     if let Options::Review(v) = plan.request.options.clone() {
         return review(g, c, plan, v, baseline);
     }
@@ -435,7 +474,12 @@ pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> 
     let file = n.file.clone();
     plan.target = n.compact();
     plan.facts = json!({"language":language(&file),"scope":"indexed_repository","capability_version":1,"exact_edit_spans":false,"hypothetical_type_check":"unknown"});
-    let mut p = Planner { g, plan, work: 0 };
+    let mut p = Planner {
+        g,
+        plan,
+        work: 0,
+        optional_tests: BTreeSet::new(),
+    };
     p.declare(&id, "declarations");
     match p.plan.request.options.clone() {
         Options::Rename(v) => {
@@ -520,11 +564,12 @@ pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> 
             for symbol in &linked {
                 p.incoming(symbol, &["calls", "references"], "callers");
             }
-            if v.return_type.is_some()
-                || v.asynchronous.is_some()
-                || !v.removed_parameters.is_empty()
-                || !v.renamed_parameters.is_empty()
-                || (v.added_parameters.is_empty() && v.required.is_none())
+            if !p.plan.request.lean()
+                && (v.return_type.is_some()
+                    || v.asynchronous.is_some()
+                    || !v.removed_parameters.is_empty()
+                    || !v.renamed_parameters.is_empty()
+                    || (v.added_parameters.is_empty() && v.required.is_none()))
             {
                 p.walk(&id, true, "forwarding_context", None);
             } else {
@@ -711,6 +756,16 @@ pub fn build(g: &Graph, c: &Config, r: Request, baseline: Option<&Baseline>) -> 
     finish(p)
 }
 fn finish(mut p: Planner<'_>) -> Result<Plan> {
+    let primary_limits = (p.plan.exploration_limited, p.plan.depth_limited);
+    if !p.optional_tests.is_empty() {
+        p.plan.exploration_limited = false;
+        p.plan.depth_limited = false;
+        for id in std::mem::take(&mut p.optional_tests) {
+            p.collect_tests(&id, None, None);
+        }
+        p.plan.optional_limited = p.plan.exploration_limited || p.plan.depth_limited;
+        (p.plan.exploration_limited, p.plan.depth_limited) = primary_limits;
+    }
     // Exact messages include their scope/parameters; preserve first occurrence order.
     let mut limits = BTreeSet::new();
     p.plan.limits.retain(|limit| limits.insert(limit.clone()));
@@ -756,13 +811,17 @@ fn finish(mut p: Planner<'_>) -> Result<Plan> {
         }
     };
     p.plan.evidence.sort_by(|a, b| {
-        priority(&a.section)
-            .cmp(&priority(&b.section))
-            .then(a.distance.cmp(&b.distance))
-            .then_with(|| compare_text(&a.edge.file, &b.edge.file))
-            .then(a.edge.line.cmp(&b.edge.line))
-            .then(a.edge.offset.cmp(&b.edge.offset))
-            .then_with(|| compare_text(&a.edge.key(), &b.edge.key()))
+        (p.plan.request.lean() && !a.required(&p.plan.request))
+            .cmp(&(p.plan.request.lean() && !b.required(&p.plan.request)))
+            .then_with(|| {
+                priority(&a.section)
+                    .cmp(&priority(&b.section))
+                    .then(a.distance.cmp(&b.distance))
+                    .then_with(|| compare_text(&a.edge.file, &b.edge.file))
+                    .then(a.edge.line.cmp(&b.edge.line))
+                    .then(a.edge.offset.cmp(&b.edge.offset))
+                    .then_with(|| compare_text(&a.edge.key(), &b.edge.key()))
+            })
     });
     if (p.plan.exploration_limited || p.plan.depth_limited) && p.plan.outcome == "ok" {
         p.plan.outcome = "partial".into();
@@ -792,7 +851,12 @@ fn review(
     let files = review_files(g, c, &plan.request, &v)?;
     plan.target = json!({"files":files});
     plan.facts["files"] = json!(files);
-    let mut p = Planner { g, plan, work: 0 };
+    let mut p = Planner {
+        g,
+        plan,
+        work: 0,
+        optional_tests: BTreeSet::new(),
+    };
     let Some(old) = baseline else {
         p.plan.outcome = "partial".into();
         p.plan.facts["comparison_verified"] = json!(false);
@@ -826,6 +890,7 @@ fn review(
         "captured working-tree source ranges and indexed semantic evidence; no Git history or correctness approval"
     );
     p.plan.facts["localization"] = json!([]);
+    p.plan.facts["relation_changes"] = json!([]);
     if old.snapshot.environment != g.snapshot.environment
         || old.snapshot.fingerprint != g.snapshot.fingerprint
     {
@@ -940,6 +1005,25 @@ fn review(
         if source_changed {
             p.plan.facts["localization"].as_array_mut().expect("localizations").push(json!({"file":file,"hunks":localization.hunks,"kind":localization.kind,"fallback":localization.fallback,"seeds":localization.seeds}));
         }
+        let current_source = after
+            .map(|r| super::review::read(c, file, &r.hash))
+            .transpose()?;
+        let before_lines: Vec<_> = old
+            .sources
+            .get(file)
+            .map_or("", String::as_str)
+            .split('\n')
+            .collect();
+        let inert_prefix = old
+            .sources
+            .get(file)
+            .zip(current_source.as_ref())
+            .is_some_and(|(before, after)| super::review::inert_leading_edit(file, before, after));
+        let current_lines: Vec<_> = current_source
+            .as_deref()
+            .unwrap_or("")
+            .split('\n')
+            .collect();
         for (id, node) in &b {
             if !p.spend() {
                 break;
@@ -947,7 +1031,21 @@ fn review(
             let declaration_changed = a
                 .get(id)
                 .is_none_or(|old| !super::review::same_declaration(old, node));
-            let selected = localization.seeds.contains(id) || localization.fallback.is_some();
+            let (unchanged_source, work) =
+                if inert_prefix && localization.fallback.is_some() && node.kind != "file" {
+                    super::review::unchanged_declaration_source(
+                        &before_lines,
+                        a.get(id),
+                        &current_lines,
+                        node,
+                        p.plan.request.budget.max_traversal.saturating_sub(p.work),
+                    )
+                } else {
+                    (false, 0)
+                };
+            p.work += work;
+            let selected = localization.seeds.contains(id)
+                || (localization.fallback.is_some() && !unchanged_source);
             if node.kind != "file" && (declaration_changed || selected) {
                 p.declare(
                     id,
@@ -977,25 +1075,54 @@ fn review(
                 p.tests(id, None, None);
             }
         }
-        let a: BTreeMap<_, _> = before
-            .into_iter()
-            .flat_map(|r| &r.edges)
-            .map(|e| (serde_json::to_string(e).expect("edge"), e))
-            .collect();
-        let b: BTreeMap<_, _> = after
-            .into_iter()
-            .flat_map(|r| &r.edges)
-            .map(|e| (serde_json::to_string(e).expect("edge"), e))
-            .collect();
-        for (key, e) in &a {
-            if !p.spend() {
-                break;
+        let comparison = super::review::relations(
+            file,
+            before,
+            after,
+            old.sources.get(file).map(String::as_str),
+            current_source.as_deref(),
+            p.plan.request.budget.max_traversal.saturating_sub(p.work),
+        );
+        p.work += comparison.work;
+        if let Some(limit) = comparison.limit {
+            p.plan
+                .limits
+                .push(format!("Relation mapping for {file}: {limit}"));
+            if limit.contains("budget") {
+                p.plan.exploration_limited = true;
             }
-            if !b.contains_key(key) {
+        }
+        if comparison.uncertain > 0 {
+            p.plan.limits.push(format!("Uncertain site correspondence in {file}: conservative before/after evidence retained; no arbitrary pairing"));
+        }
+        p.plan.facts["relation_changes"].as_array_mut().expect("relation summaries").push(json!({"file":file,"unchanged":comparison.unchanged,"relocated":comparison.relocated,"uncertain_mapping":comparison.uncertain,"removed_multiplicity":comparison.removed_multiplicity,"added_multiplicity":comparison.added_multiplicity,"mapping_limit":comparison.limit}));
+        for delta in comparison.deltas {
+            use super::review::RelationKind;
+            if delta.kind == RelationKind::Unchanged {
+                continue;
+            }
+            if delta.kind == RelationKind::Relocated {
+                if p.plan.request.view == Some(super::View::FullEvidence) {
+                    let e = fact(
+                        delta.after.expect("relocated current site"),
+                        "relocated_relations",
+                        "unchanged semantic attributes; exact source interval moved",
+                        0,
+                    );
+                    p.plan.details.insert(e.id(), json!({"classification":delta.kind,"before":delta.before,"after":delta.after}));
+                    p.add(e);
+                }
+                continue;
+            }
+            if let Some(e) = delta.before {
                 let mut e = fact(
                     e,
                     "removed_relations",
-                    "observed baseline relation; no rename/move correspondence assumed",
+                    if delta.kind == RelationKind::UncertainMapping {
+                        "uncertain_mapping: baseline site retained without a proven counterpart"
+                    } else {
+                        "observed baseline relation; no rename/move correspondence assumed"
+                    },
                     0,
                 );
                 e.phase = "before".into();
@@ -1004,14 +1131,13 @@ fn review(
                         p.plan.historical_symbols.insert(id.clone(), (*n).clone());
                     }
                 }
+                p.plan.details.insert(
+                    e.id(),
+                    json!({"classification":delta.kind,"before":delta.before,"after":delta.after}),
+                );
                 p.add(e);
             }
-        }
-        for (key, e) in &b {
-            if !p.spend() {
-                break;
-            }
-            if !a.contains_key(key) {
+            if let Some(e) = delta.after {
                 p.add(fact(e, "added_relations", "observed current relation", 0));
             }
         }

@@ -1,5 +1,12 @@
 # Validation of the Rust migration (0.5.0)
 
+Version 0.9 release checks are recorded separately in
+[release notes](docs/releases/v0.9.0.md) and
+[final local validation](docs/releases/v0.9.0-validation.json).
+Historical measurements below are unchanged. Lean native site parity is checked
+across the prepared language groups; CI also runs the Unicode/CRLF relocation and
+strict-scope probe, plus relocated package/client-adapter checks.
+
 Local reference: immutable `v0.4.0`, initially commit `2501034b84fab0ca0c0194d95be74a7660bb8a56`. Both servers use the retained semantic adapters; the comparison checks the new orchestration/storage/query/transport against the old core. Stable IDs, complete fixture searches, architecture/diagnostics, callers, callees, references, implementations, neighbors, dependencies, affected_by_change, blast_radius and snippets are compared for every fixture symbol. Only generation is normalized in graph comparisons; initialize version and new metadata are checked separately. Existing status fields and unchanged index/change reports are compared; provider-health field shapes are checked because runtime availability/locations change with the native launch. After a source edit, source-change reports and resulting graph data are compared; reindexed work sets may differ because scope invalidation is intentionally different.
 
 ## Local checks (Linux x64, 2026-10-01)

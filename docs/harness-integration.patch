@@ -1,14 +1,16 @@
 --- a/harness/docs/code-graph.md
 +++ b/harness/docs/code-graph.md
-@@ -1,15 +1,23 @@
+@@ -1,15 +1,25 @@
  
  `python3 harness/scripts/verify_code_graph.py` usa **command, args e cwd della registrazione locale**, inizializza un vero collegamento stdio MCP e verifica versione 0.5.0, elenco strumenti, `index_repository`, `status` con `freshness`, `search_symbol` per `AuthRepository`, `implementations` con `AuthRepositoryImpl` e `inspect_change` nella stessa generation. Salva le risposte in `.polycodegraph/mcp-verification.json` e stderr in `.polycodegraph/mcp-stderr.log`. È una verifica del trasporto reale, distinta dal caricamento degli strumenti nella conversazione desktop già aperta.
  
-+## PolyCodeGraph 0.8: contesto selettivo
++## PolyCodeGraph 0.9: contesto selettivo
 +
-+Usare un pacchetto verificato della release 0.8. Usare un binario compilato separatamente dal checkout verificato, senza sovrascrivere quello installato. Integrare negli override locali esistenti `executable` con il percorso del nuovo binario e `config.response_profile: compact e, se il client supporta discovery, config.tool_profile: agent`, preservando SDK e altre opzioni. Il launcher inoltra già le opzioni: non serve un normalizzatore aggiuntivo. Riavviare il collegamento MCP nel client.
++Usare un pacchetto verificato della release 0.9. Usare un binario compilato separatamente dal checkout verificato, senza sovrascrivere quello installato. Integrare negli override locali esistenti `executable` con il percorso del nuovo binario e `config.response_profile: compact e, se il client supporta discovery, config.tool_profile: agent`, preservando SDK e altre opzioni. Il launcher inoltra già le opzioni: non serve un normalizzatore aggiuntivo. Riavviare il collegamento MCP nel client.
 +
 +`status`/`index_repository` riassumono generation, freshness, conteggi, copertura e diagnostica. Recuperare i dettagli tramite `status` con `section: diagnostics|skipped|providers|update|metrics|architecture`, `offset` e `limit`; `detail: full` espande una chiamata. Controllare anche `health_fingerprint`: diagnostici diversi possono avere la stessa generation. Prima di operazioni sensibili resta necessaria una scansione esplicita; una scansione senza modifiche non prova salute o copertura completa.
++
++Per gli intent è disponibile `format: lean`: preservare tutti i siti richiesti e leggere `completion.required_inventory`, limiti e identità dello snapshot. Audit resta il default. La cattura lean è rigorosa: file esatti, nuove creazioni in `new_files`, stesso scope nel confronto. L’adattatore Python incluso nei pacchetti è facoltativo e richiede un punto di inserimento nel prompt controllato dal client; non si installa automaticamente in Codex. Nessun nuovo consumo AI è misurato per la 0.9.
 +
 +Rollback: ripristinare `executable` precedente e rimuovere `response_profile`, quindi riavviare MCP. Il primo avvio del candidato può riconciliare/ricostruire la cache 0.5. Le opzioni restano esplicite; il pilot rc.1 è favorevole rispetto a 0.7 ma fallisce il target senza grafo e G2: meno byte MCP non equivalgono a meno token o quota.
 +

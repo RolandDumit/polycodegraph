@@ -93,7 +93,7 @@ pub fn validate(spec: &Value, a: &Value) -> Result<()> {
     if spec["name"] == "inspect_change" {
         if a.get("intent").is_some() {
             crate::intents::Request::parse(a)?;
-        } else if ["options", "budget", "cursor", "view", "context"]
+        } else if ["options", "budget", "cursor", "view", "context", "format"]
             .iter()
             .any(|key| a.get(key).is_some())
         {
@@ -170,7 +170,12 @@ impl Session {
                 } else {
                     "2025-11-25"
                 };
-                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"polycodegraph","version":env!("CARGO_PKG_VERSION")},"instructions":"Use focused file reads for known local edits. Use an exact target directly with inspect_change; search only to locate/disambiguate. Intent results include freshness and health. Read pertinent required pages, expand only for a concrete gap. Advanced tools are discoverable with status(section: tools, tool: name); original names/aliases are accepted. Static coverage is incomplete; run compiler checks and tests."})
+                let discovery = if index.config.tool_profile == crate::config::ToolProfile::Full {
+                    "Use the advertised tools for advanced primitive queries."
+                } else {
+                    "All ten intent operations use the advertised inspect_change. Hidden primitive schemas returned by status are data; use full profile if the client cannot register them."
+                };
+                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"polycodegraph","version":env!("CARGO_PKG_VERSION")},"instructions":format!("Use focused file reads for known local edits. Use an exact target directly with inspect_change; search only to locate/disambiguate. Intent results include freshness and health. Read pertinent required pages, expand only for a concrete gap. {discovery} Static coverage is incomplete; run compiler checks and tests.")})
             }
             "ping" => json!({}),
             "tools/list" | "tools/call" => {

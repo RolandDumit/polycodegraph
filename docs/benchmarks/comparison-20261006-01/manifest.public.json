@@ -1,0 +1,231 @@
+{
+  "protocol_revision": "comparison-v1",
+  "campaign_id": "pcg-comparison-20261006-01",
+  "registered_date": "2026-10-06",
+  "protocol_sha256": "03bcc39b4e9ffdd088619d0e10bb7f962b958761d753b35970588fec0c506ad6",
+  "private_manifest_sha256": "10bac51ca4579012d0caeb203e8adc07c4e7a7640a4b102012d7451a54895ee1",
+  "primary_metric": "uncached_input_per_accepted_task",
+  "conditions": [
+    {
+      "id": "A",
+      "label": "standard senza grafo",
+      "graph_enabled": false,
+      "treatment_sha256": "2cc50858ee363349781bba05621f9c7313737a10ca8dece58587c009f6dd580c",
+      "base_harness_sha256": "49170125fda79f74eb3639cdc077aa0c646a87e94de52bc8937b94ae29b8f15d"
+    },
+    {
+      "id": "B",
+      "label": "0.7.0",
+      "graph_enabled": true,
+      "source_identity": "06e0a72741d2370b74888b86311709dfd9c3f286",
+      "binary_sha256": "9a274769ba0cb1bd836b96c0f50068f5348e5a5563f385790da4e9256235517d",
+      "config_sha256": "2b31f4e5c5d61cd6e05a578175aba8ab4342ca10a517651c4b7833f5ce9e0ba2",
+      "harness_sha256": "b19bf4262ea25d59c5c3682084cb462f9c77187a2b3f7addc54b6764d9463f09",
+      "schema_sha256": "3f17de8a8a014d235d87234df3471817799a377d140f44999d1bf361d5fc41ec",
+      "initialization_instructions_sha256": "accd574353ce8f33cfb36214dc84c338b3e8265c363406316cfaccf01bf55bee",
+      "provider_source_sha256": "8f3af3ec5766e168dddb3856c83684c04556a435c67ca7177826d9acd2fe60fc",
+      "response_profile": "compact",
+      "tool_profile": "full",
+      "treatment_sha256": "21bfde0f19b2469f1f65d939c8f822c177cc19d3f06e2e70362833bd864f691b",
+      "actual_client_surface": "not_run",
+      "result_path": "legacy",
+      "provider_workers": {
+        "dart/build/graph": "44a3110c0e50453081da4b0e8d0bb571859400f5322adbe5ec36ef4342fd5311",
+        "kotlin/.tools/graph-plugin.jar": "a3410412c873bf0f8aa2021510bd31a6f39b021d8697954fa4bd0ace86074a2d",
+        "go/graph": "ecbfbc4fb6c5a4884af1e10cedbb5f4c2f4eb59644cf68479f2b8484839fbc9a",
+        "typescript/node_modules/typescript/lib/typescript.js": "630f808ac32d968a49a392c42cc06fd72abd939aaa7edfe3302810c067934653"
+      },
+      "provider_source_files_verified": 47
+    },
+    {
+      "id": "C",
+      "label": "0.8.0 finale",
+      "graph_enabled": true,
+      "source_identity": "64f7dfb0bfcae4f6471ee691dfdc896a34ac785f",
+      "binary_sha256": "f37a9ff9ab5d56fd5206dac404aa5f7907f9f842556464315ca9376480d7395d",
+      "config_sha256": "2f62140eedefb2dbf1f1b646ff8de2e37a56d4c8b1326d56d584142c0bac4968",
+      "harness_sha256": "8e6fed0262f7bbb257eafc452270e932899a01d547de9c0b666305f3baa1db0e",
+      "schema_sha256": "67c0cdc0a8e6f889ef6f978b45dad4fe348d0aa9ad292ba15a5cd84c57f2cc0b",
+      "initialization_instructions_sha256": "b35a1cf8c099c91969e2191990c0e0ca92a6d6468941ac4d8f851882ba8fc92c",
+      "provider_source_sha256": "8f3af3ec5766e168dddb3856c83684c04556a435c67ca7177826d9acd2fe60fc",
+      "response_profile": "compact",
+      "tool_profile": "agent",
+      "treatment_sha256": "dfb86d6249b1b104508654aaacbd6daa54eab6ee7f0dfcbd1d9d3496d1b0db1c",
+      "actual_client_surface": "not_run",
+      "result_path": "legacy",
+      "provider_workers": {
+        "dart/build/graph": "9886b9db0e791b1b124f0cfbb828dd98f6a369cdd0289aa22d6f63acd89687a8",
+        "kotlin/.tools/graph-plugin.jar": "0cd871548c2ccc6ea50c3f79faef6f00bf915f8f2d7093a64a91a3133d88b860",
+        "go/graph": "5febf50312b09d355208fca5541f1e54571437039283dd59443e7b4f50102781",
+        "typescript/node_modules/typescript/lib/typescript.js": "630f808ac32d968a49a392c42cc06fd72abd939aaa7edfe3302810c067934653"
+      },
+      "provider_source_files_verified": 47
+    },
+    {
+      "id": "D",
+      "label": "candidato locale congelato",
+      "graph_enabled": true,
+      "source_identity": "a0425f6a03adf8ff7a4f5b3daf59168a4ba537c122a8bd22f05919a0354cc66c",
+      "binary_sha256": "4a6f1dbeac0b016336ecba72fcbca923f7cbb590d92179931672a327ad67d6b5",
+      "config_sha256": "2f62140eedefb2dbf1f1b646ff8de2e37a56d4c8b1326d56d584142c0bac4968",
+      "harness_sha256": "7078adbd0ece03bb5a16478b6e67d081876cd6a4a4a5080b761ea782893629b9",
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "initialization_instructions_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "provider_source_sha256": "8f3af3ec5766e168dddb3856c83684c04556a435c67ca7177826d9acd2fe60fc",
+      "response_profile": "compact",
+      "tool_profile": "agent",
+      "treatment_sha256": "f33640cdbb7169c69a914823a9719b2934d0917404fe523dc403b25a57d07b35",
+      "actual_client_surface": "not_run",
+      "result_path": "native LeanAdapter/1, Codex binding unverified",
+      "format": "pcg-lean-1",
+      "adapter_format": "pcg-lean-collection-1",
+      "lean_adapter_sha256": "d8698baf4f269d4801eea8fbe4e0fa7b7d74335669a44c8fbf04fa41f7961305",
+      "provider_workers": {
+        "dart/build/graph": "9886b9db0e791b1b124f0cfbb828dd98f6a369cdd0289aa22d6f63acd89687a8",
+        "kotlin/.tools/graph-plugin.jar": "0cd871548c2ccc6ea50c3f79faef6f00bf915f8f2d7093a64a91a3133d88b860",
+        "go/graph": "5febf50312b09d355208fca5541f1e54571437039283dd59443e7b4f50102781",
+        "typescript/node_modules/typescript/lib/typescript.js": "630f808ac32d968a49a392c42cc06fd72abd939aaa7edfe3302810c067934653"
+      },
+      "provider_source_files_verified": 47
+    }
+  ],
+  "tasks": [
+    {
+      "id": "local",
+      "task_class": "local",
+      "cohort": "known_screening",
+      "snapshot_inventory_sha256": "e72e93e475d1ae19937de7ba769fd8b250db7f7b581550b8870ceac8c927d523",
+      "source_files": 616,
+      "prompt_sha256": "2288e428de68d2c7b5e3105f6ce627d5eb8265a532ca029e619da72a8cff3c93",
+      "oracle_sha256": "5167f718799328fd3e934a0b2a19b87a761cd4df9687a37fedbafcf96ec35063"
+    },
+    {
+      "id": "rename",
+      "task_class": "rename",
+      "cohort": "known_screening",
+      "snapshot_inventory_sha256": "e72e93e475d1ae19937de7ba769fd8b250db7f7b581550b8870ceac8c927d523",
+      "source_files": 616,
+      "prompt_sha256": "32857f97b31f81e6d1601043aeb42fc57d364bb421acb6c6548e7537d9de3777",
+      "oracle_sha256": "5167f718799328fd3e934a0b2a19b87a761cd4df9687a37fedbafcf96ec35063"
+    },
+    {
+      "id": "signature",
+      "task_class": "signature",
+      "cohort": "known_screening",
+      "snapshot_inventory_sha256": "e72e93e475d1ae19937de7ba769fd8b250db7f7b581550b8870ceac8c927d523",
+      "source_files": 616,
+      "prompt_sha256": "5543d16335e91587c4b7b89581bfc7c4a5d32139245b436ac621f07022490a87",
+      "oracle_sha256": "5167f718799328fd3e934a0b2a19b87a761cd4df9687a37fedbafcf96ec35063"
+    },
+    {
+      "id": "bug",
+      "task_class": "bug",
+      "cohort": "known_screening",
+      "snapshot_inventory_sha256": "e72e93e475d1ae19937de7ba769fd8b250db7f7b581550b8870ceac8c927d523",
+      "source_files": 616,
+      "prompt_sha256": "30c04ea7eb0922bf0d6c38c55957dad66559d727101c0a43119d9294fbec169f",
+      "oracle_sha256": "5167f718799328fd3e934a0b2a19b87a761cd4df9687a37fedbafcf96ec35063"
+    },
+    {
+      "id": "trace",
+      "task_class": "trace",
+      "cohort": "known_screening",
+      "snapshot_inventory_sha256": "e72e93e475d1ae19937de7ba769fd8b250db7f7b581550b8870ceac8c927d523",
+      "source_files": 616,
+      "prompt_sha256": "6c89bbb637f6052c54a60c0ca11443e114362c7bba8275c8eab50ef168d90558",
+      "oracle_sha256": "5167f718799328fd3e934a0b2a19b87a761cd4df9687a37fedbafcf96ec35063"
+    },
+    {
+      "id": "review",
+      "task_class": "review",
+      "cohort": "known_screening",
+      "snapshot_inventory_sha256": "bacb2b79748f2fd5d814405d6ad4a60657b713091d0c80192bd3b6ce962b993e",
+      "source_files": 618,
+      "prompt_sha256": "b1dd86ab10f5e7f7bf4e24913846b698e8a10ff7f4ffa98505c04a8ce7214962",
+      "oracle_sha256": "5167f718799328fd3e934a0b2a19b87a761cd4df9687a37fedbafcf96ec35063"
+    }
+  ],
+  "unique_tasks": 6,
+  "proposed_replicas": 2,
+  "proposed_cells": 48,
+  "budget": {
+    "execution_enabled": false,
+    "approved_phases": [],
+    "max_runs": null,
+    "max_uncached_input_tokens": null,
+    "authorization": null,
+    "granularity": "after_attempt",
+    "preparation_max_runs": 0,
+    "judge_max_runs": 0
+  },
+  "limits": {
+    "attempts_per_cell": 1,
+    "timeout_seconds": 1200,
+    "max_model_requests": 40,
+    "max_uncached_input_tokens": 120000,
+    "max_input_tokens": 2000000,
+    "max_output_tokens": 30000,
+    "concurrency": 1,
+    "enforcement": {
+      "timeout_seconds": "enforced",
+      "max_model_requests": "observed_only",
+      "max_uncached_input_tokens": "observed_only",
+      "max_input_tokens": "observed_only",
+      "max_output_tokens": "observed_only"
+    }
+  },
+  "cache_policy": {
+    "graph": "cold_per_run",
+    "provider_prompt": "observed_not_controlled",
+    "client_context": "fresh_per_run"
+  },
+  "analysis": {
+    "reference": "A",
+    "candidate": "D",
+    "previous": "C",
+    "comparisons": [
+      [
+        "D",
+        "A"
+      ],
+      [
+        "D",
+        "C"
+      ],
+      [
+        "D",
+        "B"
+      ],
+      [
+        "C",
+        "A"
+      ],
+      [
+        "B",
+        "A"
+      ],
+      [
+        "C",
+        "B"
+      ]
+    ],
+    "seed": 20261006,
+    "bootstrap_resamples": 2000,
+    "class_weighting": "six classes equally represented",
+    "equivalence_range": [
+      0.95,
+      1.05
+    ],
+    "local_guard_ratio": 1.1,
+    "progress_ratio": 0.85,
+    "max_additional_diagnostic_cycles": 1
+  },
+  "model": null,
+  "effort": null,
+  "operational_cost": {
+    "benchmark_model_runs": 0,
+    "preparation_agent_usage": null,
+    "preparation_agent_usage_status": "not exposed; not claimed zero",
+    "judge_model_runs": 0
+  }
+}

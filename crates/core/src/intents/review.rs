@@ -1,7 +1,7 @@
 //! Bounded source comparison against explicit, hash-checked session capture.
 use crate::{
     config::Config,
-    model::{FileRecord, Node, Snapshot, hash},
+    model::{Edge, FileRecord, Node, Snapshot, hash},
     query::Graph,
 };
 use anyhow::{Result, bail};
@@ -68,6 +68,158 @@ pub fn same_declaration(a: &Node, b: &Node) -> bool {
         && a.parent == b.parent
         && a.tags == b.tags
         && a.synthetic == b.synthetic
+}
+
+pub fn inert_leading_edit(file: &str, before: &str, after: &str) -> bool {
+    // Exact file-prefix case only. Imports/global changes keep conservative consumers.
+    let prefix = after
+        .strip_suffix(before)
+        .or_else(|| before.strip_suffix(after));
+    prefix.is_some_and(|prefix| {
+        !prefix.is_empty()
+            && prefix.ends_with('\n')
+            && prefix.split('\n').all(|line| {
+                let line = line.trim_matches([' ', '\t', '\r']);
+                line.is_empty()
+                    || (crate::model::language(file) != "python"
+                        && crate::model::language(file) != "unknown"
+                        && line.starts_with("//")
+                        && !line.contains('\\'))
+            })
+    })
+}
+#[derive(Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationKind {
+    Unchanged,
+    Relocated,
+    Added,
+    Removed,
+    UncertainMapping,
+}
+pub struct RelationDelta<'a> {
+    pub kind: RelationKind,
+    pub before: Option<&'a Edge>,
+    pub after: Option<&'a Edge>,
+}
+#[derive(Default)]
+pub struct RelationComparison<'a> {
+    pub deltas: Vec<RelationDelta<'a>>,
+    pub work: usize,
+    pub limit: Option<&'static str>,
+    pub unchanged: usize,
+    pub relocated: usize,
+    pub uncertain: usize,
+    pub removed_multiplicity: usize,
+    pub added_multiplicity: usize,
+}
+pub fn relations<'a>(
+    file: &str,
+    before: Option<&'a FileRecord>,
+    after: Option<&'a FileRecord>,
+    captured: Option<&str>,
+    current: Option<&str>,
+    allowance: usize,
+) -> RelationComparison<'a> {
+    use super::site_map::{OffsetUnit, SiteMap};
+    let mut result = RelationComparison::default();
+    let changed = before.map(|r| &r.hash) != after.map(|r| &r.hash);
+    let map = if changed {
+        match (captured, current, OffsetUnit::for_file(file)) {
+            (Some(a), Some(b), Some(unit)) => Some(SiteMap::new(a, b, unit, allowance)),
+            _ => None,
+        }
+    } else {
+        None
+    };
+    if let Some(map) = &map {
+        result.work = map.work;
+        result.limit = map.limit;
+    }
+    let a = before.map_or(&[][..], |r| r.edges.as_slice());
+    let b = after.map_or(&[][..], |r| r.edges.as_slice());
+    if a.len().saturating_add(b.len()) > allowance.saturating_sub(result.work) {
+        result.limit = Some("relation correspondence work budget exhausted");
+        return result;
+    }
+    result.work += a.len() + b.len();
+    let mut current = BTreeMap::<String, Vec<usize>>::new();
+    for (i, e) in b.iter().enumerate() {
+        current
+            .entry(serde_json::to_string(e).expect("edge"))
+            .or_default()
+            .push(i);
+    }
+    let mut matched = BTreeSet::new();
+    let mut old_counts = BTreeMap::<String, usize>::new();
+    let mut new_counts = BTreeMap::<String, usize>::new();
+    let semantic = |e: &Edge| {
+        serde_json::to_string(&(&e.source, &e.target, &e.kind, &e.confidence))
+            .expect("semantic attributes")
+    };
+    for e in a {
+        *old_counts.entry(semantic(e)).or_default() += 1;
+        let position = if changed {
+            map.as_ref().and_then(|m| m.position(e))
+        } else {
+            Some((e.line, e.offset))
+        };
+        let counterpart = position.and_then(|(line, offset)| {
+            let mut moved = e.clone();
+            moved.line = line;
+            moved.offset = offset;
+            current
+                .get_mut(&serde_json::to_string(&moved).expect("edge"))
+                .and_then(Vec::pop)
+        });
+        if let Some(i) = counterpart {
+            matched.insert(i);
+            let kind = if e.line == b[i].line && e.offset == b[i].offset {
+                result.unchanged += 1;
+                RelationKind::Unchanged
+            } else {
+                result.relocated += 1;
+                RelationKind::Relocated
+            };
+            result.deltas.push(RelationDelta {
+                kind,
+                before: Some(e),
+                after: Some(&b[i]),
+            });
+        } else {
+            let kind = if changed && position.is_none() && before.is_some() && after.is_some() {
+                result.uncertain += 1;
+                RelationKind::UncertainMapping
+            } else {
+                RelationKind::Removed
+            };
+            result.deltas.push(RelationDelta {
+                kind,
+                before: Some(e),
+                after: None,
+            });
+        }
+    }
+    for (i, e) in b.iter().enumerate() {
+        *new_counts.entry(semantic(e)).or_default() += 1;
+        if !matched.contains(&i) {
+            result.deltas.push(RelationDelta {
+                kind: RelationKind::Added,
+                before: None,
+                after: Some(e),
+            });
+        }
+    }
+    // Cardinality can be proven without guessing which indistinguishable site survived.
+    result.removed_multiplicity = old_counts
+        .iter()
+        .map(|(key, count)| count.saturating_sub(*new_counts.get(key).unwrap_or(&0)))
+        .sum();
+    result.added_multiplicity = new_counts
+        .iter()
+        .map(|(key, count)| count.saturating_sub(*old_counts.get(key).unwrap_or(&0)))
+        .sum();
+    result
 }
 #[derive(Default)]
 pub struct Localization {
@@ -169,6 +321,44 @@ fn declaration_text(lines: &[&str], n: &Node) -> String {
         .copied()
         .collect::<Vec<_>>()
         .join("\n")
+}
+pub fn unchanged_declaration_source(
+    before: &[&str],
+    old: Option<&&Node>,
+    current: &[&str],
+    node: &Node,
+    allowance: usize,
+) -> (bool, usize) {
+    let Some(old) = old else {
+        return (false, 0);
+    };
+    // Exact line slices only. No cross-language whitespace or semantic equivalence.
+    if old.line == 0
+        || node.line == 0
+        || old.end > before.len()
+        || node.end > current.len()
+        || old.end < old.line
+        || node.end < node.line
+    {
+        return (false, 0);
+    }
+    let a = &before[old.line - 1..old.end];
+    let b = &current[node.line - 1..node.end];
+    if a.len() != b.len() {
+        return (false, 0);
+    }
+    let mut work = 0;
+    for (a, b) in a.iter().zip(b) {
+        let cost = a.len().saturating_add(b.len());
+        if cost > allowance.saturating_sub(work) {
+            return (false, allowance);
+        }
+        work += cost;
+        if a != b {
+            return (false, work);
+        }
+    }
+    (true, work)
 }
 pub fn localize(
     c: &Config,

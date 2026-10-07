@@ -1,0 +1,60 @@
+{
+  "status": "technical_executor_ready_budget_pending",
+  "model_runs": 0,
+  "provider_usage": null,
+  "candidate_product_unchanged": true,
+  "client": {
+    "name": "codex-cli 0.159.2",
+    "mode": "app-server stdio and debug prompt-input, no model invocation",
+    "registered_graph_tools": {
+      "A": 0,
+      "B": 16,
+      "C": 5,
+      "D": 5
+    },
+    "schema_field_equality": true,
+    "ordinary_and_advanced_native_calls": true,
+    "model_invocation": "not_run",
+    "exact_provider_prompt_insertion": "not_exposed"
+  },
+  "isolation": {
+    "mechanism": "allowlisted outer namespaces plus named Codex filesystem permissions",
+    "solver_workspace_writable": true,
+    "client_credential_file_denied": true,
+    "proc_aliases_denied": true,
+    "real_app_server_command_probe": true,
+    "real_credentials_copied": false,
+    "verifier_sha256": "bc06930d56d9026c294e980953151119d155e0e7e1af7fcd29b2e45c2098424f"
+  },
+  "lean": {
+    "single_mcp_text_for_intent": true,
+    "structured_duplicate_absent": true,
+    "collector": "frozen LeanAdapter/1",
+    "binding_sha256": "3345c765ef5f5c5be36f9771284fbec3598f94e45ede45ebd31f8246dc91775a"
+  },
+  "oracle": {
+    "positive_local": "accepted",
+    "negative_local": "rejected",
+    "checks_per_fixture": 4,
+    "oracle_sha256": "aac543bee86c1d2f0faad31e07c34ad8f13b026a7675c5f48c321e2669f28e49",
+    "trace_review": "manual source adjudication policy frozen; actual answers not_run"
+  },
+  "python": {
+    "command": "python3 -m unittest discover -s tool -p 'test_*.py'",
+    "passed": 35,
+    "failed": 0,
+    "actual_execution": true
+  },
+  "pending": [
+    "explicit campaign/preparation run and uncached-input budget",
+    "exact model and effort approval",
+    "actual P1 model invocation and rollout counters"
+  ],
+  "artifacts": {
+    "preflight-client.json": "e55c9a2886e21b12a583ee7306ed2617381e27fd3f71c848bf0190b6eb69540e",
+    "preflight-rpc.json": "ca814f38284d26ea7904ffb970d92c26d033c470343074d66014c745e1c6b46f",
+    "isolation-final.json": "e4ede63a535a8b27dbf2d65b05c54aa380ccde6324296ef7e9ff76f842fb2544",
+    "manifest.executor-ready.private.json": "2b5ed8b01dae8e2fffac064fe02c2dfc4441611d66ec668f487c4ac241af257b",
+    "adjudication-policy.md": "1d4b8215d7ed3c20c244dcbee4cf3ceabb1f82546f8e89be643dbacff8ff142e"
+  }
+}

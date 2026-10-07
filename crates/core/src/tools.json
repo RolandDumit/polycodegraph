@@ -794,6 +794,14 @@
         "context": {
           "type": "object",
           "description": "Explicit retained-window acknowledgement: epoch, root_id, generation, health_fingerprint, known_windows, rehydrate. Reset after compaction; see context result."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "audit",
+            "lean"
+          ],
+          "description": "Opt-in pcg-lean-1 presentation. Omitted/audit preserves legacy output. Lean is self-contained, uses strict review scopes and separate inventory/verification states."
         }
       },
       "required": [
@@ -887,6 +895,11 @@
                   },
                   "asynchronous": {
                     "type": "boolean"
+                  },
+                  "include_tests": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Lean: request optional test context after required callers/contracts. Audit keeps legacy test collection."
                   }
                 },
                 "required": []
@@ -967,6 +980,20 @@
                       "minimal",
                       "context"
                     ]
+                  },
+                  "strict_scope": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Require indexed files or exact explicit new_files. Always enabled by lean."
+                  },
+                  "new_files": {
+                    "type": "array",
+                    "maxItems": 32,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "description": "Exact absent files admitted during strict capture only; subset of requested files."
                   }
                 },
                 "required": []

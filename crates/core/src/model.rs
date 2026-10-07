@@ -69,6 +69,8 @@ pub struct Edge {
     pub kind: String,
     pub file: String,
     pub line: usize,
+    /// Original-source units: UTF-16 (Dart/TS/JS/Java), bytes (Go), code points
+    /// (Python/Rust/Swift/Objective-C/Kotlin). Includes original CRLF. Not a column.
     pub offset: usize,
     #[serde(default = "resolved")]
     pub confidence: String,

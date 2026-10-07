@@ -1,5 +1,10 @@
 # Performance evidence for 0.5.0
 
+Later evidence: [0.9 release validation](../releases/v0.9.0.md),
+[post-0.8 deterministic experiments](efficiency-post-0.8/decision.md), and
+[comparison preparation without AI execution](comparison-20261006-01/report.md).
+These dated experiments retain their identities and unmeasured economic gates.
+
 Run release builds with the pinned toolchain and the immutable `v0.4.0` oracle (`python tool/baseline.py`). No debug/release comparisons, provider substitutions or token-savings estimates are used.
 
 ## Workloads

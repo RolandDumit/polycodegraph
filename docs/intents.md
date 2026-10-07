@@ -1,4 +1,17 @@
-# Intent context — 0.7.0 development
+# Intent context — 0.9.0
+
+Version 0.9 adds opt-in `format: lean` (`pcg-lean-1`) with separate
+required inventory, optional context and unexecuted compiler/test verification.
+Legacy/audit rendering remains the default. Lean capture implies exact strict
+review scope; absent intended creations require `options.new_files`. Audit can
+opt in with `options.strict_scope: true`. Capture and comparison must retain the
+same scope and strictness. `change_signature.options.include_tests` requests
+optional test exploration in lean mode; legacy collection is unchanged.
+Exact text-based site relocation no longer produces a semantic added/removed
+pair; full evidence preserves both positions and ambiguous mapping retains
+explicit conservative evidence. See the [contract and limits](
+benchmarks/efficiency-post-0.8/design.md) and [integration/rollback](
+benchmarks/efficiency-post-0.8/integration.md). [Activation and rollback](migration-0.9.md) describe the released options. No new AI cost gate has passed.
 
 `inspect_change` accepts an optional intent to collect focused context for a coding
 agent. All ten intents apply to Dart/Flutter, TypeScript, JavaScript, Java, Go,

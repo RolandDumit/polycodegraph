@@ -126,6 +126,21 @@ fn selected_windows(g: &Graph, p: &Plan, evidence: &[Evidence], file: &str) -> V
                         precision: "provider_declaration_range",
                     }
                 } else if e.section == "source_changes" {
+                    if p.request.lean() {
+                        for h in p.facts["localization"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .filter(|v| v["file"] == file)
+                            .flat_map(|v| v["hunks"].as_array().into_iter().flatten())
+                        {
+                            if let (Some(start), Some(end)) =
+                                (h["after_start"].as_u64(), h["after_end"].as_u64())
+                            {
+                                selected.push(Window {start:start as usize,end:end as usize,precision:"review_hunk_lines; exact current source, not behavioral approval"});
+                            }
+                        }
+                    }
                     // Actual hunks are represented separately; do not add a random file header.
                     continue;
                 } else {
@@ -455,6 +470,9 @@ fn response(
         );
     }
     result["requirements"] = json!({"required_total":p.evidence.iter().filter(|e|e.required(&p.request)).count(),"optional_total":p.evidence.iter().filter(|e|!e.required(&p.request)).count(),"page_required":evidence.iter().filter(|e|e.required(&p.request)).count()});
+    if p.request.lean() {
+        return Ok(super::lean::project(g, c, p, evidence, offset, &result));
+    }
     if p.request.context.is_some()
         || p.request
             .view

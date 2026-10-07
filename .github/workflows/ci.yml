@@ -78,6 +78,10 @@ jobs:
         if: matrix.group == 'polyglot' && runner.os == 'Windows'
       - run: node providers/typescript/intent-context.test.cjs
         if: matrix.group == 'polyglot'
+      - run: python tool/post08_smoke.py --binary target/release/polycodegraph --config work/sdk-config.json --output work/post08.json
+        if: matrix.group == 'polyglot' && runner.os != 'Windows'
+      - run: python tool/post08_smoke.py --binary target/release/polycodegraph.exe --config work/sdk-config.json --output work/post08.json
+        if: matrix.group == 'polyglot' && runner.os == 'Windows'
       - run: go vet ./...
         working-directory: providers/go
         if: matrix.group == 'polyglot'

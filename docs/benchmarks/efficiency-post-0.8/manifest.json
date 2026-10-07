@@ -1,0 +1,459 @@
+{
+  "protocol_revision": "post08-v1",
+  "registered_date": "2026-10-06",
+  "protocol_sha256": "d2a782be388b8bcc1b25382c6663df5020c7031518240eec830002b3699638f8",
+  "primary_metric": "uncached_input_per_accepted_task",
+  "baseline": {
+    "tag": "v0.8.0",
+    "expected_commit": "64f7dfb0bfcae4f6471ee691dfdc896a34ac785f",
+    "resolved_commit": "64f7dfb0bfcae4f6471ee691dfdc896a34ac785f",
+    "rebuilt_locked": true,
+    "separate_target_cache": true,
+    "cargo_lock_sha256": "8f8e5482a17abedaddf98a6ffc7afb552f64bdbed8a6f4eeee39c3461aec6502"
+  },
+  "workspace": {
+    "initial_head": "64f7dfb0bfcae4f6471ee691dfdc896a34ac785f",
+    "initial_branch": "main",
+    "initial_clean": true,
+    "working_branch": "codex/efficiency-post-0.8",
+    "preserved_stash_sha256": "10ec8cca20a08b882f508569acfed18f3617c4f3",
+    "preserved_stash_count": 1,
+    "other_detached_worktree_commit": "06e0a72741d2370b74888b86311709dfd9c3f286",
+    "prior_changes_imported": [],
+    "new_version_or_push": false
+  },
+  "candidate_source_manifest_sha256": "a32c7fda51799440768c04e5a1283bd5ea683f155119419c10420ac33b5db035",
+  "provider_provenance_sha256": "30acf8e8e3dec0bd288c7ddc180e7591b8adf2cf3523f45e210df6eaa4d64a5f",
+  "tasks": [
+    {
+      "id": "negative-total-r1",
+      "language": "dart",
+      "framework_context": "Dart/Flutter domain code (no Flutter widget/runtime task in this pilot)",
+      "class": "bug",
+      "order": "ABC",
+      "snapshot": "test/fixtures/efficiency08/dart",
+      "source_hashes": {
+        "detail.dart": "3d98533d995fadf14efd7f20a536513cd6cded5b109e136a914ac8b828b08fce",
+        "model.dart": "7c487803851a8fa04a7c1c551d29d55b193cc3796b567f6cd7ac3dabcad906cd",
+        "review.dart": "b297bbb7e96093be6e2a1215fc211a5317c3f455b37a2a3daeb51d33cd2420af",
+        "total.dart": "14a3e703d3672e62773765b7f486e04e1c0cd4d7dd878bf324589aab86e169d1",
+        "use.dart": "0b60b2bcaec9ce5562fa566e515ee8dacbe883947305c2887751729a82ee2dea"
+      },
+      "prompt": "Totals become too small when a cart contains negative quantities. Locate and fix this behavior: negative quantities must be ignored; zero/positive quantities and empty lists must retain their behavior. Preserve the existing API.",
+      "correctness_criteria": [
+        "Total equals sum of nonnegative quantities times unitPrice",
+        "Negative entries add zero, empty list returns zero",
+        "Existing function API remains unchanged"
+      ],
+      "oracle_digest": null,
+      "oracle_status": "not_registered",
+      "base_task_id": "negative-total",
+      "replica": 1
+    },
+    {
+      "id": "negative-total-r2",
+      "language": "dart",
+      "framework_context": "Dart/Flutter domain code (no Flutter widget/runtime task in this pilot)",
+      "class": "bug",
+      "order": "BCA",
+      "snapshot": "test/fixtures/efficiency08/dart",
+      "source_hashes": {
+        "detail.dart": "3d98533d995fadf14efd7f20a536513cd6cded5b109e136a914ac8b828b08fce",
+        "model.dart": "7c487803851a8fa04a7c1c551d29d55b193cc3796b567f6cd7ac3dabcad906cd",
+        "review.dart": "b297bbb7e96093be6e2a1215fc211a5317c3f455b37a2a3daeb51d33cd2420af",
+        "total.dart": "14a3e703d3672e62773765b7f486e04e1c0cd4d7dd878bf324589aab86e169d1",
+        "use.dart": "0b60b2bcaec9ce5562fa566e515ee8dacbe883947305c2887751729a82ee2dea"
+      },
+      "prompt": "Totals become too small when a cart contains negative quantities. Locate and fix this behavior: negative quantities must be ignored; zero/positive quantities and empty lists must retain their behavior. Preserve the existing API.",
+      "correctness_criteria": [
+        "Total equals sum of nonnegative quantities times unitPrice",
+        "Negative entries add zero, empty list returns zero",
+        "Existing function API remains unchanged"
+      ],
+      "oracle_digest": null,
+      "oracle_status": "not_registered",
+      "base_task_id": "negative-total",
+      "replica": 2
+    },
+    {
+      "id": "negative-total-r3",
+      "language": "dart",
+      "framework_context": "Dart/Flutter domain code (no Flutter widget/runtime task in this pilot)",
+      "class": "bug",
+      "order": "CAB",
+      "snapshot": "test/fixtures/efficiency08/dart",
+      "source_hashes": {
+        "detail.dart": "3d98533d995fadf14efd7f20a536513cd6cded5b109e136a914ac8b828b08fce",
+        "model.dart": "7c487803851a8fa04a7c1c551d29d55b193cc3796b567f6cd7ac3dabcad906cd",
+        "review.dart": "b297bbb7e96093be6e2a1215fc211a5317c3f455b37a2a3daeb51d33cd2420af",
+        "total.dart": "14a3e703d3672e62773765b7f486e04e1c0cd4d7dd878bf324589aab86e169d1",
+        "use.dart": "0b60b2bcaec9ce5562fa566e515ee8dacbe883947305c2887751729a82ee2dea"
+      },
+      "prompt": "Totals become too small when a cart contains negative quantities. Locate and fix this behavior: negative quantities must be ignored; zero/positive quantities and empty lists must retain their behavior. Preserve the existing API.",
+      "correctness_criteria": [
+        "Total equals sum of nonnegative quantities times unitPrice",
+        "Negative entries add zero, empty list returns zero",
+        "Existing function API remains unchanged"
+      ],
+      "oracle_digest": null,
+      "oracle_status": "not_registered",
+      "base_task_id": "negative-total",
+      "replica": 3
+    },
+    {
+      "id": "trace-entry-r1",
+      "language": "typescript",
+      "framework_context": "React JSX",
+      "class": "trace",
+      "order": "BCA",
+      "snapshot": "test/fixtures/efficiency08/typescript",
+      "source_hashes": {
+        "flow.ts": "48a09f25215e7743c8dd7ca6739e781013371d42275944e734a813c193c29e63",
+        "jsx.d.ts": "65480e96cdacf36b5504e4f0ac38b2c24c0e4a48ca9358c326fc116a67cc74d7",
+        "service.ts": "a06176d4de16ef6c007a2048b4ddf2fc83cb6e073500253907bfdebca5c98339",
+        "tsconfig.json": "5d95539cdc5e7b9eb28eff789db646ad0bc42c1014c6cda4ef7169b12e867648",
+        "view.tsx": "5f9077b8c31c93515647f1a195188bc3e7a257c44efd508dc5cc1784e6cfd347"
+      },
+      "prompt": "Explain the static path from entry to destination in flow.ts, retaining necessary call/override evidence and limits. Identify the unrelated side branch without expanding it into the destination path. Do not edit code.",
+      "correctness_criteria": [
+        "Path entry -> branch -> destination is grounded in actual resolver evidence",
+        "side is distinguished as a separate branch",
+        "Static/runtime and unresolved/depth limits are visible",
+        "No source edits"
+      ],
+      "oracle_digest": null,
+      "oracle_status": "not_registered",
+      "base_task_id": "trace-entry",
+      "replica": 1
+    },
+    {
+      "id": "trace-entry-r2",
+      "language": "typescript",
+      "framework_context": "React JSX",
+      "class": "trace",
+      "order": "CAB",
+      "snapshot": "test/fixtures/efficiency08/typescript",
+      "source_hashes": {
+        "flow.ts": "48a09f25215e7743c8dd7ca6739e781013371d42275944e734a813c193c29e63",
+        "jsx.d.ts": "65480e96cdacf36b5504e4f0ac38b2c24c0e4a48ca9358c326fc116a67cc74d7",
+        "service.ts": "a06176d4de16ef6c007a2048b4ddf2fc83cb6e073500253907bfdebca5c98339",
+        "tsconfig.json": "5d95539cdc5e7b9eb28eff789db646ad0bc42c1014c6cda4ef7169b12e867648",
+        "view.tsx": "5f9077b8c31c93515647f1a195188bc3e7a257c44efd508dc5cc1784e6cfd347"
+      },
+      "prompt": "Explain the static path from entry to destination in flow.ts, retaining necessary call/override evidence and limits. Identify the unrelated side branch without expanding it into the destination path. Do not edit code.",
+      "correctness_criteria": [
+        "Path entry -> branch -> destination is grounded in actual resolver evidence",
+        "side is distinguished as a separate branch",
+        "Static/runtime and unresolved/depth limits are visible",
+        "No source edits"
+      ],
+      "oracle_digest": null,
+      "oracle_status": "not_registered",
+      "base_task_id": "trace-entry",
+      "replica": 2
+    },
+    {
+      "id": "trace-entry-r3",
+      "language": "typescript",
+      "framework_context": "React JSX",
+      "class": "trace",
+      "order": "ABC",
+      "snapshot": "test/fixtures/efficiency08/typescript",
+      "source_hashes": {
+        "flow.ts": "48a09f25215e7743c8dd7ca6739e781013371d42275944e734a813c193c29e63",
+        "jsx.d.ts": "65480e96cdacf36b5504e4f0ac38b2c24c0e4a48ca9358c326fc116a67cc74d7",
+        "service.ts": "a06176d4de16ef6c007a2048b4ddf2fc83cb6e073500253907bfdebca5c98339",
+        "tsconfig.json": "5d95539cdc5e7b9eb28eff789db646ad0bc42c1014c6cda4ef7169b12e867648",
+        "view.tsx": "5f9077b8c31c93515647f1a195188bc3e7a257c44efd508dc5cc1784e6cfd347"
+      },
+      "prompt": "Explain the static path from entry to destination in flow.ts, retaining necessary call/override evidence and limits. Identify the unrelated side branch without expanding it into the destination path. Do not edit code.",
+      "correctness_criteria": [
+        "Path entry -> branch -> destination is grounded in actual resolver evidence",
+        "side is distinguished as a separate branch",
+        "Static/runtime and unresolved/depth limits are visible",
+        "No source edits"
+      ],
+      "oracle_digest": null,
+      "oracle_status": "not_registered",
+      "base_task_id": "trace-entry",
+      "replica": 3
+    },
+    {
+      "id": "review-relocation-r1",
+      "language": "typescript",
+      "framework_context": "TypeScript compiler API",
+      "class": "review",
+      "snapshot": "test/fixtures/post08/review",
+      "prompt": "In review.ts, retain its current working source for a before/after review. Insert exactly '// moved sites\\n' before it, then change only f0 to call target(-1) instead of target(0). Review the resulting changes: identify the behavior change and distinguish it from the unchanged relations whose line numbers moved.",
+      "correctness_criteria": [
+        "Before and after refer to the same starting working source in every condition",
+        "Only the specified leading comment and f0 argument change",
+        "Review identifies f0 destination argument change, keeps real evidence and does not label the other 99 sites semantic additions/removals"
+      ],
+      "oracle_digest": null,
+      "base_task_id": "review-relocation",
+      "replica": 1,
+      "order": "CAB",
+      "source_hashes": {
+        "review.ts": "7e2037008513cdb2e5a8df52e3ae598594a4396e8d948d301d0218275cffcace"
+      },
+      "oracle_status": "not_registered"
+    },
+    {
+      "id": "review-relocation-r2",
+      "language": "typescript",
+      "framework_context": "TypeScript compiler API",
+      "class": "review",
+      "snapshot": "test/fixtures/post08/review",
+      "prompt": "In review.ts, retain its current working source for a before/after review. Insert exactly '// moved sites\\n' before it, then change only f0 to call target(-1) instead of target(0). Review the resulting changes: identify the behavior change and distinguish it from the unchanged relations whose line numbers moved.",
+      "correctness_criteria": [
+        "Before and after refer to the same starting working source in every condition",
+        "Only the specified leading comment and f0 argument change",
+        "Review identifies f0 destination argument change, keeps real evidence and does not label the other 99 sites semantic additions/removals"
+      ],
+      "oracle_digest": null,
+      "base_task_id": "review-relocation",
+      "replica": 2,
+      "order": "ABC",
+      "source_hashes": {
+        "review.ts": "7e2037008513cdb2e5a8df52e3ae598594a4396e8d948d301d0218275cffcace"
+      },
+      "oracle_status": "not_registered"
+    },
+    {
+      "id": "review-relocation-r3",
+      "language": "typescript",
+      "framework_context": "TypeScript compiler API",
+      "class": "review",
+      "snapshot": "test/fixtures/post08/review",
+      "prompt": "In review.ts, retain its current working source for a before/after review. Insert exactly '// moved sites\\n' before it, then change only f0 to call target(-1) instead of target(0). Review the resulting changes: identify the behavior change and distinguish it from the unchanged relations whose line numbers moved.",
+      "correctness_criteria": [
+        "Before and after refer to the same starting working source in every condition",
+        "Only the specified leading comment and f0 argument change",
+        "Review identifies f0 destination argument change, keeps real evidence and does not label the other 99 sites semantic additions/removals"
+      ],
+      "oracle_digest": null,
+      "base_task_id": "review-relocation",
+      "replica": 3,
+      "order": "BCA",
+      "source_hashes": {
+        "review.ts": "7e2037008513cdb2e5a8df52e3ae598594a4396e8d948d301d0218275cffcace"
+      },
+      "oracle_status": "not_registered"
+    }
+  ],
+  "conditions": {
+    "A": {
+      "label": "A",
+      "graph_enabled": false,
+      "schemas": false,
+      "graph_instructions": false,
+      "graph_artifacts": false
+    },
+    "B": {
+      "label": "B08",
+      "graph_enabled": true,
+      "binary_sha256": "f37a9ff9ab5d56fd5206dac404aa5f7907f9f842556464315ca9376480d7395d",
+      "source_identity": "64f7dfb0bfcae4f6471ee691dfdc896a34ac785f",
+      "dirty_source": false,
+      "config_sha256": "97eb3f083b6d294ad1166470538b8a022f5fa3a2c23556b10b67cd115ac342c2",
+      "harness_sha256": "8e6fed0262f7bbb257eafc452270e932899a01d547de9c0b666305f3baa1db0e",
+      "schema_sha256": "67c0cdc0a8e6f889ef6f978b45dad4fe348d0aa9ad292ba15a5cd84c57f2cc0b",
+      "schema_scope": "native server tools/list, agent profile; not the model serialization",
+      "model_schema_sha256": null,
+      "loaded_graph_instructions_sha256": null,
+      "server_instruction_sha256": "b35a1cf8c099c91969e2191990c0e0ca92a6d6468941ac4d8f851882ba8fc92c",
+      "tool_profile": "agent",
+      "response_profile": "compact",
+      "format": "audit",
+      "prepared_provider_assets_sha256": "8f3af3ec5766e168dddb3856c83684c04556a435c67ca7177826d9acd2fe60fc",
+      "effective_native_config_sha256": "e7f11a1660c5c2336e0801d9740e156939aec1ec053a393634e29f18a3cf480e",
+      "index_state": "cold per task; all preparation accounted",
+      "client": "unregistered real model client",
+      "actual_model_insertion": "not_run"
+    },
+    "C": {
+      "label": "C-lean",
+      "graph_enabled": true,
+      "binary_sha256": "4a6f1dbeac0b016336ecba72fcbca923f7cbb590d92179931672a327ad67d6b5",
+      "source_identity": "593978154e545cc178f0c808a8400f76ff052b28a2316127c6e14dec5c7d43c1",
+      "dirty_source": true,
+      "config_sha256": "97eb3f083b6d294ad1166470538b8a022f5fa3a2c23556b10b67cd115ac342c2",
+      "harness_sha256": "7078adbd0ece03bb5a16478b6e67d081876cd6a4a4a5080b761ea782893629b9",
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "schema_scope": "native server tools/list, agent profile; not the model serialization",
+      "model_schema_sha256": null,
+      "loaded_graph_instructions_sha256": null,
+      "server_instruction_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "tool_profile": "agent",
+      "response_profile": "compact",
+      "format": "lean",
+      "prepared_provider_assets_sha256": "8f3af3ec5766e168dddb3856c83684c04556a435c67ca7177826d9acd2fe60fc",
+      "effective_native_config_sha256": "e7f11a1660c5c2336e0801d9740e156939aec1ec053a393634e29f18a3cf480e",
+      "index_state": "cold per task; all preparation accounted",
+      "client": "native LeanAdapter/1 prototype",
+      "actual_model_insertion": "not_run"
+    }
+  },
+  "executor": {
+    "model": null,
+    "effort": null,
+    "version": null,
+    "command_sha256": null,
+    "isolation_verifier_sha256": null,
+    "budget_enforcement_verified": false,
+    "status": "not_registered; no paid execution authorized"
+  },
+  "limits": {
+    "authorized_runs": 0,
+    "authorized_model_requests": 0,
+    "authorized_uncached_input_tokens": 0,
+    "proposed_runs": 27,
+    "timeout_seconds": 1200,
+    "attempts_per_cell": 1,
+    "additional_diagnostic_cycles_max": 1
+  },
+  "client_measurement": {
+    "actual_prompt_insertion": "not_run in Codex; native deterministic adapter insertion tested",
+    "response_representation": null,
+    "source_ledger": "bounded exact windows; local estimates are not provider decomposition"
+  },
+  "E1": {
+    "status": "not_run",
+    "task": "local-react",
+    "snapshot": "test/fixtures/efficiency08/typescript",
+    "conditions": [
+      "A0",
+      "S",
+      "I",
+      "SI"
+    ],
+    "separation_support": "unverified; preregister reduced matrix if bundled",
+    "replicas": 3,
+    "proposed_max_runs": 12,
+    "authorized_runs": 0,
+    "prompt": "In view.tsx line 2, show Item: 1 for count=1 and Items: N for every other count in Title. Make only this local UI change.",
+    "source_hashes": {
+      "flow.ts": "48a09f25215e7743c8dd7ca6739e781013371d42275944e734a813c193c29e63",
+      "jsx.d.ts": "65480e96cdacf36b5504e4f0ac38b2c24c0e4a48ca9358c326fc116a67cc74d7",
+      "service.ts": "a06176d4de16ef6c007a2048b4ddf2fc83cb6e073500253907bfdebca5c98339",
+      "tsconfig.json": "5d95539cdc5e7b9eb28eff789db646ad0bc42c1014c6cda4ef7169b12e867648",
+      "view.tsx": "5f9077b8c31c93515647f1a195188bc3e7a257c44efd508dc5cc1784e6cfd347"
+    },
+    "correctness_criteria": [
+      "React JSX title is singular for 1, plural otherwise",
+      "Component API and unrelated files are preserved"
+    ],
+    "oracle_digest": null
+  },
+  "gates": {
+    "F0": "deterministic complete; economic launch blocked",
+    "F1": "deterministic regressions verified",
+    "F2": "native prototype verified; real model boundary not_run",
+    "E1": "not_run",
+    "E2": "not_run",
+    "F3": "not_started",
+    "E3": "not_run",
+    "H": "not_run"
+  },
+  "surface": {
+    "B": {
+      "schema_sha256": "67c0cdc0a8e6f889ef6f978b45dad4fe348d0aa9ad292ba15a5cd84c57f2cc0b",
+      "schema_utf8_bytes": 8940,
+      "instruction_sha256": "b35a1cf8c099c91969e2191990c0e0ca92a6d6468941ac4d8f851882ba8fc92c",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ]
+    },
+    "C": {
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "schema_utf8_bytes": 9671,
+      "instruction_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ]
+    }
+  },
+  "notes": [
+    "SDK paths, private source/trace/patch and model credentials remain ignored",
+    "No historic run reused as a replica; no monetary or subscription conversion",
+    "Binary provenance is a locked local rebuild, not a claim of downloaded release-byte identity"
+  ],
+  "interventions": [
+    {
+      "id": "F1-R1",
+      "symbols": [
+        "SiteMap::new",
+        "SiteMap::position",
+        "review::relations",
+        "planner::review"
+      ],
+      "files": [
+        "crates/core/src/intents/site_map.rs",
+        "crates/core/src/intents/review.rs",
+        "crates/core/src/intents/planner.rs"
+      ],
+      "working_tree_files_sha256": {
+        "crates/core/src/intents/site_map.rs": "91759efc809e07bce8105afddd851c352967176e0a3d2645aa06c4a064959cd8",
+        "crates/core/src/intents/review.rs": "0500009515933d7b1b4d74c698d8f1fb51439f744beac731397b14c23799643c",
+        "crates/core/src/intents/planner.rs": "bdbdd492960d38b14e1e16cbffcaf7951bb1b3d405a72a497bc793508a2e5104"
+      }
+    },
+    {
+      "id": "F1-R2",
+      "symbols": [
+        "Request::parse review validation",
+        "planner::review_files",
+        "State baseline capture/compare"
+      ],
+      "files": [
+        "crates/core/src/intents/input.rs",
+        "crates/core/src/intents/planner.rs",
+        "crates/core/src/intents/mod.rs"
+      ],
+      "working_tree_files_sha256": {
+        "crates/core/src/intents/input.rs": "81608b9afd5885b52c04e8bbce2675fe90e98af7d16267eae7438f0a6a227ece",
+        "crates/core/src/intents/planner.rs": "bdbdd492960d38b14e1e16cbffcaf7951bb1b3d405a72a497bc793508a2e5104",
+        "crates/core/src/intents/mod.rs": "3653a794491c8b4a452d1ac744d2634e579e27750a1fa130a0b69ad7c9ce8db2"
+      }
+    },
+    {
+      "id": "F2-native-prototype",
+      "symbols": [
+        "lean::project",
+        "Evidence::required",
+        "planner::tests",
+        "render",
+        "LeanAdapter",
+        "Observer"
+      ],
+      "files": [
+        "crates/core/src/intents/lean.rs",
+        "crates/core/src/intents/mod.rs",
+        "crates/core/src/intents/planner.rs",
+        "crates/core/src/intents/render.rs",
+        "crates/core/src/mcp.rs",
+        "crates/core/src/tools.json",
+        "tool/efficiency_client.py"
+      ],
+      "working_tree_files_sha256": {
+        "crates/core/src/intents/lean.rs": "6b7020c20d95a2284dc8226c7391d55df8f37236f81f29296969995f721d4678",
+        "crates/core/src/intents/mod.rs": "3653a794491c8b4a452d1ac744d2634e579e27750a1fa130a0b69ad7c9ce8db2",
+        "crates/core/src/intents/planner.rs": "bdbdd492960d38b14e1e16cbffcaf7951bb1b3d405a72a497bc793508a2e5104",
+        "crates/core/src/intents/render.rs": "678b05ae4a9bdd2191966f887f5fdfd48b38657715e67c0cae74c848117cda32",
+        "crates/core/src/mcp.rs": "e0493288f35a60f8d91fbed097aa4c3b6c99a7fd2e8118c1801e7dc99a2084dd",
+        "crates/core/src/tools.json": "b8423f84683e220213de43876993c1a3eaed48948b6c763c5e0fa54ad18b8ef8",
+        "tool/efficiency_client.py": "d8698baf4f269d4801eea8fbe4e0fa7b7d74335669a44c8fbf04fa41f7961305"
+      }
+    }
+  ],
+  "intervention_measurement": "combined working-tree candidate; no individual economic ablation or causal attribution"
+}

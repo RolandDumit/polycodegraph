@@ -1,6 +1,7 @@
 """Relocate distribution, prepare assets there, and exercise the installed binary."""
 
 import argparse
+import importlib.util
 import json
 import os
 import shutil
@@ -51,6 +52,14 @@ with tempfile.TemporaryDirectory(prefix="installed package spaces ") as temp:
         cli_version = subprocess.check_output([str(binary), "--version"], text=True).strip().split()[-1]
         assert manifest_version == cli_version, (manifest_version, cli_version)
         assert client.initialization["serverInfo"]["version"] == manifest_version
+        adapter_path = install / "clients/efficiency_client.py"
+        spec = importlib.util.spec_from_file_location("installed_efficiency_client", adapter_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        assert module.LeanAdapter and module.Observer
+        target = client.call("search_symbol", query="installed")["rows"][0][0]
+        lean = client.call("inspect_change", target=target, intent="rename", format="lean", view="locations")
+        assert lean["format"] == "pcg-lean-1" and not lean["sources"]
         print(
             "Relocated native package works with adjacent TypeScript, compiled Dart and compiled Go providers"
         )

@@ -87,6 +87,14 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
             )
             rename = collect(client, dict(target=target, intent="rename"))
             assert sum(len(p["evidence"]["rows"]) for p in rename) >= reference["total"]
+            # The optional projection must preserve every distinct semantic site
+            # across real adapters, including same-line offsets and confidence.
+            from post08_smoke import inventory, pages as lean_pages
+            audit = collect(client, dict(target=target, intent="rename", view="locations"))
+            lean = lean_pages(client, dict(target=target, intent="rename", view="locations", format="lean"))
+            assert inventory(audit) == inventory(lean, True), (suffix, "lean rename sites")
+            assert all(not p["sources"] for p in lean), (suffix, "locations source")
+            assert lean[-1]["completion"]["required_inventory"]["remaining_known"] == 0
             for intent in INTENTS:
                 options = {}
                 t = target
