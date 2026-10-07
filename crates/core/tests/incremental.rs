@@ -166,7 +166,9 @@ async fn concurrent_source_edit_retries_and_provider_failure_retains_generation(
     );
     let generation = snap.generation.clone();
     fs::write(root.path().join("fail.once"), "").unwrap();
-    assert!(i.refresh(true, true).await.is_err());
+    let failure = i.refresh(true, true).await.unwrap_err().to_string();
+    assert!(failure.contains("previous committed generation retained"));
+    assert!(failure.contains("typescript provider:"), "{failure}");
     assert_eq!(i.graph.as_ref().unwrap().snapshot.generation, generation);
     assert_eq!(i.store.read().unwrap().unwrap().generation, generation);
 }

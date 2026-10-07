@@ -677,13 +677,20 @@ impl Indexer {
                 continue;
             }
             if old.is_some()
-                && extracted.values().any(|r| {
-                    r.diagnostics
-                        .iter()
-                        .any(|d| d["code"] == "provider_unavailable")
-                })
+                && let Some(failure) = extracted
+                    .values()
+                    .flat_map(|r| &r.diagnostics)
+                    .find(|d| d["code"] == "provider_unavailable")
             {
-                bail!("Provider failed during update; previous committed generation retained")
+                let cause: String = failure["message"]
+                    .as_str()
+                    .unwrap_or("unknown provider error")
+                    .chars()
+                    .take(2000)
+                    .collect();
+                bail!(
+                    "Provider failed during update; previous committed generation retained: {cause}"
+                )
             }
             let mut files = old.map(|o| o.files).unwrap_or_default();
             for f in &deleted {

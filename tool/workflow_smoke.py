@@ -265,7 +265,7 @@ def run(binary: Path, config: Path | None, bridge: Path, output: Path | None = N
                 source.write_text("// relocated\n" + source.read_text(), encoding="utf-8")
                 args["options"] = {"baseline": handle}
                 response = review.request("tools/call", {"name": "inspect_change", "arguments": args})
-                assert not response["isError"]
+                assert not response["isError"], response
                 value = json.loads(response["content"][0]["text"])
                 assert value["collection"]["complete"]
                 assert normalized_inventory(value)

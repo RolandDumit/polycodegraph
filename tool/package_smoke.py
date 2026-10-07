@@ -16,10 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--package", type=Path, default=Path("dist/polycodegraph"))
 a = parser.parse_args()
 with tempfile.TemporaryDirectory(prefix="installed package spaces ") as temp:
-    install = Path(temp) / "tools"
+    # Keep the relocated package and its application under one canonical root,
+    # including macOS's /var alias. Provider records use canonical source roots.
+    temporary_root = Path(temp).resolve(strict=True)
+    install = temporary_root / "tools"
     shutil.copytree(a.package, install)
     binary = install / ("polycodegraph.exe" if os.name == "nt" else "polycodegraph")
-    root = Path(temp) / "application"
+    root = temporary_root / "application"
     root.mkdir()
     (root / "entry.ts").write_text("export function installed() { return 42; }\n", encoding="utf-8")
     (root / "bundled.dart").write_text("int dartBundled() => 42;\n", encoding="utf-8")
