@@ -15,9 +15,9 @@ from pathlib import Path
 
 
 class Client:
-    def __init__(self, binary: Path, root: Path, env=None, extra_args=()):
+    def __init__(self, binary: Path, root: Path, env=None, extra_args=(), command=None):
         self.p = subprocess.Popen(
-            [str(binary), "serve", "--root", str(root), *extra_args],
+            command if command is not None else [str(binary), "serve", "--root", str(root), *extra_args],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -28,10 +28,9 @@ class Client:
         self.q = queue.Queue()
         self.errors = []
         self.i = 0
+        self.abandoned = False
         threading.Thread(target=self._read, daemon=True).start()
-        threading.Thread(
-            target=lambda: self.errors.extend(self.p.stderr.readlines()), daemon=True
-        ).start()
+        threading.Thread(target=lambda: self.errors.extend(self.p.stderr.readlines()), daemon=True).start()
         self.initialization = self.request(
             "initialize",
             {
@@ -46,7 +45,7 @@ class Client:
         for line in self.p.stdout:
             try:
                 self.q.put(json.loads(line))
-            except Exception:
+            except json.JSONDecodeError:
                 self.q.put({"bad_frame": line})
         self.q.put({"process_ended": True})
 
@@ -54,13 +53,39 @@ class Client:
         self.p.stdin.write(json.dumps(v) + "\n")
         self.p.stdin.flush()
 
-    def request(self, method, params):
+    def request(self, method, params, *, deadline=None, cancelled=None):
+        if self.abandoned:
+            raise ConnectionError("abandoned MCP request; reconnect before reuse")
         self.i += 1
         self.send({"jsonrpc": "2.0", "id": self.i, "method": method, "params": params})
-        result = self.q.get(timeout=180)
+        if deadline is None:
+            result = self.q.get(timeout=180)
+        else:
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0 or (cancelled and cancelled()):
+                    self.abandoned = True
+                    self.send({"jsonrpc": "2.0", "method": "notifications/cancelled", "params": {"requestId": self.i}})
+                    if remaining <= 0:
+                        raise TimeoutError("native MCP deadline")
+                    raise InterruptedError("native MCP cancellation")
+                try:
+                    result = self.q.get(timeout=min(remaining, 0.05))
+                    break
+                except queue.Empty:
+                    continue
+        if result.get("process_ended"):
+            self.abandoned = True
+            raise ConnectionError("MCP EOF before response")
         assert result.get("id") == self.i, result
         assert "error" not in result, result
         return result["result"]
+
+    def deadline_call(self, name, arguments, *, deadline, cancelled):
+        """Enforce the collector deadline in the native receive operation itself."""
+        return self.request(
+            "tools/call", {"name": name, "arguments": arguments}, deadline=deadline, cancelled=cancelled
+        )
 
     def call(self, name, **args):
         r = self.request("tools/call", {"name": name, "arguments": args})
@@ -89,9 +114,7 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
             fixture,
             root,
             dirs_exist_ok=True,
-            ignore=shutil.ignore_patterns(
-                ".polycodegraph", "build", "node_modules", "target"
-            ),
+            ignore=shutil.ignore_patterns(".polycodegraph", "build", "node_modules", "target"),
         )
         (root / "polycodegraph.json").write_text(json.dumps(config), encoding="utf-8")
         new = Client(binary, root)
@@ -114,31 +137,21 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
             arch = new.call("get_architecture")
             assert arch["files"] > 0, arch
             errors = [
-                d
-                for d in arch["diagnostic_samples"]
-                if d["code"] == "provider_unavailable" or d["severity"] == "error"
+                d for d in arch["diagnostic_samples"] if d["code"] == "provider_unavailable" or d["severity"] == "error"
             ]
             assert not errors, errors
             rows = new.call("search_symbol", query="", limit=200)["rows"]
             assert rows, arch
             if old:
                 reference = old.call("get_architecture")
-                assert clean(arch) == clean(reference), {
-                    "architecture": (arch, reference)
-                }
+                assert clean(arch) == clean(reference), {"architecture": (arch, reference)}
                 assert clean(new.call("search_symbol", query="", limit=200)) == clean(
                     old.call("search_symbol", query="", limit=200)
                 )
             if old:
-                assert clean(new.call("search", query="", limit=200)) == clean(
-                    old.call("search", query="", limit=200)
-                )
-                assert clean(new.call("index_repository")) == clean(
-                    old.call("index_repository")
-                )
-                assert clean(new.call("detect_changes")) == clean(
-                    old.call("detect_changes")
-                )
+                assert clean(new.call("search", query="", limit=200)) == clean(old.call("search", query="", limit=200))
+                assert clean(new.call("index_repository")) == clean(old.call("index_repository"))
+                assert clean(new.call("detect_changes")) == clean(old.call("detect_changes"))
                 status, reference = new.call("status"), old.call("status")
                 for key in reference:
                     if key not in ("provider_health", "generation", "metrics", "freshness"):
@@ -150,9 +163,7 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                 for provider, health in reference["provider_health"].items():
                     assert provider in status["provider_health"]
                     if isinstance(health, dict):
-                        assert (
-                            health.keys() <= status["provider_health"][provider].keys()
-                        )
+                        assert health.keys() <= status["provider_health"][provider].keys()
             # Compare graph relationships and source windows for every fixture symbol.
             for row in rows:
                 target = row[0]
@@ -177,32 +188,27 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                         )
                 result = new.call("snippet", target=target, context=1)
                 if old:
-                    assert clean(result) == clean(
-                        old.call("snippet", target=target, context=1)
-                    ), ("snippet", target)
+                    assert clean(result) == clean(old.call("snippet", target=target, context=1)), ("snippet", target)
                 inspect = new.call("inspect_change", target=target, limit=1)
                 assert all(
-                    inspect[k]["generation"] == inspect["generation"]
-                    for k in ["callers", "implementations", "impact"]
+                    inspect[k]["generation"] == inspect["generation"] for k in ["callers", "implementations", "impact"]
                 )
             # Warm query invariant, and a real edit through the configured watcher.
             before = new.call("status", detail="full")["metrics"]
             new.call("search_symbol", query="")
             after = new.call("status", detail="full")["metrics"]
             if config.get("watch", True):
-                assert (
-                    before["scans"] == after["scans"]
-                    and before["graph_builds"] == after["graph_builds"]
-                ), (before, after)
+                assert before["scans"] == after["scans"] and before["graph_builds"] == after["graph_builds"], (
+                    before,
+                    after,
+                )
             source = root / rows[0][3]
             text = source.read_text(encoding="utf-8")
             comment = "# edit\n" if source.suffix in (".py", ".pyi") else "// edit\n"
             source.write_text(comment + text, encoding="utf-8")
             time.sleep(0.3)
             if old:
-                assert clean(new.call("detect_changes")) == clean(
-                    old.call("detect_changes")
-                )
+                assert clean(new.call("detect_changes")) == clean(old.call("detect_changes"))
             changed = new.call("index_repository", detail="full")
             if old:
                 reference = old.call("index_repository", **old_index_args)
@@ -225,16 +231,12 @@ def validate(binary: Path, fixture: Path, config: dict, baseline: Path | None = 
                     )
                 assert changed["reindexed_total"] == len(changed["reindexed"])
                 assert set(changed["changed"]) <= set(changed["reindexed"])
-                assert clean(new.call("get_architecture")) == clean(
-                    old.call("get_architecture")
-                )
+                assert clean(new.call("get_architecture")) == clean(old.call("get_architecture"))
                 assert clean(new.call("search_symbol", query="", limit=200)) == clean(
                     old.call("search_symbol", query="", limit=200)
                 )
             assert rows[0][3] in changed["changed"], changed
-            assert (
-                new.call("search_symbol", query="")["generation"] != arch["generation"]
-            )
+            assert new.call("search_symbol", query="")["generation"] != arch["generation"]
             return {
                 "fixture": fixture.name,
                 "languages": arch["languages"],
@@ -253,11 +255,7 @@ def main():
     parser.add_argument(
         "--binary",
         type=Path,
-        default=Path(
-            "target/release/polycodegraph.exe"
-            if os.name == "nt"
-            else "target/release/polycodegraph"
-        ),
+        default=Path("target/release/polycodegraph.exe" if os.name == "nt" else "target/release/polycodegraph"),
     )
     parser.add_argument("--baseline", type=Path)
     parser.add_argument(
@@ -277,9 +275,7 @@ def main():
         "flutter": [base / "examples/flutter_fixture"],
     }
     if a.group == "mixed":
-        with tempfile.TemporaryDirectory(
-            prefix="polycodegraph ten languages "
-        ) as mixed:
+        with tempfile.TemporaryDirectory(prefix="polycodegraph ten languages ") as mixed:
             mixed_root = Path(mixed)
             for fixture in [
                 base / "test/fixtures/dart_app",

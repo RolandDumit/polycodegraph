@@ -1,0 +1,33 @@
+{
+  "revision": "efficiency-0.10-smoke-runner-repair-source-v1",
+  "date": "2026-10-07",
+  "scope": "measurement launcher, output capture and budget policy; native/provider/shipped-client code unchanged",
+  "source_sha256": "7cc2b05b31b7ed54d11b5043070e7fcc52e7d739df7987287e18820907cbef95",
+  "files": {
+    "tool/efficiency_benchmark.py": "6cbdaa2c1258b6dd04f8bd37f0c27308631a15fffd1c13016069d7db7d702967",
+    "tool/efficiency_comparison.py": "0abf6ff02a838f39dcd7e38f29250fa577f17850611d1683a099590daa468a57",
+    "tool/efficiency_process.py": "3e45db4511db5089038e1a707145abf9e2210694ee62d7030fef64802f14fd94",
+    "tool/efficiency_capture.py": "989d000075148cb3b57c71ef68b2439cdb95987dffdecb52f4f466e2c7f718fc",
+    "tool/test_efficiency_process.py": "a6e3656e25501f7b987b0e5d56efeb9f5ff506069399d1ddb0ca3ef81facf7e7",
+    "tool/test_efficiency_capture.py": "64e21feb22d9111b81dfbdd73c3edbeedb4a6dd7806a73b5ba8d1066a63261f4",
+    "docs/benchmarks/efficiency-0.10/eduroma-smoke-rerun-20261007.md": "83ce5d8c8590ef2d13f14178dcc7d566b6ca9cffcfc1ed186b2f7b857a8e16ec"
+  },
+  "historical_source_manifest_sha256": "f220ec8f10009cf61677e46db14a787e5c326d8c6d8e0235bbb9f8252f6dccc4",
+  "historical_native_source_identity": "7df5d8e68b18ca65077f5d4b4af1e67aad37ef450ccb1d90dadeab418f03b7d2",
+  "candidate_binary_sha256": "f38fda1689394904421ba3b1ae78b176660aa5abea63df17a2e7cc013ec5dd7d",
+  "validation": {
+    "python_tests": 76,
+    "rust_tests": 88,
+    "cargo_xtask_check": "passed",
+    "native_app_server_preflight": "passed_A_B_C_D_no_model_turns",
+    "configured_python_lint_and_format": "passed_six_changed_measurement_modules",
+    "Windows_file_size_enforcement": "unverified_unsupported_by_launcher",
+    "indexed_application_builds_and_tests": "not_run"
+  },
+  "logs_sha256": {
+    "eduroma-smoke-rerun-python.log": "57da6bc62252d2c545f8d10e0c1b9c414e8c9cfef23242623d3c224a2984d23f",
+    "eduroma-smoke-rerun-rust.log": "55c05b6ec1cc26c9d2abd2c87b8eb8279db25e65a4c0ab1407525d5e01be07b1",
+    "eduroma-smoke-rerun-lint.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "eduroma-smoke-rerun-format.log": "ef7d13d02214e98ca902b05257cdbe6a8e84f3b4714508efdc19766460b54209"
+  }
+}

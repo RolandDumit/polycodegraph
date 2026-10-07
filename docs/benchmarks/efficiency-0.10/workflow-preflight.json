@@ -1,0 +1,97 @@
+{
+  "model_runs": 0,
+  "provider_usage": null,
+  "provider_prompt_insertion": null,
+  "binary_sha256": "f38fda1689394904421ba3b1ae78b176660aa5abea63df17a2e7cc013ec5dd7d",
+  "bridge_sha256": "9f51df3af6d372c835576df3f43d9e311c1a059d61e7d11bf57d37002788c6f5",
+  "python_version": "3.14.7",
+  "client_modules_sha256": {
+    "efficiency_client.py": "5081a2d3b07c5f740a766d6bcf33f8f7862add400ea21dd3bb5d0521488c13fe",
+    "efficiency_collection.py": "d02797f03dda1f949146689a7256a5ac2bd34bc93354f4ca3c014c59dbe539f9",
+    "efficiency_ledger.py": "4a789e37cfc5d6a1dadb42258b33c761eeddb29599ff8ebcb6cddc76e73f61e9",
+    "efficiency_workflow.py": "c4c5a107910a5cd663dab0e1e663bd21d04c8173e5dadb04101f4412cd6df691",
+    "efficiency_binding.py": "2d631b41b57b4a24a989cc006b061084c6a89a64f25a8280a494065a31d3b5a0",
+    "efficiency_transport.py": "c93d3b80af7c0d062c5083b88a9e13caadda734a9aa52220cff72d898d0ad11e",
+    "efficiency_mcp.py": "9f51df3af6d372c835576df3f43d9e311c1a059d61e7d11bf57d37002788c6f5"
+  },
+  "local": {
+    "tools": 0,
+    "instructions": 0,
+    "native_binary_required": false
+  },
+  "full": {
+    "tools": 16,
+    "direct_result_preserved": true,
+    "original_guide": true,
+    "schema_chars": 16310,
+    "schema_bytes": 16310,
+    "schema_sha256": "1e3f2b698790438c4d1ffe2dc8f8e4a3315658d721a051a02792b6c099ffe539",
+    "guide_chars": 358,
+    "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+  },
+  "agent": {
+    "tools": 5,
+    "direct_result_preserved": true,
+    "original_guide": true,
+    "schema_chars": 9661,
+    "schema_bytes": 9661,
+    "schema_sha256": "30f284cfc62fe1095b5b9795cd3ce81d6f6228f8f323537614b70e763440d162",
+    "guide_chars": 358,
+    "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+  },
+  "rename": {
+    "schema_chars": 2991,
+    "schema_bytes": 2991,
+    "schema_sha256": "9a35a2c7a35d6518ad39138dbf21c0cfb9a7bfd38a69822c4c6f947e65d75173",
+    "guide_chars": 336,
+    "guide_sha256": "d9bf1d0d8fc485e54ec079464ef8ff37253c8490277a4054e63e873faa717a45",
+    "advertised_tools": 2,
+    "raw_pages": 21,
+    "selected_format": "pcg-lean-collection-2",
+    "one_text": true,
+    "inventory_equal": true,
+    "source_equal": true,
+    "selected_source_windows": 2,
+    "foreign_options_rejected": true
+  },
+  "telemetry": {
+    "private_hashed_receipt": true,
+    "mcp_calls": 22,
+    "prompt_insertion_claimed": false,
+    "rejected_workflow_error_counted": true
+  },
+  "move_symbol": {
+    "schema_chars": 1882,
+    "schema_bytes": 1882,
+    "schema_sha256": "005da51248372c7edf313525ea3a54161f03fb5dfd98e6ce46347875b2b8b26a",
+    "guide_chars": 336,
+    "guide_sha256": "d9bf1d0d8fc485e54ec079464ef8ff37253c8490277a4054e63e873faa717a45",
+    "canonical_tool": true,
+    "typed_workflow": true,
+    "complete": true,
+    "selected_format": "pcg-lean-collection-1"
+  },
+  "trace_flow": {
+    "schema_chars": 1907,
+    "schema_bytes": 1907,
+    "schema_sha256": "404614f7ef7ab34c5b0ae0a42490c6ca5e21ab253459305a33583886f696099e",
+    "guide_chars": 336,
+    "guide_sha256": "d9bf1d0d8fc485e54ec079464ef8ff37253c8490277a4054e63e873faa717a45",
+    "canonical_tool": true,
+    "typed_workflow": true,
+    "complete": true,
+    "selected_format": "pcg-lean-collection-1"
+  },
+  "continuation": {
+    "limit_visible": true,
+    "canonical_cursor_recovery": true,
+    "page_offset": 20,
+    "inventory_equal": true
+  },
+  "review_change": {
+    "baseline_reused_same_session": true,
+    "source_edit_observed": true,
+    "complete": true,
+    "selected_format": "pcg-lean-collection-1"
+  }
+}

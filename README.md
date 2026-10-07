@@ -432,6 +432,13 @@ Copy the adaptable instructions from [docs/harness-AGENTS.md](docs/harness-AGENT
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md) and [VALIDATION.md](VALIDATION.md). Run `cargo xtask check` for format, Clippy and Rust tests; `cargo xtask package` builds a host package. Real-provider MCP validation uses `python tool/smoke.py --group dart|polyglot|mobile|flutter` after provider setup. These tests fail if required coverage is missing.
 
+Development toward 0.10 starts with opt-in client measurement, static workflow
+surfaces and lossless fused collections. A packaged optional MCP relay applies
+these policies for ordinary clients; see [activation/rollback](docs/migration-0.10.md)
+and the [preregistered efficiency protocol](docs/benchmarks/efficiency-0.10/protocol.md).
+The [implementation report](docs/benchmarks/efficiency-0.10/report.md) records actual checks and remaining gates.
+Local serialization measurements do not establish provider-accounted token savings.
+
 Differential checks can use `--baseline /path/to/v0.4.0/executable`. They compare all fixture symbols, calls, references, implementations, neighbors, dependencies, impact and snippets while normalizing generation. See [benchmark methodology](docs/benchmarks/README.md); synthetic query results are not token-savings or whole-project analysis claims.
 
 ## References

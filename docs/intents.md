@@ -1,5 +1,10 @@
 # Intent context — 0.9.0
 
+The [0.10 development integration](migration-0.10.md) adds explicit environment
+identity to lean snapshots and optional lossless client collection fusion.
+Inventory/source/verification distinctions, cursor and baseline contracts below
+remain applicable; fused completion is never a compiler or runtime proof.
+
 Version 0.9 adds opt-in `format: lean` (`pcg-lean-1`) with separate
 required inventory, optional context and unexecuted compiler/test verification.
 Legacy/audit rendering remains the default. Lean capture implies exact strict

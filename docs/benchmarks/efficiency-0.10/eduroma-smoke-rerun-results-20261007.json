@@ -1,0 +1,322 @@
+{
+  "revision": "efficiency-0.10-eduroma-repaired-wiring-smoke-v1",
+  "date": "2026-10-07",
+  "status": "incomplete_or_failed_wiring_smoke",
+  "decision": "HOLD_REAL_MODEL_ACCEPTANCE",
+  "scope": "one known read-only production Dart authentication task, one fresh replica per condition",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "client_version": "Codex CLI 0.159.2 app-server",
+  "execution_order": [
+    "A",
+    "B",
+    "D",
+    "C"
+  ],
+  "manifest_identity": "8867bbd67972d4700569064ba7e06909ccca81e3c7b523e19c211df5aebe22f3",
+  "measurement_source_identity": "7cc2b05b31b7ed54d11b5043070e7fcc52e7d739df7987287e18820907cbef95",
+  "authorization": {
+    "max_paid_solver_turns": 4,
+    "max_uncached_input_tokens": 100000,
+    "control": "after_attempt_with_final_run_overshoot_accepted",
+    "preparation_ai_turns": 0,
+    "judge_ai_turns": 0,
+    "external_retries": 0
+  },
+  "limits": {
+    "attempts_per_cell": 1,
+    "timeout_seconds": 900,
+    "max_model_requests": 40,
+    "max_uncached_input_tokens": 40000,
+    "max_input_tokens": 600000,
+    "max_output_tokens": 30000,
+    "concurrency": 1,
+    "executor_file_size_bytes": 536870912,
+    "enforcement": {
+      "executor_file_size_bytes": "enforced",
+      "timeout_seconds": "enforced",
+      "max_model_requests": "observed_only",
+      "max_uncached_input_tokens": "observed_only",
+      "max_input_tokens": "observed_only",
+      "max_output_tokens": "observed_only"
+    }
+  },
+  "source": {
+    "dart_files": 385,
+    "snapshot_files": 408,
+    "original_source_and_config_files_hash_checked_unchanged": 401
+  },
+  "product": {
+    "candidate_source_identity_before_smoke": "7df5d8e68b18ca65077f5d4b4af1e67aad37ef450ccb1d90dadeab418f03b7d2",
+    "candidate_binary_sha256": "f38fda1689394904421ba3b1ae78b176660aa5abea63df17a2e7cc013ec5dd7d",
+    "baseline_0_9_commit": "f1e0484cb1ac66f0fe623fc6e8c4531a886b0a07",
+    "baseline_binary_sha256": "9c8a3c483ba1dfe2cd8e351ba78470db264989d11363a76baf176f9a3f907b00",
+    "native_provider_shipped_client_source_changed_by_repairs": false
+  },
+  "accounting": {
+    "paid_solver_turns": 4,
+    "model_usage_events": 27,
+    "totals": {
+      "input_tokens": 546758,
+      "uncached_input_tokens": 136134,
+      "cached_input_tokens": 410624,
+      "output_tokens": 3985,
+      "reasoning_output_tokens": 717,
+      "total_tokens": 550743
+    },
+    "within_aggregate_uncached_budget": false,
+    "prior_campaign_uncached_input_tokens_separate": 92475,
+    "both_campaigns_uncached_input_tokens": 228609,
+    "monetary_cost": null,
+    "replayed_observations": 0
+  },
+  "conditions": [
+    {
+      "condition": "A",
+      "paid_solver_turns": 1,
+      "accepted_smoke": true,
+      "journal_status": "completed",
+      "reason": "static_sources_and_tool_requirements_verified",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "static_source_answer_verified": true,
+      "supplementary_deterministic_verification": null,
+      "usage": {
+        "input_tokens": 70703,
+        "uncached_input_tokens": 33455,
+        "cached_input_tokens": 37248,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 706,
+        "reasoning_output_tokens": 34,
+        "total_tokens": 71409
+      },
+      "model_usage_events": 5,
+      "registered_graph_tools": 0,
+      "model_graph_tool_calls": 0,
+      "native_graph_tool_calls": 0,
+      "ordinary_tool_calls": 10,
+      "native_intent_requests": 0,
+      "delivered_native_intent_pages": 0,
+      "bound_tool_errors": 2,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 30.715,
+      "isolation_verified": true,
+      "graph_surface_identity": null,
+      "treatment_identity": "dea17d11a2243249b3724d246f728de38087d75c4e8dde9d290708094b9743aa",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [],
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    },
+    {
+      "condition": "B",
+      "paid_solver_turns": 1,
+      "accepted_smoke": true,
+      "journal_status": "completed",
+      "reason": "static_sources_and_tool_requirements_verified",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "static_source_answer_verified": true,
+      "supplementary_deterministic_verification": null,
+      "usage": {
+        "input_tokens": 219754,
+        "uncached_input_tokens": 31594,
+        "cached_input_tokens": 188160,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 970,
+        "reasoning_output_tokens": 80,
+        "total_tokens": 220724
+      },
+      "model_usage_events": 9,
+      "registered_graph_tools": 16,
+      "model_graph_tool_calls": 2,
+      "native_graph_tool_calls": 2,
+      "ordinary_tool_calls": 12,
+      "native_intent_requests": 1,
+      "delivered_native_intent_pages": 1,
+      "bound_tool_errors": 1,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 61.356,
+      "isolation_verified": true,
+      "graph_surface_identity": "6ead83e90c771098e72eb234c14099b5525a30672fb9ba017c1a304a27b98e22",
+      "treatment_identity": "25d2cfc70e9733fe72cd6cee0373bf0cb565b6c6e1cee4e2031556156331b3d1",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [
+        {
+          "format": "native_audit",
+          "returned_native_pages": 1,
+          "collection_complete": null,
+          "collector_limit": null,
+          "provider_incomplete": null,
+          "remaining_known": [],
+          "coverage_precision": "static; dynamic/callback and cross-language coverage incomplete",
+          "text_blocks": 1,
+          "structured_content": true
+        }
+      ],
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    },
+    {
+      "condition": "D",
+      "paid_solver_turns": 1,
+      "accepted_smoke": true,
+      "journal_status": "completed",
+      "reason": "static_sources_and_tool_requirements_verified",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "static_source_answer_verified": true,
+      "supplementary_deterministic_verification": null,
+      "usage": {
+        "input_tokens": 84979,
+        "uncached_input_tokens": 23283,
+        "cached_input_tokens": 61696,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1173,
+        "reasoning_output_tokens": 313,
+        "total_tokens": 86152
+      },
+      "model_usage_events": 5,
+      "registered_graph_tools": 1,
+      "model_graph_tool_calls": 2,
+      "native_graph_tool_calls": 2,
+      "ordinary_tool_calls": 8,
+      "native_intent_requests": 2,
+      "delivered_native_intent_pages": 2,
+      "bound_tool_errors": 1,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 64.818,
+      "isolation_verified": true,
+      "graph_surface_identity": "6dd6706cc34d353be46687795f33d9aa21c21f2202f960df3a34cf35fddbd597",
+      "treatment_identity": "3636610c271137d94f06e41b61be03d41e57fa933e5972a8114a7ecab6139e42",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [
+        {
+          "format": "pcg-lean-collection-1",
+          "returned_native_pages": 1,
+          "collection_complete": false,
+          "collector_limit": null,
+          "provider_incomplete": true,
+          "remaining_known": [
+            0
+          ],
+          "coverage_precision": null,
+          "text_blocks": 1,
+          "structured_content": false
+        },
+        {
+          "format": "pcg-lean-collection-2",
+          "returned_native_pages": 1,
+          "collection_complete": false,
+          "collector_limit": null,
+          "provider_incomplete": true,
+          "remaining_known": [
+            0
+          ],
+          "coverage_precision": "static; dynamic/callback and cross-language coverage incomplete",
+          "text_blocks": 1,
+          "structured_content": false
+        }
+      ],
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    },
+    {
+      "condition": "C",
+      "paid_solver_turns": 1,
+      "accepted_smoke": false,
+      "journal_status": "budget_exhausted",
+      "reason": "observed_attempt_cap_exceeded",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "static_source_answer_verified": true,
+      "supplementary_deterministic_verification": {
+        "classification": "post_campaign_deterministic_diagnostic_only_budget_failure_unchanged",
+        "result": {
+          "accepted": true,
+          "reason_code": "static_sources_and_tool_requirements_verified"
+        }
+      },
+      "usage": {
+        "input_tokens": 171322,
+        "uncached_input_tokens": 47802,
+        "cached_input_tokens": 123520,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1136,
+        "reasoning_output_tokens": 290,
+        "total_tokens": 172458
+      },
+      "model_usage_events": 8,
+      "registered_graph_tools": 5,
+      "model_graph_tool_calls": 2,
+      "native_graph_tool_calls": 2,
+      "ordinary_tool_calls": 10,
+      "native_intent_requests": 1,
+      "delivered_native_intent_pages": 1,
+      "bound_tool_errors": 1,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 63.713,
+      "isolation_verified": true,
+      "graph_surface_identity": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "treatment_identity": "892aea850111e3e67267fad50f72f70a1dfaad3e13b10403bec5a11c0f4e254d",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [
+        {
+          "format": "pcg-lean-collection-1",
+          "returned_native_pages": 1,
+          "collection_complete": false,
+          "collector_limit": null,
+          "provider_incomplete": true,
+          "remaining_known": [
+            0
+          ],
+          "coverage_precision": null,
+          "text_blocks": 1,
+          "structured_content": false
+        }
+      ],
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    }
+  ],
+  "verification": {
+    "python_tests_passed": 76,
+    "rust_tests_passed": 88,
+    "cargo_xtask_check": "passed",
+    "native_app_server_preflight": "A_B_C_D_passed_zero_AI",
+    "application_execution": false,
+    "application_builds_or_tests": false,
+    "temporary_credentials_remaining": 0,
+    "original_sources_unchanged": true,
+    "frozen_artifacts_verified": true,
+    "measurement_copy_matches_repair_source_manifest": true
+  },
+  "precision_limits": [
+    "One known task and one replica do not establish general token savings, noninferiority, component attribution or economic value.",
+    "Native provider incompleteness remains visible; accepted source facts do not imply a complete semantic inventory or rename safety.",
+    "Exact per-request provider context and insertion, cache-write input counters, economic cost and provider internal transport retries remain unverified.",
+    "All real provider usage increments, failed tool calls and native collector RPCs are included; characters and wire bytes are not measured model tokens.",
+    "Token/request guards are checked after the attempt; the final aggregate uncached-input overshoot is authorized.",
+    "No indexed application builds, tests, plugins, hooks or code generation were executed."
+  ]
+}

@@ -1,0 +1,705 @@
+{
+  "revision": "efficiency-0.10-deterministic-v1",
+  "date": "2026-10-07",
+  "version": "0.10.0-dev.1",
+  "model_runs": 0,
+  "provider_tokens": null,
+  "tokenizer": null,
+  "monetary_cost": null,
+  "native": {
+    "binary_sha256": "f38fda1689394904421ba3b1ae78b176660aa5abea63df17a2e7cc013ec5dd7d",
+    "model_runs": 0,
+    "provider": "TypeScript compiler API",
+    "measurement": "one compact JSON result representation; not provider tokens or model input",
+    "relocation": {
+      "before_reference_sites": 100,
+      "after_reference_sites": 100,
+      "sections": {
+        "removed_relations": 0,
+        "added_relations": 0,
+        "source_changes": 1
+      },
+      "response": {
+        "pages": 1,
+        "unicode_characters": 3683,
+        "utf8_bytes": 3683,
+        "records": 1
+      },
+      "query_ms": 349.4578339996224,
+      "classification": [
+        {
+          "file": "sample.ts",
+          "unchanged": 0,
+          "relocated": 202,
+          "uncertain_mapping": 0,
+          "removed_multiplicity": 0,
+          "added_multiplicity": 0,
+          "mapping_limit": null
+        }
+      ],
+      "lean_response": {
+        "pages": 1,
+        "unicode_characters": 2605,
+        "utf8_bytes": 2605,
+        "records": 1
+      }
+    },
+    "schema_unicode_characters": 17620,
+    "schema_sha256": "6ead83e90c771098e72eb234c14099b5525a30672fb9ba017c1a304a27b98e22",
+    "strict_scope": {
+      "typo_rejected": true
+    },
+    "projection": {
+      "rename": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 29935,
+          "utf8_bytes": 29935,
+          "records": 201
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6221,
+          "utf8_bytes": 6221,
+          "records": 201
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 201,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "edit"
+        }
+      },
+      "change_signature": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 32828,
+          "utf8_bytes": 32828,
+          "records": 201
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6390,
+          "utf8_bytes": 6390,
+          "records": 201
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 201,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "edit"
+        }
+      },
+      "explain_symbol": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 30279,
+          "utf8_bytes": 30279,
+          "records": 202
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6423,
+          "utf8_bytes": 6423,
+          "records": 202
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 1,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "complete",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "none"
+        }
+      },
+      "trace_flow": {
+        "audit": {
+          "pages": 1,
+          "unicode_characters": 2803,
+          "utf8_bytes": 2803,
+          "records": 1
+        },
+        "lean": {
+          "pages": 1,
+          "unicode_characters": 1916,
+          "utf8_bytes": 1916,
+          "records": 1
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 1,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "none"
+        }
+      }
+    },
+    "adapter": {
+      "client": "efficiency_client.LeanAdapter/1, native stdio client; no model attached",
+      "complete": true,
+      "boundary": {
+        "actual_schema_sha256": null,
+        "loaded_graph_instructions_sha256": null,
+        "response_representation": [
+          "transformed"
+        ],
+        "model_requests": 0,
+        "mcp_calls": 11,
+        "external_reads": 0,
+        "new_context_chars": 1530,
+        "repeated_context_chars": 139,
+        "rehydrated_context_chars": 0,
+        "pages": 11,
+        "expansions": 0,
+        "compactions": 0,
+        "errors": 0,
+        "retries": 0,
+        "wire_bytes": 64962,
+        "injected_bytes": 30740,
+        "wire_measurement_scope": "compact MCP result serialization; excludes JSON-RPC framing and transport whitespace",
+        "injected_chars": 30740,
+        "insertion_boundary_complete": true,
+        "wire_duplicate_objects": 11,
+        "unidentified_context_chars": 0,
+        "context_identity_complete": true,
+        "source_ledger_entries": 12,
+        "source_ledger_omitted": 0,
+        "ledger_entries": 200,
+        "ledger_omitted_entries": 0,
+        "boundary_events": 24,
+        "boundary_events_omitted": 0,
+        "boundary_accounting_complete": true,
+        "binding_mode": null,
+        "collection_mode": "pcg-lean-collection-1",
+        "measurement_scope": "source windows and partial line overlaps at explicit client insertion; characters are not model usage"
+      },
+      "automatic_pages": 11,
+      "codex_client_insertion": "not_run"
+    },
+    "fused_collection": {
+      "corpus": {
+        "rename": {
+          "raw_pages": 11,
+          "collection_1_chars": 30637,
+          "selected_chars": 11148,
+          "selected_format": "pcg-lean-collection-2",
+          "inventory_equal": true,
+          "raw_windows": 12,
+          "merged_windows": 2
+        },
+        "change_signature": {
+          "raw_pages": 11,
+          "collection_1_chars": 31571,
+          "selected_chars": 12513,
+          "selected_format": "pcg-lean-collection-2",
+          "inventory_equal": true,
+          "raw_windows": 12,
+          "merged_windows": 2
+        },
+        "explain_symbol": {
+          "raw_pages": 11,
+          "collection_1_chars": 29359,
+          "selected_chars": 11071,
+          "selected_format": "pcg-lean-collection-2",
+          "inventory_equal": true,
+          "raw_windows": 13,
+          "merged_windows": 3
+        },
+        "trace_flow": {
+          "raw_pages": 1,
+          "collection_1_chars": 2254,
+          "selected_chars": 2254,
+          "selected_format": "pcg-lean-collection-1",
+          "inventory_equal": true,
+          "raw_windows": 1,
+          "merged_windows": 1
+        }
+      },
+      "native_deadline": true,
+      "boundary": {
+        "actual_schema_sha256": null,
+        "loaded_graph_instructions_sha256": null,
+        "response_representation": [
+          "transformed"
+        ],
+        "model_requests": 0,
+        "mcp_calls": 11,
+        "external_reads": 0,
+        "new_context_chars": 1530,
+        "repeated_context_chars": 0,
+        "rehydrated_context_chars": 0,
+        "pages": 11,
+        "expansions": 0,
+        "compactions": 0,
+        "errors": 0,
+        "retries": 0,
+        "wire_bytes": 64962,
+        "injected_bytes": 11229,
+        "wire_measurement_scope": "compact MCP result serialization; excludes JSON-RPC framing and transport whitespace",
+        "injected_chars": 11229,
+        "insertion_boundary_complete": true,
+        "wire_duplicate_objects": 11,
+        "unidentified_context_chars": 0,
+        "context_identity_complete": true,
+        "source_ledger_entries": 2,
+        "source_ledger_omitted": 0,
+        "ledger_entries": 200,
+        "ledger_omitted_entries": 0,
+        "boundary_events": 24,
+        "boundary_events_omitted": 0,
+        "boundary_accounting_complete": true,
+        "binding_mode": null,
+        "collection_mode": "pcg-lean-collection-2",
+        "measurement_scope": "source windows and partial line overlaps at explicit client insertion; characters are not model usage"
+      },
+      "provider_insertion": "unknown",
+      "model_runs": 0
+    },
+    "workflow_surfaces": {
+      "local": {
+        "tools": 0,
+        "schema_chars": 2,
+        "instructions_chars": 0
+      },
+      "full": {
+        "tools": 16,
+        "schema_chars": 16310,
+        "instructions_chars": 336
+      },
+      "agent": {
+        "tools": 5,
+        "schema_chars": 9661,
+        "instructions_chars": 336
+      },
+      "rename": {
+        "tools": 1,
+        "schema_chars": 1763,
+        "instructions_chars": 336
+      },
+      "change_signature": {
+        "tools": 1,
+        "schema_chars": 2231,
+        "instructions_chars": 336
+      },
+      "review_change": {
+        "tools": 1,
+        "schema_chars": 2220,
+        "instructions_chars": 336
+      }
+    },
+    "signature_review": {
+      "same_symbol_id": true,
+      "contract_classification_retained": true,
+      "source_change_visible": true,
+      "classification": "contract_or_initializer"
+    },
+    "agent_surface": {
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ],
+      "advanced_intent_invoked": true,
+      "metadata_accepted": true,
+      "error_recovery": true,
+      "schema_sha256": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "schema_unicode_characters": 10426,
+      "initialization_instructions_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "native_reconnect": true,
+      "codex_tool_registration": "not_run"
+    }
+  },
+  "mixed_primitive_differential_and_workflows": {
+    "languages": {
+      "dart": 5,
+      "go": 4,
+      "java": 5,
+      "javascript": 3,
+      "kotlin": 3,
+      "objectivec": 5,
+      "python": 5,
+      "rust": 4,
+      "swift": 4,
+      "typescript": 4
+    },
+    "symbols": 200,
+    "edges": 438,
+    "verified": [
+      {
+        "extension": ".dart",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".kt",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".m",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".swift",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".go",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".java",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".ts",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".js",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".py",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".rs",
+        "intents": 10,
+        "fused_workflows": 10
+      }
+    ]
+  },
+  "flutter": {
+    "languages": {
+      "dart": 2
+    },
+    "symbols": 24,
+    "edges": 75,
+    "verified": [
+      {
+        "extension": ".dart",
+        "intents": 10,
+        "fused_workflows": 10
+      }
+    ]
+  },
+  "android": {
+    "sdk_fixture": "android_sdk",
+    "symbols": 5,
+    "edges": 6
+  },
+  "rename_gate": {
+    "measurement": "Unicode characters and UTF-8 bytes of one tool-result JSON representation, broker default spaces, no protocol/text duplication; not tokens",
+    "original_files": 385,
+    "model_runs": 0,
+    "baseline": {
+      "collection_calls": 13,
+      "characters": 36167,
+      "utf8_bytes": 36167
+    },
+    "intent": {
+      "pages": 2,
+      "expansion_calls": 1,
+      "collection_calls": 3,
+      "characters": 22394,
+      "utf8_bytes": 22394,
+      "evidence": 24,
+      "reference_edges_preserved": 19,
+      "oracle_line_patterns": 17,
+      "query_ms": [
+        2.2993349994067103,
+        0.6250840015127324
+      ],
+      "warm_scan_delta": 0,
+      "warm_extraction_delta": 0,
+      "warm_graph_build_delta": 0
+    },
+    "schema": {
+      "baseline_characters": 10277,
+      "intent_characters": 17620,
+      "added_characters": 7343,
+      "baseline_utf8_bytes": 10277,
+      "intent_utf8_bytes": 17620
+    },
+    "excluded_startup_calls": {
+      "status": 2,
+      "search_symbol": 2,
+      "index_repository": 1
+    },
+    "character_reduction_percent": 38.0816766665745,
+    "gate_passed": true
+  },
+  "frozen_page_replay": {
+    "model_runs": 0,
+    "provider_tokens": null,
+    "tokenizer": null,
+    "cases": [
+      {
+        "input_sha256": "3bdbbf9848a7f6743519b9c173b4e995413f250a41bbaf9ccdcb7cf5f0268813",
+        "pages": 21,
+        "raw_page_chars": 58043,
+        "collection_1_chars": 58124,
+        "fused_inline_chars": 20891,
+        "selected_chars": 20832,
+        "selected_format": "pcg-lean-collection-2",
+        "inventory_equal": true
+      },
+      {
+        "input_sha256": "01a012c23e798f35aa63d9a387d561a9aaf84ba407a81a1a8c94d6c210dcc855",
+        "pages": 11,
+        "raw_page_chars": 27368,
+        "collection_1_chars": 27439,
+        "fused_inline_chars": 10877,
+        "selected_chars": 10710,
+        "selected_format": "pcg-lean-collection-2",
+        "inventory_equal": true
+      }
+    ],
+    "surfaces": {
+      "local": {
+        "tools": 0,
+        "schema_chars": 2,
+        "schema_utf8_bytes": 2,
+        "schema_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "graph_instructions_chars": 0
+      },
+      "full": {
+        "tools": 16,
+        "schema_chars": 16310,
+        "schema_utf8_bytes": 16310,
+        "schema_sha256": "1e3f2b698790438c4d1ffe2dc8f8e4a3315658d721a051a02792b6c099ffe539",
+        "graph_instructions_chars": 336
+      },
+      "agent": {
+        "tools": 5,
+        "schema_chars": 9661,
+        "schema_utf8_bytes": 9661,
+        "schema_sha256": "30f284cfc62fe1095b5b9795cd3ce81d6f6228f8f323537614b70e763440d162",
+        "graph_instructions_chars": 336
+      },
+      "rename": {
+        "tools": 1,
+        "schema_chars": 1763,
+        "schema_utf8_bytes": 1763,
+        "schema_sha256": "aae6fb93f94102ea1461f13024bd91dbd706147cee93a31aefb7867388c0e486",
+        "graph_instructions_chars": 336
+      },
+      "change_signature": {
+        "tools": 1,
+        "schema_chars": 2231,
+        "schema_utf8_bytes": 2231,
+        "schema_sha256": "c359c1dbf14a007b380117f2b2dc9f983bc1aa806f1bc19a0f590d4d8d64f06a",
+        "graph_instructions_chars": 336
+      },
+      "review_change": {
+        "tools": 1,
+        "schema_chars": 2220,
+        "schema_utf8_bytes": 2220,
+        "schema_sha256": "58efea644d87a3382a54dcdea5a66a7ee1f189dee26fe3038e6a6e07af2de536",
+        "graph_instructions_chars": 336
+      }
+    },
+    "instruction_ablation": {
+      "original_chars": 6914,
+      "minimal_chars": 336
+    },
+    "measurement": "compact Unicode characters and UTF-8 bytes at local replay; no provider usage or prompt insertion claim"
+  },
+  "validation": {
+    "rust": {
+      "command": "cargo xtask check",
+      "status": "passed",
+      "tests": 88
+    },
+    "python": {
+      "command": "python -m unittest discover -s tool -p 'test_*.py'",
+      "status": "passed",
+      "tests": 67
+    },
+    "lint": {
+      "configured_E_F_I_B_UP": "passed",
+      "additional_SIM_C4_ISC_PIE_PLW_PLC0414_BLE": "passed",
+      "formatting": "passed",
+      "scope": "nineteen modified/new Python tools; not a repository-wide all-rule audit",
+      "remaining_findings": 0,
+      "initial_legacy_findings_resolved": 120
+    },
+    "package_build": "passed",
+    "relocated_package_smoke": "passed",
+    "uikit_sdk": "not_run_requires_macos",
+    "installed_workflow_preflight": "passed_adjacent_binary_and_seven_modules"
+  },
+  "measurement": "Local compact tool-result JSON characters/UTF-8 bytes, with separate scope per receipt; excludes model consumption.",
+  "log_sha256": {
+    "rust-final.log": "e2c59978da4bcfe0f6bbf282d165f460f952dc021b9d666516d6e8db2f31841a",
+    "python-final.log": "b3ae16d0cdd779dccb6e01fd228d58ee59826ffe4394882584a14baafabbe928",
+    "python-lint-final.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "python-style-scope.log": "b5c4c730bfdf86d54d63fb8eb416caba7ee09cf45dac6813fbc026576d691243",
+    "native-mixed-final.log": "eb78790d7e669aadb6d49fbc97340b994a4bad16eb85930d5dc194bea54880ed",
+    "native-post08-final.json": "d6a4443777f4b0cb30ebde9892b61889b67e789a384af4f492fd0333efa6a1e8",
+    "rename-final.json": "3b32fe9074e0525efd93a3487db908c5c6926ec9c6e90c41009cecf0579c86a3",
+    "flutter-final.log": "69ddba0f254d067e2798d588a78029962145fff3c9e2a02ba71f5032afea4ba0",
+    "android-final.log": "802773c7f952ef0b7c3fba1a7f37ac677f3b5020b6130499a0f955717895b488",
+    "package-build.log": "de0363ac97c547bbdcc7e84f569c0628d2e28c0736cae6044dca7212be13078c",
+    "package-smoke.log": "c8bf5d2c93ec97a1e0a0dec748690c1725577dbb01f4406af342e464dff92ed3",
+    "replay-final.json": "40d415f7f4e2b4c657761889e97e343bf951c17b9f69aaa8f9bb38f7ec9070f4",
+    "rust-continuation-final.log": "3b54256856bd0f0430ae8e4376bd9c03746e45590760af5f01bfa47d9798a4e1",
+    "python-continuation-final.log": "aceb0baaa4caa207c885276902f93d42b5e1404362d4ae34b88e6109cd5df1c4",
+    "python-lint-continuation-final.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "python-format-continuation-final.log": "a0a0f191878d553ae2b88299d5ead34d7a6367937ff1bd9e304fb73059c83f8a",
+    "native-mixed-continuation-final.log": "eb78790d7e669aadb6d49fbc97340b994a4bad16eb85930d5dc194bea54880ed",
+    "native-post08-continuation-final.json": "a3ed5e98386a242369adbd943f7a4ea5e2e64c7669c2b4528a9e915ba9c2c2b3",
+    "workflow-preflight.json": "09312c8b49d1f9d737f5e7d5f7f6f579ff7d88519ace40dbd4c1949de14086df",
+    "workflow-preflight.log": "0a54a0e9246489b8a38dd75e2fd4df43aa3d344d79828eed8706d46ab6a9728d",
+    "package-continuation-build.log": "e281231f5acfc47a85539ed71a789dd7f4a10a7226012de41696f20ae609d6aa",
+    "package-continuation-smoke.log": "93ea7e0fec567d187067d3c3f12fd708e43ec9d9bee4445489615f830a2a33bb"
+  },
+  "workflow_mcp_preflight": {
+    "model_runs": 0,
+    "provider_usage": null,
+    "provider_prompt_insertion": null,
+    "binary_sha256": "f38fda1689394904421ba3b1ae78b176660aa5abea63df17a2e7cc013ec5dd7d",
+    "bridge_sha256": "9f51df3af6d372c835576df3f43d9e311c1a059d61e7d11bf57d37002788c6f5",
+    "python_version": "3.14.7",
+    "client_modules_sha256": {
+      "efficiency_client.py": "5081a2d3b07c5f740a766d6bcf33f8f7862add400ea21dd3bb5d0521488c13fe",
+      "efficiency_collection.py": "d02797f03dda1f949146689a7256a5ac2bd34bc93354f4ca3c014c59dbe539f9",
+      "efficiency_ledger.py": "4a789e37cfc5d6a1dadb42258b33c761eeddb29599ff8ebcb6cddc76e73f61e9",
+      "efficiency_workflow.py": "c4c5a107910a5cd663dab0e1e663bd21d04c8173e5dadb04101f4412cd6df691",
+      "efficiency_binding.py": "2d631b41b57b4a24a989cc006b061084c6a89a64f25a8280a494065a31d3b5a0",
+      "efficiency_transport.py": "c93d3b80af7c0d062c5083b88a9e13caadda734a9aa52220cff72d898d0ad11e",
+      "efficiency_mcp.py": "9f51df3af6d372c835576df3f43d9e311c1a059d61e7d11bf57d37002788c6f5"
+    },
+    "local": {
+      "tools": 0,
+      "instructions": 0,
+      "native_binary_required": false
+    },
+    "full": {
+      "tools": 16,
+      "direct_result_preserved": true,
+      "original_guide": true,
+      "schema_chars": 16310,
+      "schema_bytes": 16310,
+      "schema_sha256": "1e3f2b698790438c4d1ffe2dc8f8e4a3315658d721a051a02792b6c099ffe539",
+      "guide_chars": 358,
+      "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+    },
+    "agent": {
+      "tools": 5,
+      "direct_result_preserved": true,
+      "original_guide": true,
+      "schema_chars": 9661,
+      "schema_bytes": 9661,
+      "schema_sha256": "30f284cfc62fe1095b5b9795cd3ce81d6f6228f8f323537614b70e763440d162",
+      "guide_chars": 358,
+      "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+    },
+    "rename": {
+      "schema_chars": 2991,
+      "schema_bytes": 2991,
+      "schema_sha256": "9a35a2c7a35d6518ad39138dbf21c0cfb9a7bfd38a69822c4c6f947e65d75173",
+      "guide_chars": 336,
+      "guide_sha256": "d9bf1d0d8fc485e54ec079464ef8ff37253c8490277a4054e63e873faa717a45",
+      "advertised_tools": 2,
+      "raw_pages": 21,
+      "selected_format": "pcg-lean-collection-2",
+      "one_text": true,
+      "inventory_equal": true,
+      "source_equal": true,
+      "selected_source_windows": 2,
+      "foreign_options_rejected": true
+    },
+    "telemetry": {
+      "private_hashed_receipt": true,
+      "mcp_calls": 22,
+      "prompt_insertion_claimed": false,
+      "rejected_workflow_error_counted": true
+    },
+    "move_symbol": {
+      "schema_chars": 1882,
+      "schema_bytes": 1882,
+      "schema_sha256": "005da51248372c7edf313525ea3a54161f03fb5dfd98e6ce46347875b2b8b26a",
+      "guide_chars": 336,
+      "guide_sha256": "d9bf1d0d8fc485e54ec079464ef8ff37253c8490277a4054e63e873faa717a45",
+      "canonical_tool": true,
+      "typed_workflow": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    },
+    "trace_flow": {
+      "schema_chars": 1907,
+      "schema_bytes": 1907,
+      "schema_sha256": "404614f7ef7ab34c5b0ae0a42490c6ca5e21ab253459305a33583886f696099e",
+      "guide_chars": 336,
+      "guide_sha256": "d9bf1d0d8fc485e54ec079464ef8ff37253c8490277a4054e63e873faa717a45",
+      "canonical_tool": true,
+      "typed_workflow": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    },
+    "continuation": {
+      "limit_visible": true,
+      "canonical_cursor_recovery": true,
+      "page_offset": 20,
+      "inventory_equal": true
+    },
+    "review_change": {
+      "baseline_reused_same_session": true,
+      "source_edit_observed": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    }
+  }
+}

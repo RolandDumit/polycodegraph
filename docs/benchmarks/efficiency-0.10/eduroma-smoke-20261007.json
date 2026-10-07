@@ -1,0 +1,292 @@
+{
+  "revision": "efficiency-0.10-eduroma-wiring-smoke-v1",
+  "date": "2026-10-07",
+  "scope": "read-only production Dart authentication relationships, one known task, one paid solver turn per condition",
+  "status": "partial_smoke_comparison_invalid",
+  "decision": "HOLD_REAL_MODEL_ACCEPTANCE",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "client_version": "Codex CLI 0.159.2 app-server",
+  "execution_order": [
+    "A",
+    "B",
+    "D",
+    "C"
+  ],
+  "authorization": {
+    "max_paid_solver_turns": 4,
+    "max_uncached_input_tokens": 100000,
+    "control": "after_attempt_with_final_run_overshoot_accepted",
+    "preparation_ai_turns": 0,
+    "judge_ai_turns": 0,
+    "external_retries": 0
+  },
+  "source": {
+    "dart_files": 385,
+    "snapshot_files": 408,
+    "original_source_and_config_files_hash_checked_unchanged": 401,
+    "snapshot_identity": "23084e85f8ec735f1e58d63c36aff83fb4ccaf98b3eb01a086efd29b46782e38"
+  },
+  "product": {
+    "candidate_source_identity_before_smoke": "7df5d8e68b18ca65077f5d4b4af1e67aad37ef450ccb1d90dadeab418f03b7d2",
+    "candidate_binary_sha256": "f38fda1689394904421ba3b1ae78b176660aa5abea63df17a2e7cc013ec5dd7d",
+    "baseline_0_9_commit": "f1e0484cb1ac66f0fe623fc6e8c4531a886b0a07",
+    "baseline_binary_sha256": "9c8a3c483ba1dfe2cd8e351ba78470db264989d11363a76baf176f9a3f907b00",
+    "product_source_changed_by_smoke": false
+  },
+  "accounting": {
+    "paid_solver_turns": 4,
+    "model_usage_events": 36,
+    "totals": {
+      "input_tokens": 579515,
+      "uncached_input_tokens": 92475,
+      "cached_input_tokens": 487040,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 4378,
+      "reasoning_output_tokens": 1530,
+      "total_tokens": 583893
+    },
+    "within_aggregate_uncached_budget": true,
+    "monetary_cost": null,
+    "reused_A_observations_deduplicated": true,
+    "preparation_wall_time": null
+  },
+  "native_preflight": {
+    "registered_graph_tools": {
+      "A": 0,
+      "B": 16,
+      "C": 5,
+      "D": 1
+    },
+    "B_format": "native_audit",
+    "C_format": "pcg-lean-collection-1",
+    "D_format": "pcg-lean-collection-2",
+    "AI_turns": 0
+  },
+  "candidate_after_file_budget_correction": {
+    "rpc_verified": true,
+    "format": "pcg-lean-collection-1",
+    "model_turns": 0,
+    "provider_prompt_insertion": null,
+    "collection_completion": {
+      "complete": false,
+      "limit": null,
+      "max_pages": 16,
+      "max_chars": 64000,
+      "max_seconds": 240.0,
+      "max_wire_bytes": 8388608
+    }
+  },
+  "conditions": [
+    {
+      "condition": "A",
+      "paid_solver_turns": 1,
+      "accepted_smoke": false,
+      "static_source_answer_verified": false,
+      "reason": "model_tool_routing_disabled",
+      "journal_status": "completed",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "usage": {
+        "input_tokens": 33426,
+        "uncached_input_tokens": 11666,
+        "cached_input_tokens": 21760,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 805,
+        "reasoning_output_tokens": 482,
+        "total_tokens": 34231
+      },
+      "model_usage_events": 3,
+      "registered_graph_tools": 0,
+      "model_graph_tool_calls": 0,
+      "native_graph_tool_calls": 0,
+      "ordinary_tool_calls": 0,
+      "native_intent_requests": 0,
+      "bound_tool_errors": 0,
+      "model_routing_errors": 2,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 36.17,
+      "isolation_verified": true,
+      "graph_surface_identity": null,
+      "treatment_identity": "a6497521482c3cb55c90d58cb2c983a50acb9d89832c4a879e21bf1da418fd13",
+      "manifest_identity": "05b791ec0abf2a15227b5c04235f541e02ced119dc6b37ef997691fac4acb9d0",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [],
+      "owned_file_limit_bytes": 8388608,
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    },
+    {
+      "condition": "B",
+      "paid_solver_turns": 1,
+      "accepted_smoke": false,
+      "static_source_answer_verified": false,
+      "reason": "model_tool_routing_disabled_and_25000_uncached_attempt_cap",
+      "journal_status": "budget_exhausted",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "usage": {
+        "input_tokens": 39743,
+        "uncached_input_tokens": 26815,
+        "cached_input_tokens": 12928,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 605,
+        "reasoning_output_tokens": 280,
+        "total_tokens": 40348
+      },
+      "model_usage_events": 3,
+      "registered_graph_tools": 16,
+      "model_graph_tool_calls": 0,
+      "native_graph_tool_calls": 0,
+      "ordinary_tool_calls": 0,
+      "native_intent_requests": 0,
+      "bound_tool_errors": 0,
+      "model_routing_errors": 2,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 27.857,
+      "isolation_verified": true,
+      "graph_surface_identity": "6ead83e90c771098e72eb234c14099b5525a30672fb9ba017c1a304a27b98e22",
+      "treatment_identity": "ea1ea136cd7133a899a80ba2111c73d4f0422e1d4bb2864b933876aeb15efc66",
+      "manifest_identity": "05b791ec0abf2a15227b5c04235f541e02ced119dc6b37ef997691fac4acb9d0",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [],
+      "owned_file_limit_bytes": 8388608,
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    },
+    {
+      "condition": "C",
+      "paid_solver_turns": 1,
+      "accepted_smoke": true,
+      "static_source_answer_verified": true,
+      "reason": "static_source_task_and_tool_invocation_accepted_provider_inventory_incomplete",
+      "journal_status": "completed",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "usage": {
+        "input_tokens": 172483,
+        "uncached_input_tokens": 27843,
+        "cached_input_tokens": 144640,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 882,
+        "reasoning_output_tokens": 60,
+        "total_tokens": 173365
+      },
+      "model_usage_events": 8,
+      "registered_graph_tools": 5,
+      "model_graph_tool_calls": 2,
+      "native_graph_tool_calls": 2,
+      "ordinary_tool_calls": 10,
+      "native_intent_requests": 1,
+      "bound_tool_errors": 1,
+      "model_routing_errors": 0,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 60.559,
+      "isolation_verified": true,
+      "graph_surface_identity": "8f772353d10058bb607befe1825645ad05b9c608b029967ef8078c8b16a0edd0",
+      "treatment_identity": "e3068ff3545c2f96e76fbdc44158afe59b5615d657e4723d9e9a686d88f85b1b",
+      "manifest_identity": "ee413381c1e8093e01bb3ea79bf3ac241de6bdb74129851608c27e2c0d2e4a31",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [
+        {
+          "format": "pcg-lean-collection-1",
+          "returned_native_pages": 1,
+          "collection_complete": false,
+          "collector_limit": null,
+          "provider_incomplete": true,
+          "remaining_known": [
+            0
+          ]
+        }
+      ],
+      "owned_file_limit_bytes": 536870912,
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    },
+    {
+      "condition": "D",
+      "paid_solver_turns": 1,
+      "accepted_smoke": false,
+      "static_source_answer_verified": true,
+      "reason": "inherited_8MiB_cache_file_limit_collector_timeout_and_300000_total_input_attempt_cap",
+      "journal_status": "budget_exhausted",
+      "model_settings": [
+        "codex",
+        "gpt-6.1-sol",
+        "high"
+      ],
+      "usage": {
+        "input_tokens": 333863,
+        "uncached_input_tokens": 26151,
+        "cached_input_tokens": 307712,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 2086,
+        "reasoning_output_tokens": 708,
+        "total_tokens": 335949
+      },
+      "model_usage_events": 22,
+      "registered_graph_tools": 1,
+      "model_graph_tool_calls": 1,
+      "native_graph_tool_calls": 1,
+      "ordinary_tool_calls": 11,
+      "native_intent_requests": 1,
+      "bound_tool_errors": 2,
+      "model_routing_errors": 0,
+      "external_retries": 0,
+      "provider_transport_retries": null,
+      "compactions": 0,
+      "executor_wall_seconds": 271.181,
+      "isolation_verified": true,
+      "graph_surface_identity": "6dd6706cc34d353be46687795f33d9aa21c21f2202f960df3a34cf35fddbd597",
+      "treatment_identity": "bb974b786db7b5fccb993199526b9dadb2a9ba898eb6dc467fe902f561a38d6c",
+      "manifest_identity": "3fc698034cc6da7aa8d05fea4690c5bf1496281b939c9812b5133b0a14424879",
+      "oracle_sha256": "cc5f11f91c133d4b7080a11478cae4c2224922b9086ba7b0f0524f986f51c640",
+      "collection_results": [
+        {
+          "format": "pcg-lean-collection-1",
+          "returned_native_pages": 0,
+          "collection_complete": false,
+          "collector_limit": "collector_time_budget",
+          "provider_incomplete": false,
+          "remaining_known": []
+        }
+      ],
+      "owned_file_limit_bytes": 8388608,
+      "exact_provider_context_identity_complete": false,
+      "per_request_model_insertion": null
+    }
+  ],
+  "verification": {
+    "cargo_xtask_check": "passed",
+    "rust_tests_passed": 88,
+    "application_execution": false,
+    "application_builds_or_tests": false,
+    "temporary_credentials_remaining": 0,
+    "frozen_artifacts_verified": true
+  },
+  "limits": [
+    "A/B tool routing failed before any source/graph tool invocation. These are not a strong no-graph or full-graph baseline.",
+    "D used the corrected tool routing but inherited an 8 MiB file limit; its SQLite WAL reached that cap and the collector timed out.",
+    "C used corrected routing and a private 512 MiB per-file executor limit while executor response reading remained capped at 8 MiB. The product default launcher still has the original 8 MiB file limit.",
+    "C returned one native page with provider_incomplete=true, remaining_known=0, and collection.complete=false. Source relationships were independently verified; full semantic coverage is not claimed.",
+    "Two journal continuations reuse the first A observation without another model turn. The accounting here selects the four unique paid turns and counts A once.",
+    "The native tool calls are observed from private transparent wire captures, including internal collector RPCs. No per-request provider prompt insertion or schema deduplication is inferred.",
+    "Different client/resource revisions plus one task/replica make comparative ratios, token-saving claims, noninferiority and economic decisions invalid.",
+    "No compiler, tests or runtime verification of the indexed application were performed."
+  ]
+}

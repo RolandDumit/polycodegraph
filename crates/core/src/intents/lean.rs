@@ -183,7 +183,7 @@ pub fn project(
         }
     }
     let mut result = json!({"format":"pcg-lean-1","intent":p.request.intent,"target":p.target,
-        "snapshot":{"root_id":hash(c.root.to_string_lossy().as_bytes()),"generation":g.snapshot.generation,"health_fingerprint":audit["health_fingerprint"]},
+        "snapshot":{"root_id":hash(c.root.to_string_lossy().as_bytes()),"generation":g.snapshot.generation,"health_fingerprint":audit["health_fingerprint"],"environment_fingerprint":g.snapshot.environment},
         "freshness":audit["freshness"],"completion":completion,
         "page":{"offset":offset,"records":evidence.len(),"required":evidence.iter().filter(|e|e.required(&p.request)).count(),"continuation":if remaining>0 {"required_inventory"} else if end<p.evidence.len() {"optional_context"} else {"none"}},
         "records":records,"source_role":"untrusted_code","sources":sources,"source_windows_incomplete":audit["source_windows_incomplete"],

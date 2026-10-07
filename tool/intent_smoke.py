@@ -1,8 +1,13 @@
 """Real stdio intent checks on prepared native semantic fixtures; never installs providers."""
 
-import argparse, json, shutil, tempfile, sqlite3
+import argparse
+import json
+import shutil
+import sqlite3
+import tempfile
 from contextlib import closing
 from pathlib import Path
+
 from smoke import Client, clean
 
 INTENTS = [
@@ -25,14 +30,8 @@ def collect(client, args):
         v = client.call("inspect_change", **args)
         pages.append(v)
         assert not v.get("restart_required"), v
-        assert (
-            len(json.dumps(v, separators=(",", ":"), ensure_ascii=False))
-            <= v["budget"]["max_chars"]
-        )
-        assert (
-            v["generation"] == pages[0]["generation"]
-            and v["health_fingerprint"] == pages[0]["health_fingerprint"]
-        )
+        assert len(json.dumps(v, separators=(",", ":"), ensure_ascii=False)) <= v["budget"]["max_chars"]
+        assert v["generation"] == pages[0]["generation"] and v["health_fingerprint"] == pages[0]["health_fingerprint"]
         if not v["next_cursor"]:
             return pages
         args = dict(args, cursor=v["next_cursor"])
@@ -54,16 +53,13 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
         old = Client(baseline.resolve(), root, extra_args=("--config", str(old_path)))
     try:
         arch = client.call("get_architecture", detail="full")
-        assert arch["files"] > 0 and not [
+        assert arch["files"] > 0 and not [d for d in arch["diagnostic_samples"] if d["severity"] == "error"], [
             d for d in arch["diagnostic_samples"] if d["severity"] == "error"
-        ], [d for d in arch["diagnostic_samples"] if d["severity"] == "error"]
+        ]
         rows = client.call("search_symbol", query="", limit=200, detail="full")["rows"]
         targets = {}
         with closing(sqlite3.connect(root / ".polycodegraph/index.sqlite")) as database:
-            records = {
-                f: json.loads(r)
-                for f, r in database.execute("SELECT path,record FROM files")
-            }
+            records = {f: json.loads(r) for f, r in database.execute("SELECT path,record FROM files")}
         for row in rows:
             suffix = Path(row[3]).suffix
             if suffix in [".h", ".mm"]:
@@ -76,22 +72,25 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                 targets[suffix] = row
         if old:
             old_arch = old.call("get_architecture", detail="full")
-            assert not [
+            assert not [d for d in old_arch["diagnostic_samples"] if d["severity"] == "error"], [
                 d for d in old_arch["diagnostic_samples"] if d["severity"] == "error"
-            ], [d for d in old_arch["diagnostic_samples"] if d["severity"] == "error"]
+            ]
         checked = []
         for suffix, row in targets.items():
             target, file = row[0], row[3]
-            reference = client.call(
-                "references", target=target, limit=200, detail="full"
-            )
-            rename = collect(client, dict(target=target, intent="rename"))
+            reference = client.call("references", target=target, limit=200, detail="full")
+            rename = collect(client, {"target": target, "intent": "rename"})
             assert sum(len(p["evidence"]["rows"]) for p in rename) >= reference["total"]
             # The optional projection must preserve every distinct semantic site
             # across real adapters, including same-line offsets and confidence.
-            from post08_smoke import inventory, pages as lean_pages
-            audit = collect(client, dict(target=target, intent="rename", view="locations"))
-            lean = lean_pages(client, dict(target=target, intent="rename", view="locations", format="lean"))
+            from efficiency_collection import fuse_pages, normalized_inventory
+            from efficiency_workflow import workflow_arguments, workflow_surface
+            from post08_smoke import inventory
+            from post08_smoke import pages as lean_pages
+
+            catalog = client.request("tools/list", {})["tools"]
+            audit = collect(client, {"target": target, "intent": "rename", "view": "locations"})
+            lean = lean_pages(client, {"target": target, "intent": "rename", "view": "locations", "format": "lean"})
             assert inventory(audit) == inventory(lean, True), (suffix, "lean rename sites")
             assert all(not p["sources"] for p in lean), (suffix, "locations source")
             assert lean[-1]["completion"]["required_inventory"]["remaining_known"] == 0
@@ -105,17 +104,13 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                         r
                         for f, r in records.items()
                         if "extraction." in f.lower()
-                        and (
-                            ".m" if Path(f).suffix in [".h", ".mm"] else Path(f).suffix
-                        )
-                        == suffix
+                        and (".m" if Path(f).suffix in [".h", ".mm"] else Path(f).suffix) == suffix
                     ]
                     if not candidates:
                         candidates = [
                             r
                             for f, r in records.items()
-                            if Path(f).suffix == suffix
-                            and r.get("intent", {}).get("ast", {}).get("statements")
+                            if Path(f).suffix == suffix and r.get("intent", {}).get("ast", {}).get("statements")
                         ]
                     if not candidates:
                         raise AssertionError(("missing provider AST metadata", suffix))
@@ -123,15 +118,9 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                     ast = record.get("intent", {}).get("ast", {})
                     statements = ast.get("statements", [])
                     if not statements:
-                        raise AssertionError(
-                            ("missing AST statements", suffix, record["file"])
-                        )
+                        raise AssertionError(("missing AST statements", suffix, record["file"]))
                     statement = next(
-                        (
-                            v
-                            for v in statements
-                            if any(u["line"] == v["line"] for u in ast.get("uses", []))
-                        ),
+                        (v for v in statements if any(u["line"] == v["line"] for u in ast.get("uses", []))),
                         statements[0],
                     )
                     t = record["file"]
@@ -143,13 +132,31 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                 if intent == "review_change":
                     t = file
                     options = {"capture_baseline": True}
-                pages = collect(client, dict(target=t, intent=intent, options=options))
+                pages = collect(client, {"target": t, "intent": intent, "options": options})
+                workflow = workflow_surface(catalog, intent)
+                workflow_args = workflow_arguments(
+                    workflow,
+                    {
+                        "target": t,
+                        "intent": intent,
+                        "options": options,
+                        "format": "lean",
+                        "view": "locations",
+                        "budget": {"max_chars": 100000},
+                    },
+                )
+                workflow_pages = lean_pages(client, workflow_args)
+                fused = fuse_pages(workflow_pages)
+                assert normalized_inventory(workflow_pages) == normalized_inventory(fused), (
+                    suffix,
+                    intent,
+                    "fused inventory",
+                )
+                assert all("environment_fingerprint" in p["snapshot"] for p in workflow_pages)
                 if intent == "extract_symbol":
                     assert (
                         pages[0]["outcome"] == "partial"
-                        and pages[0]["facts"]["ast_region"][
-                            "exact_statement_boundaries"
-                        ]
+                        and pages[0]["facts"]["ast_region"]["exact_statement_boundaries"]
                     )
                     assert pages[0]["facts"]["suggested_signature"] is None
                     assert ast.get("bindings"), (
@@ -162,56 +169,46 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                         suffix,
                     )
                     if candidates and "extraction." in record["file"].lower():
-                        writes = [
-                            u
-                            for u in ast.get("uses", [])
-                            if u.get("write") and u.get("binding")
-                        ]
+                        writes = [u for u in ast.get("uses", []) if u.get("write") and u.get("binding")]
                         assert writes, ("missing mutation site", suffix)
-                        mutation = next(
-                            s for s in statements if s["line"] == writes[0]["line"]
-                        )
+                        mutation = next(s for s in statements if s["line"] == writes[0]["line"])
                         mutation_pages = collect(
                             client,
-                            dict(
-                                target=t,
-                                intent=intent,
-                                options={
+                            {
+                                "target": t,
+                                "intent": intent,
+                                "options": {
                                     "file": t,
                                     "start_line": mutation["line"],
                                     "end_line": mutation["end"],
                                 },
-                            ),
+                            },
                         )
-                        assert (
-                            mutation_pages[0]["facts"]["external_mutations"]["total"]
-                            > 0
-                        ), ("missing external mutation", suffix)
-                        returns = [
-                            s for s in ast.get("controls", []) if "return" in s["kind"]
-                        ]
+                        assert mutation_pages[0]["facts"]["external_mutations"]["total"] > 0, (
+                            "missing external mutation",
+                            suffix,
+                        )
+                        returns = [s for s in ast.get("controls", []) if "return" in s["kind"]]
                         assert returns, ("missing return boundary", suffix)
-                        exit_statement = next(
-                            s for s in statements if s["line"] == returns[0]["line"]
-                        )
+                        exit_statement = next(s for s in statements if s["line"] == returns[0]["line"])
                         exit_pages = collect(
                             client,
-                            dict(
-                                target=t,
-                                intent=intent,
-                                options={
+                            {
+                                "target": t,
+                                "intent": intent,
+                                "options": {
                                     "file": t,
                                     "start_line": exit_statement["line"],
                                     "end_line": exit_statement["end"],
                                 },
-                            ),
+                            },
                         )
                         assert exit_pages[0]["facts"]["control_exits"]["total"] > 0
                 if intent == "review_change":
                     handle = pages[0]["facts"]["baseline"]["handle"]
                     review = collect(
                         client,
-                        dict(target=file, intent=intent, options={"baseline": handle}),
+                        {"target": file, "intent": intent, "options": {"baseline": handle}},
                     )
                     assert review[0]["facts"]["comparison_verified"]
                     assert not review[0]["evidence"]["total"]
@@ -219,18 +216,11 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                     for group in page["files"]:
                         if not group["snippets"]:
                             continue
-                        text = (
-                            (root / group["file"])
-                            .read_bytes()
-                            .decode("utf-8")
-                            .split("\n")
-                        )
+                        text = (root / group["file"]).read_bytes().decode("utf-8").split("\n")
                         for snippet in group["snippets"]:
                             if not snippet["truncated"]:
                                 assert snippet["text"] == "\n".join(
-                                    text[
-                                        snippet["start_line"] - 1 : snippet["end_line"]
-                                    ]
+                                    text[snippet["start_line"] - 1 : snippet["end_line"]]
                                 )
             if old:
                 for tool in [
@@ -243,13 +233,11 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
                     "blast_radius",
                     "inspect_change",
                 ]:
-                    args = dict(target=target, detail="full")
+                    args = {"target": target, "detail": "full"}
                     if tool != "inspect_change":
                         args["limit"] = 200
-                    assert clean(client.call(tool, **args)) == clean(
-                        old.call(tool, **args)
-                    ), (suffix, tool)
-            checked.append({"extension": suffix, "intents": len(INTENTS)})
+                    assert clean(client.call(tool, **args)) == clean(old.call(tool, **args)), (suffix, tool)
+            checked.append({"extension": suffix, "intents": len(INTENTS), "fused_workflows": len(INTENTS)})
         bad = client.request(
             "tools/call",
             {
@@ -262,12 +250,12 @@ def validate(binary, root, config, baseline=None, baseline_config=None):
             },
         )
         assert bad["isError"]
-        return dict(
-            languages=arch["languages"],
-            symbols=arch["symbols"],
-            edges=arch["edges"],
-            verified=checked,
-        )
+        return {
+            "languages": arch["languages"],
+            "symbols": arch["symbols"],
+            "edges": arch["edges"],
+            "verified": checked,
+        }
     finally:
         client.close()
         if old:
@@ -314,10 +302,7 @@ if __name__ == "__main__":
                 ignore=shutil.ignore_patterns(".polycodegraph", "build", "target"),
             )
         result = validate(a.binary, root, cfg, a.baseline, oldcfg)
-        assert (
-            len(result["verified"])
-            == {"mixed": 10, "polyglot": 6, "mobile": 3, "dart": 1, "flutter": 1}[
-                a.group
-            ]
-        ), result
+        assert len(result["verified"]) == {"mixed": 10, "polyglot": 6, "mobile": 3, "dart": 1, "flutter": 1}[a.group], (
+            result
+        )
         print(json.dumps(result), flush=True)

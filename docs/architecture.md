@@ -35,3 +35,12 @@ Opaque bounded cursor/baseline handles have independent TTLs and snapshot identi
 See [the intent contract](intents.md) for budgets and precision.
 
 Relation-specific adjacency buckets are built once per graph. Optional lexical discovery uses bounded source line documents and existing declaration intervals; it creates no semantic edges. Intent planning/rendering, provider invocations and categorized hashing have separate counters. See [0.8 design](efficiency-0.8-design.md) for additive views, source capture and client acknowledgement.
+
+The opt-in [0.10 client integration](migration-0.10.md) separates static workflow
+schema projection, bounded insertion accounting, lossless collection fusion and
+deadline-aware binding. Its optional packaged stdio relay applies that surface
+and collector for ordinary MCP clients, using a separate cancellation-safe native
+session and explicit cursor recovery. It consumes canonical MCP pages without changing the
+semantic planner or storage. Native lean identity additionally exposes the
+provider environment fingerprint. The server does not install a client adapter
+or infer model prompt insertion/token usage.

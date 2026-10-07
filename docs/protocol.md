@@ -49,6 +49,18 @@ documented in [activation/rollback](migration-0.9.md). Error/restart envelopes r
 their existing contract. Omitted `format` and explicit `audit` retain audit
 rendering and retention options.
 
+Version 0.10 development adds `snapshot.environment_fingerprint` to native lean
+results. The opt-in `pcg-lean-collection-2` envelope and static workflow schemas
+are client projections; server tools, accepted arguments, wire text/structured
+representations and ordinary defaults remain compatible. See
+[client activation and rollback](migration-0.10.md). A client may select the old
+collection envelope when shorter; the returned format is authoritative.
+The optional packaged workflow MCP relay advertises the selected canonical
+surface at initialization and emits collected results as one text block. Its
+explicit cursor recovery returns one native lean page in the same session.
+Ordinary native full/agent serving keeps its existing response representation.
+Relay receipts observe prepared protocol output, not provider prompt insertion.
+
 Standard `params._meta` is accepted independently of tool arguments, including optional
 string/number progressToken and vendor metadata. The server may omit progress
 notifications; this does not require a client envelope adapter. tools/list returns one

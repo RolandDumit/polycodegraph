@@ -5,6 +5,21 @@ Later evidence: [0.9 release validation](../releases/v0.9.0.md),
 [comparison preparation without AI execution](comparison-20261006-01/report.md).
 These dated experiments retain their identities and unmeasured economic gates.
 
+[0.10 first-tranche implementation](efficiency-0.10/report.md) records T0–T2
+client integration, lossless native replay, artifact identities and the separate
+preregistered continuation. It is the frozen pre-AI snapshot.
+[EduRoma real-client smoke, 2026-10-07](efficiency-0.10/eduroma-smoke-20261007.md)
+records four separately authorized AI turns, their complete usage and observed
+client/resource failures. The comparison remains invalid; no token-saving claim
+is made.
+[Smoke runner repairs and fresh-run preparation](efficiency-0.10/eduroma-smoke-rerun-20261007.md)
+record the corrected common client/resource limits and zero-AI checks. Repeated
+AI smokes require a separate explicit budget; old failed runs remain recorded.
+[Four fresh smokes after the repairs](efficiency-0.10/eduroma-smoke-rerun-results-20261007.md)
+record the separately authorized rerun: A/B/D accepted, C exceeded its attempt
+guard despite a verified source answer, and the final aggregate overshoot is
+recorded. General token-saving acceptance remains pending.
+
 Run release builds with the pinned toolchain and the immutable `v0.4.0` oracle (`python tool/baseline.py`). No debug/release comparisons, provider substitutions or token-savings estimates are used.
 
 ## Workloads

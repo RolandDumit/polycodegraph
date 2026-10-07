@@ -1,0 +1,47 @@
+{
+  "protocol_revision": "comparison-v2",
+  "status": "deterministic_implementation_complete_ai_not_authorized",
+  "primary_metric": "total_tokens_per_accepted_task",
+  "supporting_metric": "uncached_input_per_accepted_task",
+  "approved_ai_runs": 0,
+  "approved_preparation_ai_runs": 0,
+  "approved_judge_ai_runs": 0,
+  "executed_ai_runs": 0,
+  "source_manifest_sha256": "f220ec8f10009cf61677e46db14a787e5c326d8c6d8e0235bbb9f8252f6dccc4",
+  "protocol_sha256": "13f419bd6298cfc9103ced7dec60a740d5c9dd3a2334316b7b63fe50a9eb4c25",
+  "gates": {
+    "G0": "native_and_installed_workflow_entrypoint_verified_actual_model_treatment_and_campaign_freeze_pending",
+    "G1": "passed_tested_fixture_scope",
+    "G2_product": "not_measured",
+    "G2_mechanism": "not_measured",
+    "G3": "not_measured",
+    "G4": "bounds_and_deadlines_passed_rss_p95_and_real_local_tasks_not_measured",
+    "G5": "not_run"
+  },
+  "pending_before_ai": [
+    "explicit_phase_run_and_economic_budget",
+    "private_task_prompts_snapshots_and_independent_oracles",
+    "actual_model_version_effort_and_executor_identity",
+    "version_matched_condition_assets",
+    "actual_registered_schemas_initialization_and_consumer_guidance",
+    "balanced_frozen_schedule_and_stop_rules"
+  ],
+  "prior_executor_isolation_preflight": "verified_for_its_historical_identity_not_invalidated",
+  "unmeasured": {
+    "provider_prompt_insertion": null,
+    "provider_usage": null,
+    "tokenizer": null,
+    "corrective_rereads": null,
+    "latency_p95": null,
+    "heap_rss": null,
+    "monetary_cost": null,
+    "heldout_quality": null
+  },
+  "optional_not_verified": [
+    "macos_uikit_sdk",
+    "windows_package",
+    "macos_package"
+  ],
+  "native_workflow_model_calls": 0,
+  "native_workflow_provider_prompt_insertion": null
+}
