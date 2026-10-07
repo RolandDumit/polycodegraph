@@ -91,7 +91,7 @@ def build_tasks() -> list[SourceTask]:
         result.append(
             task(
                 f"local-{i}",
-                "local_edit",
+                "local",
                 "local",
                 None,
                 f"In src/messages.ts cambia soltanto il valore della costante message da {literal!r} a {replacement!r}; la chiave protocolKey deve restare invariata.",

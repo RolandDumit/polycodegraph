@@ -52,6 +52,11 @@ def condition_map(manifest):
     return result
 
 
+def task_condition(condition, task_id):
+    """Use the preregistered offered surface for this task, including local zero."""
+    return {**condition, **condition.get("task_surfaces", {}).get(task_id, {})}
+
+
 def schedule(task_ids, condition_ids, replicas=2, seed=20261006):
     """Freeze balanced sequences; no assumption about the letters in actual IDs."""
     if not 1 <= replicas <= 16 or not 1 <= len(task_ids) <= 128:
@@ -177,6 +182,30 @@ def validate(manifest, repository, launch=False):
         raise ValueError("reference must exclude graph artifacts/schemas/instructions")
     seen = set()
     for name, condition in conditions.items():
+        if "task_surfaces" in condition:
+            surfaces = condition["task_surfaces"]
+            if not isinstance(surfaces, dict) or set(surfaces) != set(tasks):
+                raise ValueError("task surfaces must cover exactly the frozen tasks")
+            for surface in surfaces.values():
+                if (
+                    not isinstance(surface, dict)
+                    or set(surface)
+                    != {"graph_enabled", "schema_sha256", "harness_sha256"}
+                    or type(surface["graph_enabled"]) is not bool
+                ):
+                    raise ValueError("invalid task surface")
+                if surface["graph_enabled"]:
+                    if not condition["graph_enabled"] or not all(
+                        isinstance(surface[k], str) and surface[k]
+                        for k in ("schema_sha256", "harness_sha256")
+                    ):
+                        raise ValueError("invalid enabled task surface")
+                elif any(
+                    surface[k] is not None for k in ("schema_sha256", "harness_sha256")
+                ):
+                    raise ValueError(
+                        "local task surface must exclude graph schema and guide"
+                    )
         fingerprint = condition.get("treatment_sha256")
         if not fingerprint:
             missing.append(f"{name}: frozen complete treatment identity")
@@ -296,7 +325,7 @@ def prepare_campaign(manifest, repository, work):
             "workspace": str(workspace.resolve()),
             "model": manifest["executor"]["model"],
             "effort": manifest["executor"]["effort"],
-            "graph": conditions[condition],
+            "graph": task_condition(conditions[condition], task_id),
             "limits": manifest["limits"],
         }
         # No manifest, source hashes, other cells, oracle or reference answer given to solver.
@@ -904,7 +933,7 @@ def evaluate_campaign(manifest, runs):
         graph_calls = client.get("graph_mcp_calls")
         if type(graph_calls) is not int or graph_calls < 0:
             measured.append("graph namespace unknown: " + record["cell_id"])
-        condition = conditions[key[2]]
+        condition = task_condition(conditions[key[2]], key[0])
         if not condition["graph_enabled"]:
             if (
                 graph_calls != 0
