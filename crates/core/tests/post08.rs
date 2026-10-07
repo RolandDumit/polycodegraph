@@ -5,7 +5,21 @@ use polycodegraph_core::{
     query::Graph,
 };
 use serde_json::{Value, json};
-use std::{collections::BTreeMap, fs};
+use std::{collections::BTreeMap, fs, path::Path};
+
+fn config(root: &Path) -> Config {
+    let mut c = Config::load(root, None).unwrap();
+    // These tests construct semantic snapshots directly; no real provider runs.
+    // Give health checks an isolated availability fixture instead of depending
+    // on an SDK/module installed on the host. Native smoke covers real engines.
+    let assets = root.join("test-provider-assets");
+    let module = assets.join("typescript/node_modules/typescript");
+    fs::create_dir_all(&module).unwrap();
+    fs::write(module.join("package.json"), "{}").unwrap();
+    c.providers_path = Some(assets.to_string_lossy().into());
+    c.node_path = std::env::current_exe().unwrap().to_string_lossy().into();
+    c
+}
 
 fn graph(text: &str, generation: &str) -> Graph {
     let file = "sample.ts";
@@ -66,7 +80,7 @@ fn graph(text: &str, generation: &str) -> Graph {
 
 fn review(before: &str, after: &str) -> Value {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     fs::write(d.path().join("sample.ts"), before).unwrap();
     let mut s = State::default();
     let baseline = s.prepare(&graph(before, "before"), &c,
@@ -142,7 +156,7 @@ fn multiple_insertions_and_deletions_preserve_unique_unchanged_sites() {
 #[test]
 fn strict_capture_rejects_typos_excluded_files_and_changed_scope() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let text = "function caller() {\n  target(1);\n}\n";
     fs::write(d.path().join("sample.ts"), text).unwrap();
     fs::write(d.path().join("excluded.ts"), text).unwrap();
@@ -166,7 +180,7 @@ fn strict_capture_rejects_typos_excluded_files_and_changed_scope() {
 #[test]
 fn strict_future_creation_is_explicit_and_legacy_remains_available() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let g = graph("", "before");
     let mut s = State::default();
     assert!(s.prepare(&g,&c,&json!({"intent":"review_change","target":"future.ts","format":"lean","options":{"capture_baseline":true}}),json!({})).is_err());
@@ -223,7 +237,7 @@ fn inventory(page: &Value, lean: bool) -> Vec<Value> {
 #[test]
 fn lean_preserves_sites_and_limits_and_is_self_contained() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let text =
         "function caller() {\r\n  target(1); target(2);\r\n}\r\nfunction target(x: number) {}\r\n";
     fs::write(d.path().join("sample.ts"), text).unwrap();
@@ -267,9 +281,39 @@ fn lean_preserves_sites_and_limits_and_is_self_contained() {
 }
 
 #[test]
+fn lean_unavailable_provider_does_not_certify_inventory() {
+    let d = tempfile::tempdir().unwrap();
+    let c = config(d.path());
+    let text = "function target(x: number) {}\n";
+    fs::write(d.path().join("sample.ts"), text).unwrap();
+    fs::remove_file(
+        c.assets()
+            .join("typescript/node_modules/typescript/package.json"),
+    )
+    .unwrap();
+    let lean = State::default()
+        .prepare(
+            &graph(text, "before"),
+            &c,
+            &json!({"target":"target","intent":"rename","format":"lean"}),
+            json!({}),
+        )
+        .unwrap();
+    assert_eq!(
+        lean["completion"]["required_inventory"]["state"],
+        "incomplete"
+    );
+    assert_eq!(
+        lean["completion"]["required_inventory"]["provider_incomplete"],
+        true
+    );
+    assert_eq!(lean["completion"]["next_required_action"], "report_limit");
+}
+
+#[test]
 fn optional_tests_and_compatibility_do_not_make_signature_inventory_incomplete() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let text = "function caller() {\n  target(1);\n}\nfunction target(x: number) {}\n";
     fs::write(d.path().join("sample.ts"), text).unwrap();
     let mut snapshot = (*graph(text, "before").snapshot).clone();
@@ -328,7 +372,7 @@ fn optional_tests_and_compatibility_do_not_make_signature_inventory_incomplete()
 #[test]
 fn review_semantic_destination_and_confidence_changes_are_never_erased() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let text = "function caller() {\n  target(1);\n}\n";
     fs::write(d.path().join("sample.ts"), text).unwrap();
     for confidence_change in [false, true] {
@@ -352,7 +396,7 @@ fn review_semantic_destination_and_confidence_changes_are_never_erased() {
 #[test]
 fn review_full_evidence_retains_before_and_after_positions() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let text = "begin\n  target(1); target(2);\nend\n";
     fs::write(d.path().join("sample.ts"), text).unwrap();
     let mut s = State::default();
@@ -404,7 +448,7 @@ fn same_id_signature_change_and_exhausted_diff_remain_visible() {
     assert_eq!(page["sections"]["source_changes"]["total"], 1);
     assert!(page["sections"]["file_context"]["total"].as_u64().unwrap() > 0);
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let text = "begin\n  target(1);\nend\n";
     fs::write(d.path().join("sample.ts"), text).unwrap();
     let mut s = State::default();
@@ -422,7 +466,7 @@ fn same_id_signature_change_and_exhausted_diff_remain_visible() {
 #[test]
 fn strict_capture_lists_ambiguous_candidates_without_guessing() {
     let d = tempfile::tempdir().unwrap();
-    let c = Config::load(d.path(), None).unwrap();
+    let c = config(d.path());
     let mut snapshot = Snapshot::default();
     for path in ["one/sample.ts", "two/sample.ts"] {
         fs::create_dir_all(d.path().join(path).parent().unwrap()).unwrap();
