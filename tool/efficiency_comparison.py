@@ -253,6 +253,37 @@ def normalize_attempt(observed):
     return requests([event for s in streams for event in s['usage_events']])
 
 
+def campaign_lock(path):
+    """Exclusive nonblocking journal lock on Unix and Windows."""
+    from contextlib import contextmanager
+    import os
+
+    @contextmanager
+    def held():
+        with path.open('a+b') as lock:
+            if os.name == 'nt':
+                import msvcrt
+                lock.seek(0)
+                if not lock.read(1):
+                    lock.write(b'0')
+                    lock.flush()
+                lock.seek(0)
+                msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+                try:
+                    yield
+                finally:
+                    lock.seek(0)
+                    msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                try:
+                    yield
+                finally:
+                    fcntl.flock(lock, fcntl.LOCK_UN)
+    return held()
+
+
 def run_campaign(manifest, jobs, command, oracle, work):
     validate(manifest, Path(__file__).resolve().parent.parent, launch=True)
     if jobs['manifest_sha256'] != identity(manifest) or read(work / 'jobs.json') != jobs:
@@ -264,9 +295,7 @@ def run_campaign(manifest, jobs, command, oracle, work):
     tasks = {t['id']: t for t in manifest['tasks']}
     if any(digest(oracle) != t['oracle_digest'] for t in tasks.values()):
         raise ValueError('oracle changed after freeze')
-    import fcntl
-    with (work / 'campaign.lock').open('a') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    with campaign_lock(work / 'campaign.lock'):
         journal = work / 'attempts.jsonl'
         runs, started_ids, interrupted = journal_read(journal)
         if interrupted or any(r.get('status') != 'completed' for r in runs):

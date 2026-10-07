@@ -4,7 +4,7 @@
   "base_commit": "64f7dfb0bfcae4f6471ee691dfdc896a34ac785f",
   "linux_local_binary_sha256": "9c8a3c483ba1dfe2cd8e351ba78470db264989d11363a76baf176f9a3f907b00",
   "rust_tests": 88,
-  "python_tests": 35,
+  "python_tests": 37,
   "core_check": "passed: cargo xtask check (format, clippy, regressions)",
   "native_intents_mixed": {
     "languages": {
@@ -369,5 +369,18 @@
     "commit": "a4301403f46b8464ed51989b41e044008b96e8d3",
     "reason": "Three synthetic completion tests depended on a host-installed TypeScript module. CI core/Intel package tests correctly reported provider unavailability.",
     "recovery": "Isolated synthetic provider availability fixture, plus regression that an unavailable provider keeps lean inventory incomplete. No runtime/provider code changed. Complete exact-source CI required again."
+  },
+  "runner_portability": {
+    "status": "local_passed; exact cross-platform CI required",
+    "snapshot": "Canonical trusted-root aliases accepted, internal symlinks and escaped roots rejected",
+    "journal_lock": "Nonblocking exclusive flock on Unix and byte-range lock on Windows",
+    "regressions": "Concurrent writer rejection/release, root alias acceptance, internal link rejection, external root rejection",
+    "Windows_symlink_fixture": "May skip if host lacks symlink privilege; Unix/macOS coverage and Rust/native confinement remain separate"
+  },
+  "superseded_CI_runner": {
+    "run": 37590169860,
+    "commit": "d71be83cbc713d6a223070fa22ab5f4ebe219b8c",
+    "reason": "Rust fixtures now pass; Python runner tests revealed /var versus /private/var confinement mismatch on macOS and Unix-only fcntl import on Windows",
+    "recovery": "Canonicalize declared root, retain internal symlink rejection, use a portable exclusive journal lock, add meaningful regressions; frozen historical experiments are not rewritten"
   }
 }

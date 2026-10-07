@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from efficiency_benchmark import evaluate, prepare, run, validate_manifest, write
-from efficiency_comparison import cell_id, cells, digest, identity, journal_append, journal_read, normalize_attempt, schedule
+from efficiency_benchmark import check_snapshot, evaluate, prepare, run, validate_manifest, write
+from efficiency_comparison import campaign_lock, cell_id, cells, digest, identity, journal_append, journal_read, normalize_attempt, schedule
 from efficiency_usage import requests
 from test_efficiency import event
 from test_token_usage import event as cumulative_event
@@ -56,6 +56,37 @@ def record(m, cell, cost=15, accepted=True, attempt=1):
 
 
 class Comparison(unittest.TestCase):
+    def test_campaign_lock_excludes_concurrent_writer_and_releases(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'campaign.lock'
+            with campaign_lock(path):
+                with self.assertRaises(OSError):
+                    with campaign_lock(path):
+                        self.fail('two campaign writers acquired the same lock')
+            with campaign_lock(path):
+                pass
+
+    def test_snapshot_root_alias_preserves_internal_symlink_rejection(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            trusted = root / 'trusted'; trusted.mkdir()
+            base = trusted / 'snapshot'; base.mkdir()
+            source = base / 'code.txt'; source.write_text('source')
+            alias = root / 'alias'
+            try:
+                alias.symlink_to(root, target_is_directory=True)
+            except OSError:
+                self.skipTest('host does not permit test symlink creation')
+            expected = {'code.txt': digest(source)}
+            check_snapshot(base, expected, alias / 'trusted')
+            internal = trusted / 'internal'
+            internal.symlink_to(base, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'symlink snapshot ancestor'):
+                check_snapshot(internal, expected, trusted)
+            external = root / 'external'; external.mkdir()
+            with self.assertRaisesRegex(ValueError, 'outside declared repository'):
+                check_snapshot(external, {}, trusted)
+
     def test_n_conditions_and_absent_candidate(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

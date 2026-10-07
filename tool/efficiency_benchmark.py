@@ -101,12 +101,16 @@ def validate_manifest(manifest: dict, repository: Path, launch: bool = False) ->
 
 
 def check_snapshot(base: Path, expected: dict, confinement: Path) -> None:
-    if not base.absolute().is_relative_to(confinement.absolute()) or '..' in base.parts:
+    declared_root = confinement.absolute()
+    resolved_root = confinement.resolve()
+    if not base.resolve().is_relative_to(resolved_root) or '..' in base.parts:
         raise ValueError('snapshot outside declared repository')
     for path in (base, *base.parents):
         if path.is_symlink():
             raise ValueError('symlink snapshot ancestor')
-        if path == confinement:
+        # macOS temporary paths can use /var or its canonical /private/var
+        # spelling. Accept that trusted-root alias, never a link inside it.
+        if path.absolute() in (declared_root, resolved_root):
             break
     inventory = {}
     for path in base.rglob('*'):
