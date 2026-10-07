@@ -1,0 +1,120 @@
+{
+  "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960",
+  "source_commit": "b272b2451b35d1247ef18680ed832c969b94969f",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "flutter (windows-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380465"
+    },
+    {
+      "name": "benchmark",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380499"
+    },
+    {
+      "name": "integration (macos-latest, dart)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380542"
+    },
+    {
+      "name": "core (windows-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380581"
+    },
+    {
+      "name": "mobile (macos-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380596"
+    },
+    {
+      "name": "core (macos-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380652"
+    },
+    {
+      "name": "mobile (windows-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380655"
+    },
+    {
+      "name": "core (ubuntu-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380662"
+    },
+    {
+      "name": "flutter (ubuntu-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380666"
+    },
+    {
+      "name": "mobile (ubuntu-24.04)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380679"
+    },
+    {
+      "name": "flutter (macos-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380686"
+    },
+    {
+      "name": "integration (ubuntu-latest, polyglot)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380843"
+    },
+    {
+      "name": "packages / package (macos-latest, macos-arm64)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380977"
+    },
+    {
+      "name": "packages / package (windows-latest, windows-x64)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380989"
+    },
+    {
+      "name": "integration (ubuntu-latest, dart)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902380992"
+    },
+    {
+      "name": "integration (macos-latest, polyglot)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902381039"
+    },
+    {
+      "name": "integration (windows-latest, polyglot)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902381080"
+    },
+    {
+      "name": "integration (windows-latest, dart)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902381119"
+    },
+    {
+      "name": "packages / package (ubuntu-latest, linux-x64)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902381183"
+    },
+    {
+      "name": "packages / package (macos-15-intel, macos-x64)",
+      "conclusion": "success",
+      "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37653431960/job/112902381419"
+    }
+  ],
+  "local": {
+    "cargo_xtask_check": "passed",
+    "python_tests": 81,
+    "native_workflow_smoke": "passed",
+    "zero_ai_task_preflights": 12
+  },
+  "sdk_checks": {
+    "android_sdk": "passed_in_mobile_jobs",
+    "macos_uikit_sdk": "passed",
+    "macos_uikit_fixture_symbols": 13,
+    "macos_uikit_fixture_edges": 23
+  },
+  "limits": "Recorded native fixture/provider/SDK scope only; skipped conditional steps do not count as coverage. Later report-only commits do not change the tested program or test harness."
+}

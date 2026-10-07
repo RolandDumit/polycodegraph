@@ -1,0 +1,228 @@
+{
+  "model_turns": 0,
+  "results": [
+    {
+      "task_id": "rename-1",
+      "profile": "rename",
+      "views": {
+        "full_evidence": {
+          "native_pages": 2,
+          "wire_page_chars": 20095,
+          "complete_projected_chars": 15827,
+          "source_window_count": 20,
+          "inventory_count": 73,
+          "inventory_equal": true
+        },
+        "locations": {
+          "native_pages": 2,
+          "wire_page_chars": 14376,
+          "complete_projected_chars": 10389,
+          "source_window_count": 0,
+          "inventory_count": 73,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "profile": "rename",
+      "views": {
+        "full_evidence": {
+          "native_pages": 3,
+          "wire_page_chars": 27760,
+          "complete_projected_chars": 20568,
+          "source_window_count": 27,
+          "inventory_count": 97,
+          "inventory_equal": true
+        },
+        "locations": {
+          "native_pages": 3,
+          "wire_page_chars": 19927,
+          "complete_projected_chars": 13310,
+          "source_window_count": 0,
+          "inventory_count": 97,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "signature-1",
+      "profile": "change_signature",
+      "views": {
+        "full_evidence": {
+          "native_pages": 2,
+          "wire_page_chars": 20411,
+          "complete_projected_chars": 16557,
+          "source_window_count": 19,
+          "inventory_count": 37,
+          "inventory_equal": true
+        },
+        "contracts": {
+          "native_pages": 2,
+          "wire_page_chars": 14400,
+          "complete_projected_chars": 10541,
+          "source_window_count": 1,
+          "inventory_count": 37,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "profile": "change_signature",
+      "views": {
+        "full_evidence": {
+          "native_pages": 2,
+          "wire_page_chars": 23272,
+          "complete_projected_chars": 18814,
+          "source_window_count": 22,
+          "inventory_count": 43,
+          "inventory_equal": true
+        },
+        "contracts": {
+          "native_pages": 2,
+          "wire_page_chars": 16217,
+          "complete_projected_chars": 11754,
+          "source_window_count": 1,
+          "inventory_count": 43,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "bug-1",
+      "profile": "trace_flow",
+      "views": {
+        "full_evidence": {
+          "native_pages": 1,
+          "wire_page_chars": 3095,
+          "complete_projected_chars": 3171,
+          "source_window_count": 2,
+          "inventory_count": 3,
+          "inventory_equal": true
+        },
+        "edit_context": {
+          "native_pages": 1,
+          "wire_page_chars": 3095,
+          "complete_projected_chars": 3171,
+          "source_window_count": 2,
+          "inventory_count": 3,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "bug-2",
+      "profile": "trace_flow",
+      "views": {
+        "full_evidence": {
+          "native_pages": 1,
+          "wire_page_chars": 3095,
+          "complete_projected_chars": 3171,
+          "source_window_count": 2,
+          "inventory_count": 3,
+          "inventory_equal": true
+        },
+        "edit_context": {
+          "native_pages": 1,
+          "wire_page_chars": 3095,
+          "complete_projected_chars": 3171,
+          "source_window_count": 2,
+          "inventory_count": 3,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "flow-1",
+      "profile": "trace_flow",
+      "views": {
+        "full_evidence": {
+          "native_pages": 1,
+          "wire_page_chars": 3387,
+          "complete_projected_chars": 3408,
+          "source_window_count": 2,
+          "inventory_count": 4,
+          "inventory_equal": true
+        },
+        "edit_context": {
+          "native_pages": 1,
+          "wire_page_chars": 3387,
+          "complete_projected_chars": 3407,
+          "source_window_count": 2,
+          "inventory_count": 4,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "flow-2",
+      "profile": "trace_flow",
+      "views": {
+        "full_evidence": {
+          "native_pages": 1,
+          "wire_page_chars": 3387,
+          "complete_projected_chars": 3408,
+          "source_window_count": 2,
+          "inventory_count": 4,
+          "inventory_equal": true
+        },
+        "edit_context": {
+          "native_pages": 1,
+          "wire_page_chars": 3387,
+          "complete_projected_chars": 3407,
+          "source_window_count": 2,
+          "inventory_count": 4,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "review-1",
+      "profile": "review_change",
+      "views": {
+        "full_evidence": {
+          "native_pages": 13,
+          "wire_page_chars": 148518,
+          "complete_projected_chars": 98593,
+          "source_window_count": 13,
+          "inventory_count": 361,
+          "inventory_equal": true
+        },
+        "locations": {
+          "native_pages": 11,
+          "wire_page_chars": 130189,
+          "complete_projected_chars": 85017,
+          "source_window_count": 0,
+          "inventory_count": 361,
+          "inventory_equal": true
+        }
+      }
+    },
+    {
+      "task_id": "review-2",
+      "profile": "review_change",
+      "views": {
+        "full_evidence": {
+          "native_pages": 13,
+          "wire_page_chars": 148520,
+          "complete_projected_chars": 98595,
+          "source_window_count": 13,
+          "inventory_count": 361,
+          "inventory_equal": true
+        },
+        "locations": {
+          "native_pages": 11,
+          "wire_page_chars": 130189,
+          "complete_projected_chars": 86287,
+          "source_window_count": 0,
+          "inventory_count": 361,
+          "inventory_equal": true
+        }
+      }
+    }
+  ],
+  "limits": "Same known fixtures, unchanged native semantics. Characters only, not tokens. Review is current-context projection; no before/after baseline attribution or AI advantage proven.",
+  "measurement_script_sha256": "2f8d21a97ba0038a79e8d3102ca0efff7dfcc71242c0afc35fa4265be3b67d58",
+  "source_commit": "88d22a728e99aea3cb46e87b0da00e4fd44fb64e"
+}

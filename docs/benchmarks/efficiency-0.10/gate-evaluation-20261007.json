@@ -1,0 +1,20 @@
+{
+  "source_commit": "b272b2451b35d1247ef18680ed832c969b94969f",
+  "screening_source_commit": "88d22a728e99aea3cb46e87b0da00e4fd44fb64e",
+  "screening_executed_turns": 24,
+  "screening_accepted_turns": 24,
+  "screening_uncached_input_tokens": 506060,
+  "G0": "passed_frozen_screening",
+  "G1": "passed_recorded_deterministic_provider_and_platform_fixture_scope",
+  "G2_product": "passed_frozen_screening",
+  "G2_mechanism": "unknown_internal_provider_insertion_qualified_under_plan_6_3",
+  "G3": {
+    "status": "failed",
+    "total_tokens_ratio_D_A": 1.5426634932828518,
+    "uncached_input_ratio_D_A": 1.4282293780919069
+  },
+  "G4": "passed_preregistered_local_token_critical_edit_and_native_runtime_guards_in_fixture_scope_whole_solver_p95_higher",
+  "G5": "not_run_current_candidate_fails_G3_new_AI_turn_authorization_required",
+  "release_decision": "keep_development_workflow_opt_in_no_stable_release_savings_claim",
+  "further_ai_turns_authorized": 0
+}

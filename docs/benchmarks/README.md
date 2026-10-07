@@ -22,6 +22,9 @@ recorded. General token-saving acceptance remains pending.
 [Gate continuation status](efficiency-0.10/gates-status-20261007.md) distinguishes
 the historical pre-AI manifests from current evidence, platform follow-up and
 the separately approved 24-run screening.
+[Completed 24-turn screening](efficiency-0.10/screening-results-20261007.md)
+records complete static acceptance and a failed savings gate: D used 54.3% more
+total tokens and 42.8% more uncached input than A.
 
 Run release builds with the pinned toolchain and the immutable `v0.4.0` oracle (`python tool/baseline.py`). No debug/release comparisons, provider substitutions or token-savings estimates are used.
 

@@ -1,0 +1,57 @@
+{
+  "counts": {
+    "A": {
+      "ordinary_leaf_calls": {
+        "source_read": 183,
+        "source_replace": 91,
+        "source_search": 53
+      },
+      "native_leaf_calls": {},
+      "model_facing_graph_calls": {},
+      "source_reads_after_first_successful_edit": 66,
+      "source_reads_after_edit_meaning": "Ordering count only; corrective-read necessity is unknown."
+    },
+    "D": {
+      "ordinary_leaf_calls": {
+        "source_read": 219,
+        "source_replace": 91,
+        "source_search": 39
+      },
+      "native_leaf_calls": {
+        "inspect_change": 42
+      },
+      "model_facing_graph_calls": {
+        "inspect_change": 25
+      },
+      "source_reads_after_first_successful_edit": 106,
+      "source_reads_after_edit_meaning": "Ordering count only; corrective-read necessity is unknown."
+    }
+  },
+  "offered_profile_catalogs": {
+    "rename": {
+      "sha256": "59150308e1677cedc0f4d17639faa127edfb46b9b88abdf7c07f7c1846f842ea",
+      "chars": 1950,
+      "bytes": 1950,
+      "tool_count": 1
+    },
+    "change_signature": {
+      "sha256": "1102d11fd997ae3957a60c182ff1dd4efbd3589636288be0c3985a3c79d1dae9",
+      "chars": 2418,
+      "bytes": 2418,
+      "tool_count": 1
+    },
+    "trace_flow": {
+      "sha256": "76160fd3e9da48bdb8aab04fb3ca58320c4dcbd637865ef0709bc30b4ddc1d86",
+      "chars": 1917,
+      "bytes": 1917,
+      "tool_count": 1
+    },
+    "review_change": {
+      "sha256": "8c35ae240d84a39e6bf3ba2fa62165770b03b61f50b2d32264836a100ebd3e7c",
+      "chars": 2407,
+      "bytes": 2407,
+      "tool_count": 1
+    }
+  },
+  "meaning": "Counts are actual host leaf RPCs and outer graph calls. Model code-mode wrapper calls are separate; offered catalog characters/bytes are not model tokens. Complete provider input/output usage contains the charged task cost; internal per-schema insertion remains unknown."
+}
