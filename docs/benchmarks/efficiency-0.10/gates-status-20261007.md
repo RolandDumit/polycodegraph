@@ -51,3 +51,19 @@ input regression also verifies that a receipt was created, so an unrelated
 path-validation failure cannot satisfy that test. Linux Python tests and native
 workflow checks, including a deliberately aliased temporary root, verify this
 repair locally; macOS acceptance requires the subsequent CI result.
+
+Subsequent package checks exposed a separate macOS watcher race: the immediate
+post-edit review rejected a stale source snapshot. The zero-model smoke now
+repeats only that exact stale-hash error, with the same baseline and same process,
+for at most five seconds. Provider errors, expired baselines and other failures
+are never retried. This bounded lifecycle wait does not add solver retries to the
+AI campaign. Local tests cover successful reconciliation, unrelated failures and
+deadline exhaustion; native macOS acceptance still depends on CI.
+
+The separately frozen screening uses source commit `88d22a7` and manifest digest
+`0d017847738090bb321ccaf4bab16269f02d78649a2d20f907d6887bfc05e7b8`.
+Its candidate binary is unchanged by the subsequent smoke-only watcher repair.
+See [the preregistration](screening-preregistration-20261007.md) for the controlled
+static fixture scope, exact acceptance and stop rules. Results will be recorded
+separately after the authorized campaign; historical smoke observations are not
+replayed or included in its new budget.

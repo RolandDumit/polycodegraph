@@ -7,10 +7,36 @@ import hashlib
 import json
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 from efficiency_collection import normalized_inventory, source_windows
 from smoke import Client
+
+
+def compare_after_edit(client: Client, arguments: dict, max_wait_seconds: float = 5) -> tuple[dict, int]:
+    """Wait only for the watcher to reconcile an explicitly stale source snapshot.
+
+    Repeat the same baseline request, never recapture or ignore a provider failure.
+    This is a zero-model lifecycle check; solver attempts have no retries.
+    """
+    deadline = time.monotonic() + max_wait_seconds
+    retries = 0
+    while True:
+        response = client.request("tools/call", {"name": "inspect_change", "arguments": arguments})
+        if not response.get("isError"):
+            return response, retries
+        try:
+            error = json.loads(response["content"][0]["text"])["error"]
+        except (KeyError, IndexError, TypeError, ValueError):
+            return response, retries
+        if error != "stale: source differs from snapshot during review capture/comparison":
+            return response, retries
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return response, retries
+        time.sleep(min(0.05, remaining))
+        retries += 1
 
 
 def surface_metrics(tools: list[dict], initialization: dict) -> dict:
@@ -264,13 +290,15 @@ def run(binary: Path, config: Path | None, bridge: Path, output: Path | None = N
                 source = root / "sample.ts"
                 source.write_text("// relocated\n" + source.read_text(), encoding="utf-8")
                 args["options"] = {"baseline": handle}
-                response = review.request("tools/call", {"name": "inspect_change", "arguments": args})
+                response, stale_retries = compare_after_edit(review, args)
                 assert not response["isError"], response
                 value = json.loads(response["content"][0]["text"])
                 assert value["collection"]["complete"]
                 assert normalized_inventory(value)
                 result["review_change"] = {
                     "baseline_reused_same_session": True,
+                    "watcher_reconciliation_retries": stale_retries,
+                    "watcher_wait_max_seconds": 5,
                     "source_edit_observed": True,
                     "complete": True,
                     "selected_format": value["format"],
