@@ -19,6 +19,9 @@ AI smokes require a separate explicit budget; old failed runs remain recorded.
 record the separately authorized rerun: A/B/D accepted, C exceeded its attempt
 guard despite a verified source answer, and the final aggregate overshoot is
 recorded. General token-saving acceptance remains pending.
+[Gate continuation status](efficiency-0.10/gates-status-20261007.md) distinguishes
+the historical pre-AI manifests from current evidence, platform follow-up and
+the separately approved 24-run screening.
 
 Run release builds with the pinned toolchain and the immutable `v0.4.0` oracle (`python tool/baseline.py`). No debug/release comparisons, provider substitutions or token-savings estimates are used.
 

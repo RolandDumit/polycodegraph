@@ -49,7 +49,9 @@ def source_inventory(pages: list[dict]) -> dict:
 def run(binary: Path, config: Path | None, bridge: Path, output: Path | None = None, adjacent=False) -> dict:
     """Exercise the shipped stdio entrypoint against the native TypeScript compiler fixture."""
     with tempfile.TemporaryDirectory(prefix="pcg workflow spaces ") as temp:
-        root = Path(temp)
+        # Give the private receipt a canonical fixture path on macOS, where
+        # tempfile can return the /var alias. Keep relay symlink rejection intact.
+        root = Path(temp).resolve(strict=True)
         (root / "sample.ts").write_text(
             "export function target(x: number) { return x; }\nexport function caller() {\n"
             + "target(1); target(2);\n" * 100

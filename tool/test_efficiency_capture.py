@@ -15,6 +15,9 @@ from efficiency_capture import INPUT_LIMIT
 
 class WireCapture(unittest.TestCase):
     def proxy(self, root: Path, backend: str) -> subprocess.Popen:
+        # macOS tempfile roots may be spelled through /var -> /private/var.
+        # Pass the canonical trusted fixture root; the recorder still rejects links.
+        root = root.resolve(strict=True)
         source = (
             "from efficiency_capture import capture;from pathlib import Path;import sys;"
             f"sys.exit(capture([sys.executable,'-c',{backend!r}],Path({str(root)!r}),'test',grace_seconds=2))"
@@ -74,6 +77,7 @@ class WireCapture(unittest.TestCase):
             process = self.proxy(Path(temp), "import time;time.sleep(30)")
             process.communicate(b"x" * INPUT_LIMIT + b"\n", timeout=5)
             self.assertNotEqual(process.returncode, 0)
+            self.assertTrue(list(Path(temp).glob("test-*.jsonl")))
 
 
 if __name__ == "__main__":
