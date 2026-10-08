@@ -86,6 +86,10 @@ jobs:
         if: matrix.group == 'polyglot' && runner.os != 'Windows'
       - run: python tool/workflow_smoke.py --binary target/release/polycodegraph.exe --config work/sdk-config.json --output work/workflow.json
         if: matrix.group == 'polyglot' && runner.os == 'Windows'
+      - run: python tool/dev2_smoke.py --binary target/release/polycodegraph --config work/sdk-config.json --output work/dev2.json
+        if: matrix.group == 'polyglot' && runner.os != 'Windows'
+      - run: python tool/dev2_smoke.py --binary target/release/polycodegraph.exe --config work/sdk-config.json --output work/dev2.json
+        if: matrix.group == 'polyglot' && runner.os == 'Windows'
       - run: go vet ./...
         working-directory: providers/go
         if: matrix.group == 'polyglot'

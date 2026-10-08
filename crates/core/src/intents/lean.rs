@@ -5,7 +5,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 
-fn task_coverage(g: &Graph, p: &Plan, audit: &Value, remaining: usize) -> Value {
+fn task_coverage(g: &Graph, p: &Plan, audit: &Value) -> Value {
     let mut files = BTreeSet::new();
     if let Some(file) = p.target["file"].as_str() {
         files.insert(file.to_owned());
@@ -42,16 +42,18 @@ fn task_coverage(g: &Graph, p: &Plan, audit: &Value, remaining: usize) -> Value 
         || g.health.coverage["unresolved_calls"].as_u64().unwrap_or(0) > 0
         || g.health.coverage["dropped_edges"].as_u64().unwrap_or(0) > 0
         || !g.snapshot.skipped.is_empty();
+    if !global_issue {
+        return json!({"state":"unknown","known_inventory":"completion.required_inventory","global_limit_relevance":"no_recorded_global_issue"});
+    }
     json!({
         "state":"unknown",
-        "reason":"Traversed files and known resolver records do not prove complete coverage of the question or external consumers",
-        "known_inventory":{"all_known_required_delivered":remaining==0,"remaining_known":remaining,"exploration_incomplete":p.exploration_limited || p.depth_limited},
+        "reason":"Known records and traversed files do not prove question/external-consumer coverage",
+        "known_inventory":"see completion.required_inventory; delivery is separate from task coverage",
         "traversed_files":files.iter().take(16).collect::<Vec<_>>(),
         "traversed_files_total":files.len(),"traversed_files_omitted":files.len().saturating_sub(16),
         "local_limits":{"errors":errors,"unresolved_calls":unresolved,"unavailable_providers":missing},
         "global_limit_relevance":if errors>0 || unresolved>0 || !missing.is_empty() {"relevant"} else if global_issue {"unknown"} else {"no_recorded_global_issue"},
-        "recovery":{"more_pages_deliver_known_required":remaining>0,"global_limits_resolved_by_pagination":false,"action":if remaining>0 {"retrieve_required"} else if global_issue {"report_limit; inspect relevant diagnostics/capabilities, do not repeat exhausted pages"} else {"follow intent source and verification requirements"}},
-        "freshness":"root, generation, health, environment, source hashes and baseline validation unchanged"
+        "recovery":{"global_limits_resolved_by_pagination":false,"action":"retrieve remaining_known sites; after exhaustion report unresolved limits, inspect relevant diagnostics/capabilities"}
     })
 }
 
@@ -246,9 +248,14 @@ pub fn project(
     }
     if let Some(selection) = audit.get("source_selection") {
         result["source_selection"] = selection.clone();
+        result["page"]["source_chars"] = result["source_selection"]["emitted_source_chars"].clone();
+        result["source_selection"]
+            .as_object_mut()
+            .expect("selection")
+            .remove("emitted_source_chars");
     }
     if p.request.source_policy.is_some() {
-        result["task_coverage"] = task_coverage(g, p, audit, remaining);
+        result["task_coverage"] = task_coverage(g, p, audit);
     }
     if provider_incomplete || g.health.diagnostics.values().sum::<usize>() > 0 {
         result["diagnostics"] = audit["diagnostics"].clone();

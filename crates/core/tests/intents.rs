@@ -216,12 +216,7 @@ fn separate_source_budget_keeps_required_inventory_and_visible_truncation() {
         bounded["budget"] = json!({"max_source_chars":size});
         let result = state.prepare(&g, &c, &bounded, json!({})).unwrap();
         assert_eq!(original["records"], result["records"]);
-        assert!(
-            result["source_selection"]["emitted_source_chars"]
-                .as_u64()
-                .unwrap()
-                <= size
-        );
+        assert!(result["page"]["source_chars"].as_u64().unwrap() <= size);
         assert_eq!(result["source_windows_incomplete"], true);
         assert_eq!(
             result["completion"]["required_inventory"],
@@ -234,7 +229,17 @@ fn separate_source_budget_keeps_required_inventory_and_visible_truncation() {
 }
 #[test]
 fn task_coverage_reports_relevant_and_unrelated_errors_without_promoting_completion() {
-    let (_d, c, g) = fixture("ts");
+    let (d, mut c, g) = fixture("ts");
+    let assets = d.path().join("assets");
+    fs::create_dir_all(assets.join("typescript/node_modules/typescript")).unwrap();
+    fs::write(
+        assets.join("typescript/node_modules/typescript/package.json"),
+        "{}",
+    )
+    .unwrap();
+    c.providers_path = Some(assets.to_string_lossy().into());
+    // Health checks locate this native executable; no provider is invoked.
+    c.node_path = std::env::current_exe().unwrap().to_string_lossy().into();
     let args = json!({"intent":"rename","target":"api","format":"lean","source_policy":"intent"});
     for local in [false, true] {
         let mut snapshot = (*g.snapshot).clone();
@@ -269,11 +274,11 @@ fn task_coverage_reports_relevant_and_unrelated_errors_without_promoting_complet
             if local { "relevant" } else { "unknown" }
         );
         assert_eq!(
-            result["task_coverage"]["known_inventory"]["all_known_required_delivered"],
-            true
+            result["completion"]["required_inventory"]["remaining_known"],
+            0
         );
         assert_eq!(
-            result["task_coverage"]["recovery"]["more_pages_deliver_known_required"],
+            result["task_coverage"]["recovery"]["global_limits_resolved_by_pagination"],
             false
         );
         assert!(!result["diagnostics"].is_null());
