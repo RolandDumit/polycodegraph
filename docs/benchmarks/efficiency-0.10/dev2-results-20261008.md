@@ -5,8 +5,9 @@ T3–T6 implementation continues on `codex/0.10-token-efficiency`; the annotated
 commit: `2e40eceecce941aa96048c0bf02bd2614b1df55d`.
 
 The user clarified that at most 15% additional total tokens relative to A is a
-1.0 objective. The historical dev.1 savings screening remains failed. This new
-candidate has **zero new AI runs** and cannot claim measured model-token savings.
+1.0 objective. The historical dev.1 savings screening remains failed. The new
+candidate completed a separately authorized 24-turn screening: all static edits
+passed, but total tokens were 55.9% above A. See [the AI results](dev2-screening-report-20261008.md). It cannot claim aggregate model-token savings.
 
 ## Implemented tranche
 
@@ -94,10 +95,11 @@ experiment as the historical dev.1 locations-only runtime measurement.
 ## Remaining experimental acceptance
 
 The implementation and deterministic checks do not close the source-reread,
-seed-search or retention end-to-end AI acceptance criteria. The user authorized a new 24-turn A/D comparison on 2026-10-08 with an
-additional cap of 1,000,000 uncached input tokens, checked after each turn with
-final-turn overshoot accepted. It starts after final platform checks; no new
-paid turn has started. See [the preregistration](dev2-screening-proposal-20261008.md). The generic relay cannot validate T6 model retention; that requires a
+seed-search or retention end-to-end AI acceptance criteria. The authorized 24-turn A/D comparison is complete, with 556,969 uncached input
+tokens, 24 accepted static outcomes and no additional authorized solver turns.
+See [the screening report](dev2-screening-report-20261008.md). T3 direct-read
+counts increased, chiefly after signature edits; its no-reread acceptance is
+not closed. Product savings and independent confirmation remain unproved. The generic relay cannot validate T6 model retention; that requires a
 client with actual retained-context observation. T4 ranking stays opt-in and its
 baseline remains available. This repeated known-task screening is not independent confirmation. The
 previous 24-turn screening budget remains fully consumed.

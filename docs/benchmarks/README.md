@@ -77,3 +77,7 @@ missing model usage/isolation is never replaced with payload characters.
 accepted cells and actual usage: rc.1 improves descriptively over 0.7, remains more
 expensive than no graph, and fails G2 on incomplete client telemetry. This is a
 separate pilot, not a revision of the historical fixture protocols.
+
+The [dev.2 model screening](efficiency-0.10/dev2-screening-report-20261008.md)
+records the separately authorized 24-turn campaign, actual provider costs and
+source-read audit; all static outcomes pass, aggregate savings do not.

@@ -31,5 +31,8 @@ after final validation and release notes; no stable tag is created during work.
 
 Implementation and current verification are recorded in the
 [dev.2 report](benchmarks/efficiency-0.10/dev2-results-20261008.md). T3–T6 have
-code and deterministic regression coverage; their end-to-end AI acceptance is
-separate and remains unmeasured for this candidate.
+code and deterministic regression coverage. The [24-turn screening](benchmarks/efficiency-0.10/dev2-screening-report-20261008.md)
+is complete: all static outcomes pass, total tokens are +55.9% versus A, and T3
+read counts increase. Independent confirmation, T4 discovery benefit and T6
+end-to-end compaction savings remain unmeasured. The annotated dev.2 tag is
+published; no stable tag has been created.

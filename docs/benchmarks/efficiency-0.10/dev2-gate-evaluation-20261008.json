@@ -1,0 +1,43 @@
+{
+  "candidate_tag": "v0.10.0-dev.2",
+  "frozen_source_commit": "634b6dedf93651bdad98da5b63b7105d9c65d846",
+  "tested_program_commit": "2e40eceecce941aa96048c0bf02bd2614b1df55d",
+  "campaign_manifest_sha256": "23979b993db2c9f97ee2d9d6ed7ed6df3f9a662a76a3ef96625b4dc374c62a94",
+  "screening_model_turns": 24,
+  "accepted_static_tasks": {
+    "A": 12,
+    "D": 12
+  },
+  "observed_uncached_input_tokens": 556969,
+  "G0": "passed_frozen_identity_actual_task_surface_isolation_and_treatment",
+  "G1": "passed_recorded_deterministic_ten_provider_primitive_differential_rename_and_20_platform_jobs_with_UIKit_same_code_recheck",
+  "G2_product": "passed_complete_provider_usage_and_independent_static_oracles",
+  "G2_mechanism": "qualified_unknown_internal_provider_insertion_under_plan_6_3",
+  "G3": {
+    "status": "failed_original_savings_screening_criterion",
+    "total_tokens_ratio_D_A": 1.5590230169817472,
+    "uncached_input_ratio_D_A": 1.037410698281822,
+    "exploratory_paired_task_ratio_interval95": [
+      1.260003206053028,
+      1.850783756071405
+    ],
+    "does_not_block_010_under_user_milestone_clarification": true
+  },
+  "G4": {
+    "local_total_tokens_ratio_D_A": 0.9995591669446695,
+    "critical_rename_signature_static_failures": 0,
+    "native_runtime": "recorded_TypeScript_fixture_guards_pass",
+    "whole_solver_runtime": "D_slower_observed_not_general_regression_free_claim"
+  },
+  "G5": "not_run_repeated_known_tasks_are_not_independent_confirmation",
+  "T3_acceptance": "required_inventories_and_hashes_pass; aggregate_direct_read_count_increases_204_vs_180; signature_post_edit_reads_41_vs_2; no_systematic_reread_acceptance_not_closed",
+  "T4_acceptance": "scope_anchor_cap_and_semantic_invariants_verified; overlap_baseline_preserved; no_end_to_end_discovery_or_BM25_superiority_claim",
+  "T5_acceptance": "coverage_remains_unknown_when_unproven; no_false_complete; end_to_end_effect_not_isolated",
+  "T6_acceptance": "native_binding_identity_ack_and_compaction_verified; generic_MCP_retention_disabled; end_to_end_long_task_compaction_savings_not_measured",
+  "milestone_010": "T3_T6_implemented_correctness_verified; efficiency_claims_and_default_rollout_not_approved_by_screening",
+  "milestone_100": "user_goal_at_most_15_percent_total_overhead_is_future_target",
+  "release_status": "dev2_tag_pushed_stable_010_not_created",
+  "external_solver_retries": 0,
+  "pre_model_launcher_failure_model_turns": 0,
+  "further_authorized_solver_turns": 0
+}

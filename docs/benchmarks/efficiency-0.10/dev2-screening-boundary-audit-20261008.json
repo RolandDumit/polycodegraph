@@ -1,0 +1,254 @@
+{
+  "counts": {
+    "A": {
+      "ordinary_leaf_calls": {
+        "source_read": 180,
+        "source_replace": 91,
+        "source_search": 47
+      },
+      "native_leaf_calls": {},
+      "model_facing_graph_calls": {},
+      "source_reads_after_first_successful_edit": 66,
+      "source_reads_after_edit_meaning": "Ordering count only; corrective-read necessity is unknown."
+    },
+    "D": {
+      "ordinary_leaf_calls": {
+        "source_read": 204,
+        "source_replace": 91,
+        "source_search": 20
+      },
+      "native_leaf_calls": {
+        "inspect_change": 54
+      },
+      "model_facing_graph_calls": {
+        "inspect_change": 28
+      },
+      "source_reads_after_first_successful_edit": 99,
+      "source_reads_after_edit_meaning": "Ordering count only; corrective-read necessity is unknown."
+    }
+  },
+  "offered_profile_catalogs": {
+    "rename": {
+      "sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+      "chars": 2387,
+      "bytes": 2387,
+      "tool_count": 1
+    },
+    "change_signature": {
+      "sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+      "chars": 2855,
+      "bytes": 2855,
+      "tool_count": 1
+    },
+    "trace_flow": {
+      "sha256": "b59b0ae5e2702e94015b2928ef828ebfcfea6d2ae95b8c916d1ac3b6167aab36",
+      "chars": 2354,
+      "bytes": 2354,
+      "tool_count": 1
+    },
+    "review_change": {
+      "sha256": "d95b6a83a7228816efbf0259582b0fceb7a2a800242cd151195b318642433a82",
+      "chars": 2844,
+      "bytes": 2844,
+      "tool_count": 1
+    }
+  },
+  "meaning": "Counts are actual host leaf RPCs and outer graph calls. Model code-mode wrapper calls are separate; offered catalog characters/bytes are not model tokens. Complete provider input/output usage contains the charged task cost; internal per-schema insertion remains unknown.",
+  "native_intent_source_policy_requests": {
+    "intent": 54
+  },
+  "native_explicit_view_requests": {
+    "omitted": 54
+  },
+  "direct_read_source_states": [
+    {
+      "task_id": "local-1",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 1,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "local-1",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 1,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "local-2",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 1,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "local-2",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 1,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 21,
+        "post_edit_hash": 19
+      }
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 21,
+        "post_edit_hash": 19
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 27,
+        "post_edit_hash": 25
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 27,
+        "post_edit_hash": 25
+      }
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 21,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 21,
+        "post_edit_hash": 19
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 24,
+        "post_edit_hash": 22
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 24,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "bug-1",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 5,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "bug-1",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 5,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "bug-2",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 5,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "bug-2",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 5,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "flow-1",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 3
+      }
+    },
+    {
+      "task_id": "flow-1",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 3
+      }
+    },
+    {
+      "task_id": "flow-2",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 3
+      }
+    },
+    {
+      "task_id": "flow-2",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 4
+      }
+    },
+    {
+      "task_id": "review-1",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 5,
+        "post_edit_hash": 4
+      }
+    },
+    {
+      "task_id": "review-1",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 1,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "review-2",
+      "condition": "D",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 1,
+        "post_edit_hash": 1
+      }
+    },
+    {
+      "task_id": "review-2",
+      "condition": "A",
+      "successful_direct_read_source_identities": {
+        "initial_hash": 5,
+        "post_edit_hash": 4
+      }
+    }
+  ],
+  "direct_read_source_state_scope": "Successful reads of initial source hashes versus host-edited postimages; this is not a judgment of necessity."
+}

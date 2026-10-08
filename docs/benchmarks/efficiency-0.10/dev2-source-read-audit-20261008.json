@@ -1,0 +1,373 @@
+{
+  "runs": [
+    {
+      "task_id": "local-1",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_read_calls": 2,
+        "source_read_returned_characters": 173,
+        "truncated_reads": 0,
+        "direct_code_characters": 159,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 159,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "local-1",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 2,
+        "source_read_returned_characters": 173,
+        "truncated_reads": 0,
+        "direct_code_characters": 159,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 159,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "local-2",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 2,
+        "source_read_returned_characters": 177,
+        "truncated_reads": 0,
+        "direct_code_characters": 163,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 163,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "local-2",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_read_calls": 2,
+        "source_read_returned_characters": 177,
+        "truncated_reads": 0,
+        "direct_code_characters": 163,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 163,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 9,
+        "source_read_calls": 40,
+        "source_read_returned_characters": 6559,
+        "truncated_reads": 0,
+        "direct_code_characters": 5975,
+        "repeated_direct_code_characters": 155,
+        "new_direct_code_characters": 5820,
+        "source_replace_calls": 19
+      }
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 40,
+        "source_read_returned_characters": 6559,
+        "truncated_reads": 0,
+        "direct_code_characters": 5975,
+        "repeated_direct_code_characters": 155,
+        "new_direct_code_characters": 5820,
+        "source_search_calls": 6,
+        "source_replace_calls": 19
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 52,
+        "source_read_returned_characters": 8659,
+        "truncated_reads": 0,
+        "direct_code_characters": 7895,
+        "repeated_direct_code_characters": 161,
+        "new_direct_code_characters": 7734,
+        "source_search_calls": 5,
+        "source_replace_calls": 25
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 8,
+        "source_read_calls": 52,
+        "source_read_returned_characters": 8659,
+        "truncated_reads": 0,
+        "direct_code_characters": 7895,
+        "repeated_direct_code_characters": 161,
+        "new_direct_code_characters": 7734,
+        "source_replace_calls": 25
+      }
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 7,
+        "source_read_calls": 22,
+        "source_read_returned_characters": 3005,
+        "truncated_reads": 0,
+        "direct_code_characters": 2843,
+        "repeated_direct_code_characters": 85,
+        "new_direct_code_characters": 2758,
+        "source_replace_calls": 19
+      }
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 40,
+        "source_read_returned_characters": 5731,
+        "truncated_reads": 0,
+        "direct_code_characters": 5443,
+        "repeated_direct_code_characters": 85,
+        "new_direct_code_characters": 5358,
+        "source_search_calls": 4,
+        "source_replace_calls": 19
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 46,
+        "source_read_returned_characters": 6709,
+        "truncated_reads": 0,
+        "direct_code_characters": 6379,
+        "repeated_direct_code_characters": 89,
+        "new_direct_code_characters": 6290,
+        "source_search_calls": 3,
+        "source_replace_calls": 22
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 8,
+        "source_read_calls": 25,
+        "source_read_returned_characters": 3506,
+        "truncated_reads": 0,
+        "direct_code_characters": 3323,
+        "repeated_direct_code_characters": 89,
+        "new_direct_code_characters": 3234,
+        "source_replace_calls": 22
+      }
+    },
+    {
+      "task_id": "bug-1",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_read_calls": 6,
+        "source_read_returned_characters": 645,
+        "truncated_reads": 0,
+        "direct_code_characters": 611,
+        "repeated_direct_code_characters": 233,
+        "new_direct_code_characters": 378,
+        "source_search_calls": 3,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "bug-1",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 6,
+        "source_read_returned_characters": 645,
+        "truncated_reads": 0,
+        "direct_code_characters": 611,
+        "repeated_direct_code_characters": 233,
+        "new_direct_code_characters": 378,
+        "source_search_calls": 1,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "bug-2",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 6,
+        "source_read_returned_characters": 645,
+        "truncated_reads": 0,
+        "direct_code_characters": 611,
+        "repeated_direct_code_characters": 233,
+        "new_direct_code_characters": 378,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "bug-2",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 4,
+        "source_read_calls": 6,
+        "source_read_returned_characters": 645,
+        "truncated_reads": 0,
+        "direct_code_characters": 611,
+        "repeated_direct_code_characters": 233,
+        "new_direct_code_characters": 378,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "flow-1",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 4,
+        "source_read_calls": 3,
+        "source_read_returned_characters": 403,
+        "truncated_reads": 0,
+        "direct_code_characters": 382,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 382
+      }
+    },
+    {
+      "task_id": "flow-1",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_search_calls": 1,
+        "source_read_calls": 3,
+        "source_read_returned_characters": 403,
+        "truncated_reads": 0,
+        "direct_code_characters": 382,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 382
+      }
+    },
+    {
+      "task_id": "flow-2",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 3,
+        "source_read_returned_characters": 403,
+        "truncated_reads": 0,
+        "direct_code_characters": 382,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 382
+      }
+    },
+    {
+      "task_id": "flow-2",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 2,
+        "source_read_calls": 4,
+        "source_read_returned_characters": 471,
+        "truncated_reads": 0,
+        "direct_code_characters": 447,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 447
+      }
+    },
+    {
+      "task_id": "review-1",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 1,
+        "source_read_calls": 9,
+        "source_read_returned_characters": 31951,
+        "truncated_reads": 0,
+        "direct_code_characters": 27232,
+        "repeated_direct_code_characters": 3775,
+        "new_direct_code_characters": 23457,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "review-1",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 2,
+        "source_read_returned_characters": 374,
+        "truncated_reads": 0,
+        "direct_code_characters": 340,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 340,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "review-2",
+      "condition": "D",
+      "success": true,
+      "counts": {
+        "source_read_calls": 2,
+        "source_read_returned_characters": 345,
+        "truncated_reads": 0,
+        "direct_code_characters": 315,
+        "repeated_direct_code_characters": 0,
+        "new_direct_code_characters": 315,
+        "source_replace_calls": 1
+      }
+    },
+    {
+      "task_id": "review-2",
+      "condition": "A",
+      "success": true,
+      "counts": {
+        "source_search_calls": 1,
+        "source_read_calls": 9,
+        "source_read_returned_characters": 31957,
+        "truncated_reads": 0,
+        "direct_code_characters": 27238,
+        "repeated_direct_code_characters": 3777,
+        "new_direct_code_characters": 23461,
+        "source_replace_calls": 1
+      }
+    }
+  ],
+  "aggregate": {
+    "A": {
+      "source_read_calls": 180,
+      "source_read_returned_characters": 88151,
+      "direct_code_characters": 76879,
+      "new_direct_code_characters": 68371,
+      "source_replace_calls": 91,
+      "source_search_calls": 47,
+      "repeated_direct_code_characters": 8508
+    },
+    "D": {
+      "source_read_calls": 204,
+      "source_read_returned_characters": 30823,
+      "direct_code_characters": 28655,
+      "new_direct_code_characters": 27699,
+      "source_replace_calls": 91,
+      "repeated_direct_code_characters": 956,
+      "source_search_calls": 20
+    }
+  },
+  "scope": "Actual ordinary source tools, all attempts. Returned text includes line numbers; direct code characters exclude line-number prefixes and newline separators. Repeats match file/source-hash/line and emitted prefix. Graph windows, search results, model history and tokenization are not part of this overlap count. No inference about necessary corrective reads or model prompt insertion."
+}
