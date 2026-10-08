@@ -49,7 +49,7 @@ documented in [activation/rollback](migration-0.9.md). Error/restart envelopes r
 their existing contract. Omitted `format` and explicit `audit` retain audit
 rendering and retention options.
 
-Version 0.10 development adds `snapshot.environment_fingerprint` to native lean
+Version 0.10 adds `snapshot.environment_fingerprint` to native lean
 results. The opt-in `pcg-lean-collection-2` envelope and static workflow schemas
 are client projections; server tools, accepted arguments, wire text/structured
 representations and ordinary defaults remain compatible. See
@@ -61,7 +61,7 @@ explicit cursor recovery returns one native lean page in the same session.
 Ordinary native full/agent serving keeps its existing response representation.
 Relay receipts observe prepared protocol output, not provider prompt insertion.
 
-0.10-dev.2 adds optional intent `source_policy: intent` and independent
+Version 0.10 adds optional intent `source_policy: intent` and independent
 `budget.max_source_chars`; explicit views prevail and required sites are not
 sampled. Opt-in lean policy results carry conservative `task_coverage`.
 Lexical search supports `group_by: anchor|line`, `ranking: overlap|bm25` and an

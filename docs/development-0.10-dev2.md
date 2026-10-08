@@ -62,3 +62,13 @@ two proposed replicas and a new budget request. [T6's installed-client audit](
 benchmarks/efficiency-0.10/t6-model-verification-20261008.md) identifies the missing
 exact retained-context boundary. Both model gates remain open; neither has an
 AI allocation from the completed T3 diagnostic.
+
+## Stable publication decision — 2026-10-08
+
+The user explicitly requested publication of 0.10 after reviewing the open
+gates. Stable 0.10 ships the implemented compatible opt-in behavior and records
+G5 as prepared/not executed and T6 model retention/compaction savings as
+unverified. The release decision does not turn these gates into passing
+evidence, authorize the pending 48-turn holdout proposal or change the user's
+1.0 efficiency objective. Retention stays disabled in the generic MCP relay.
+See [the stable release notes](releases/v0.10.0.md).

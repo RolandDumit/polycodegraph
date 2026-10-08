@@ -16,22 +16,22 @@ Index a repository, explore its symbols and dependencies through compact graph q
 
 No embeddings, LLM API key or database service is required. The server is a native Rust executable. Additional semantic adapters need their language runtimes; install only the adapters used by your projects.
 
-**Version 0.9.0.** Reviews distinguish relocated reference sites from semantic changes, baseline scope can be validated strictly, and optional `format: lean` separates required evidence, optional context and external verification. Audit rendering stays the default. See [0.9 activation/rollback](docs/migration-0.9.md) and [release validation](docs/releases/v0.9.0.md). No new AI cost comparison has been measured for 0.9. The [historical 0.8.0-rc.1 application pilot](docs/benchmarks/efficiency-0.8-application/report.md) observed 13.7% less uncached input per accepted task than 0.7, but 89.7% more than no graph, with limited telemetry and one replica per cell; it does not measure 0.9. All ten [intent context services](docs/intents.md) remain available through `inspect_change` across all ten languages.
+**Version 0.10.0.** Optional workflow clients expose focused schemas, collect intent pages into one compact response, and support independent source budgets and intent-specific source selection. Scoped lexical discovery preserves the overlap baseline and adds opt-in anchor grouping/BM25. Generic MCP retention stays disabled. See [activation/rollback](docs/migration-0.10.md), [release validation and limits](docs/releases/v0.10.0.md), and [Codex plan consumption policy](docs/codex-plan-consumption.md). The dev.2 screening used 55.9% more total tokens than no graph; a four-task instruction diagnostic reduced post-edit rereads but did not measure subscription savings. Independent holdout and long-task/compaction model verification remain open. All ten [intent context services](docs/intents.md) remain available across all ten languages.
 
 **Rust core.** Opt-in compact responses, paged diagnostics and per-tool metrics, on the Rust core with local stdio MCP, SQLite cache and filesystem watcher. Dart Analyzer 13.3.0 remains the Dart/Flutter semantic provider.
 
 ## Install and run
 
-Download a prebuilt package from [release v0.9.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.9.0). **Rust is not required to run these packages.**
+Download a prebuilt package from [release v0.10.0](https://github.com/RolandDumit/polycodegraph/releases/tag/v0.10.0). **Rust is not required to run these packages.**
 
 | System | Download |
 | --- | --- |
-| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.9.0/polycodegraph-0.9.0-linux-x64.tar.gz) |
-| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.9.0/polycodegraph-0.9.0-windows-x64.zip) |
-| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.9.0/polycodegraph-0.9.0-macos-x64.tar.gz) |
-| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.9.0/polycodegraph-0.9.0-macos-arm64.tar.gz) |
+| Linux x64 | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.10.0/polycodegraph-0.10.0-linux-x64.tar.gz) |
+| Windows x64 | [zip](https://github.com/RolandDumit/polycodegraph/releases/download/v0.10.0/polycodegraph-0.10.0-windows-x64.zip) |
+| macOS Intel | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.10.0/polycodegraph-0.10.0-macos-x64.tar.gz) |
+| macOS Apple Silicon | [tar.gz](https://github.com/RolandDumit/polycodegraph/releases/download/v0.10.0/polycodegraph-0.10.0-macos-arm64.tar.gz) |
 
-Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.9.0/SHA256SUMS) verifies the four archives.
+Extract the archive and keep the executable beside its `providers/` directory. Open that folder in a terminal and run `./polycodegraph --version` on Linux/macOS or `.\polycodegraph.exe --version` on Windows. Then use that executable for the setup and serve commands below. The packages include compiled Dart/Go workers and provider source assets; SDKs/runtimes for selected languages remain necessary. [SHA256SUMS](https://github.com/RolandDumit/polycodegraph/releases/download/v0.10.0/SHA256SUMS) verifies the four archives.
 
 To build from source instead:
 

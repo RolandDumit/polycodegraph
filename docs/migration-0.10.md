@@ -1,10 +1,12 @@
-# 0.10 development: selective client integration
+# 0.10: selective client integration
 
-The first tranche implements T0–T2 from the [research plan](token-efficiency-research-plan-0.10.0.md).
-It is opt-in client work, not a released 0.10 version or a measured AI saving.
-The package is marked `0.10.0-dev.2`. Native defaults remain compatible; the
-selected workflow integration opts into intent source selection. See the
-[development milestones](development-0.10-dev2.md).
+Version `0.10.0` includes opt-in T0–T6 implementation from the
+[research plan](token-efficiency-research-plan-0.10.0.md), with compatible native
+defaults. The selected workflow integration opts into intent source selection;
+clients are packaged but not automatically installed into Codex.
+[Release notes](releases/v0.10.0.md) describe measured results and open G5/T6
+model verification. Publishing this version does not establish subscription
+savings or completion of every experimental acceptance criterion.
 
 ## T3: independent source selection
 

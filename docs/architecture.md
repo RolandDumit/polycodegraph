@@ -45,7 +45,7 @@ semantic planner or storage. Native lean identity additionally exposes the
 provider environment fingerprint. The server does not install a client adapter
 or infer model prompt insertion/token usage.
 
-0.10-dev.2 keeps required intent records independent of explicit source-text
+Version 0.10 keeps required intent records independent of explicit source-text
 budgets and intent source selection. Lexical discovery uses a bounded, immutable
 snapshot-owned scope/config cache with inverted postings; anchor grouping and
 binary-term BM25 are opt-in projections/ablations. Task coverage separates local
