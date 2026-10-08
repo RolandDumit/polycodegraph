@@ -2,7 +2,7 @@
 
 The first tranche implements T0–T2 from the [research plan](token-efficiency-research-plan-0.10.0.md).
 It is opt-in client work, not a released 0.10 version or a measured AI saving.
-The package is marked `0.10.0-dev.1`; server defaults stay unchanged until release gates pass.
+The package is marked `0.10.0-dev.2`; server defaults stay unchanged until release gates pass.
 The full/agent server catalogs, accepted primitive tools, audit/lean formats and
 semantic resolver contracts remain available.
 

@@ -24,7 +24,7 @@ from efficiency_transport import (
 )
 from efficiency_workflow import workflow_arguments, workflow_surface
 
-VERSION = "0.10.0-dev.1"
+VERSION = "0.10.0-dev.2"
 REVISIONS = ("2025-11-25", "2025-06-18", "2025-03-26")
 
 
