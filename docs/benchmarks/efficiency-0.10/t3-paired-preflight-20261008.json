@@ -1,0 +1,105 @@
+{
+  "model_turns": 0,
+  "paid_execution_enabled": false,
+  "results": [
+    {
+      "task_id": "signature-1",
+      "condition": "C",
+      "registered_tools": 1,
+      "schema_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "guide_chars": 514,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "D",
+      "registered_tools": 1,
+      "schema_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+      "guide_sha256": "51a8420807c41dfadf10144f02c05e9e51e8033d35188ac68451af6bb1c5c83b",
+      "guide_chars": 795,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "C",
+      "registered_tools": 1,
+      "schema_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "guide_chars": 514,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "D",
+      "registered_tools": 1,
+      "schema_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+      "guide_sha256": "51a8420807c41dfadf10144f02c05e9e51e8033d35188ac68451af6bb1c5c83b",
+      "guide_chars": 795,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "C",
+      "registered_tools": 1,
+      "schema_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "guide_chars": 514,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "D",
+      "registered_tools": 1,
+      "schema_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+      "guide_sha256": "51a8420807c41dfadf10144f02c05e9e51e8033d35188ac68451af6bb1c5c83b",
+      "guide_chars": 795,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "C",
+      "registered_tools": 1,
+      "schema_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "guide_chars": 514,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "D",
+      "registered_tools": 1,
+      "schema_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+      "guide_sha256": "51a8420807c41dfadf10144f02c05e9e51e8033d35188ac68451af6bb1c5c83b",
+      "guide_chars": 795,
+      "isolation": true,
+      "oracle_positive_negative": true,
+      "native_inventory_complete": true,
+      "model_turns": 0
+    }
+  ],
+  "paired_schema_inventory_source_equal": true,
+  "instruction_insertion": "MCP initialization and explicit developer guide; internal provider materialization unknown",
+  "requested_budget": "awaiting user authorization; previous budget is consumed"
+}

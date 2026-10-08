@@ -53,6 +53,7 @@ class ReadAudit(unittest.TestCase):
             )
             self.assertEqual(result["counts"]["post_edit_same_hash_reads"], 0)
             self.assertEqual(result["counts"]["post_edit_unknown_hash_reads"], 2)
+            self.assertFalse(result["post_edit_classification_complete"])
         wrong = receipt("source_read")
         wrong["result"]["file"] = "other.ts"
         self.assertEqual(audit([wrong])["counts"]["reads_with_unknown_identity"], 1)

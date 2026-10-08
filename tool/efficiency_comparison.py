@@ -17,6 +17,7 @@ import time
 from pathlib import Path
 
 from efficiency_benchmark import (
+    COMPARISON_REVISIONS,
     COMPONENTS,
     PROCESS_CAPTURE_LIMIT,
     bounded_process,
@@ -99,6 +100,49 @@ def cell_id(manifest, task, replica, condition):
     return f"{manifest['campaign_id']}/{task}/r{replica}/{condition}"
 
 
+def validate_instruction_ablation(manifest, conditions, tasks):
+    """Allow a graph control only in the versioned instruction-only diagnostic."""
+    analysis = manifest["analysis"]
+    reference, candidate = analysis["reference"], analysis.get("candidate")
+    if (
+        len(conditions) != 2
+        or reference == candidate
+        or reference not in conditions
+        or candidate not in conditions
+        or analysis.get("previous") is not None
+        or analysis.get("comparisons") != [[candidate, reference]]
+        or analysis.get("experiment_kind") != "instruction_only_diagnostic"
+        or analysis.get("behavioral_primary") != "same_hash_post_edit_reads_per_accepted_task"
+    ):
+        raise ValueError("instruction ablation needs two explicit diagnostic conditions")
+    control, treatment = conditions[reference], conditions[candidate]
+    for condition in (control, treatment):
+        if condition.get("graph_enabled") is not True:
+            raise ValueError("instruction ablation requires a graph in both conditions")
+        if not isinstance(condition.get("shared_client_runtime_sha256"), dict) or not condition["shared_client_runtime_sha256"]:
+            raise ValueError("instruction ablation needs frozen shared client runtime")
+        surfaces = condition.get("task_surfaces", {})
+        if not isinstance(surfaces, dict) or set(surfaces) != set(tasks) or any(
+            not isinstance(surface, dict) or surface.get("graph_enabled") is not True
+            for surface in surfaces.values()
+        ):
+            raise ValueError("instruction ablation needs every frozen task graph surface")
+    for field in (
+        "binary_sha256", "source_identity", "config_sha256", "schema_sha256",
+        "provider_artifacts", "provider_source_artifacts", "shared_client_runtime_sha256",
+    ):
+        if not control.get(field) or control[field] != treatment.get(field):
+            raise ValueError("instruction ablation changed shared " + field)
+    if control.get("harness_sha256") == treatment.get("harness_sha256"):
+        raise ValueError("instruction ablation requires different frozen guides")
+    for task in tasks:
+        a, b = control["task_surfaces"][task], treatment["task_surfaces"][task]
+        if a.get("schema_sha256") != b.get("schema_sha256"):
+            raise ValueError("instruction ablation changed a task schema")
+        if a.get("harness_sha256") == b.get("harness_sha256"):
+            raise ValueError("instruction ablation needs different task guides")
+
+
 def validate(manifest, repository, launch=False):
     safe_id(manifest["campaign_id"])
     metric = primary_component(manifest)
@@ -174,12 +218,15 @@ def validate(manifest, repository, launch=False):
             "unsupported",
         ):
             raise ValueError(f"missing real enforcement status: {field}")
-    no_graph = manifest["analysis"]["reference"]
-    if (
-        no_graph not in conditions
-        or conditions[no_graph].get("graph_enabled") is not False
-    ):
-        raise ValueError("reference must exclude graph artifacts/schemas/instructions")
+    if manifest["protocol_revision"] == "instruction-ablation-v1":
+        validate_instruction_ablation(manifest, conditions, tasks)
+    else:
+        no_graph = manifest["analysis"]["reference"]
+        if (
+            no_graph not in conditions
+            or conditions[no_graph].get("graph_enabled") is not False
+        ):
+            raise ValueError("reference must exclude graph artifacts/schemas/instructions")
     seen = set()
     for name, condition in conditions.items():
         if "task_surfaces" in condition:
@@ -591,7 +638,7 @@ def run_campaign(manifest, jobs, command, oracle, work):
                     usage = normalize_attempt(
                         observed,
                         "usage-v2"
-                        if manifest["protocol_revision"] == "comparison-v2"
+                        if primary_component(manifest) == "total_tokens"
                         else "usage-v1",
                     )
                     if observed.get("attempt_id") != attempt_id or usage[
@@ -697,9 +744,9 @@ def component(usage, key):
 def primary_component(manifest):
     """Keep historical accounting frozen; v2 includes cached input and output."""
     revision = manifest.get("protocol_revision", "comparison-v1")
-    if revision not in ("comparison-v1", "comparison-v2"):
+    if revision not in COMPARISON_REVISIONS:
         raise ValueError("unknown comparison revision")
-    return "total_tokens" if revision == "comparison-v2" else "uncached_input_tokens"
+    return "uncached_input_tokens" if revision == "comparison-v1" else "total_tokens"
 
 
 def aggregate(records, primary="uncached_input_tokens"):
@@ -1034,7 +1081,10 @@ def evaluate_campaign(manifest, runs):
             elif da is not None and 0.95 <= da <= 1.05:
                 decision = "NEAR_PARITY_UNCERTAIN"
             # Screening never upgrades to a confirmed holdout verdict or economic stop.
-    return {
+    ablation = manifest["protocol_revision"] == "instruction-ablation-v1"
+    if ablation and consumption and isolation and correctness:
+        decision = "DIAGNOSTIC_ONLY"
+    result = {
         "protocol_revision": manifest.get("protocol_revision", "comparison-v1"),
         "status": "not_run" if not runs else "complete" if complete else "partial",
         "primary_metric": manifest["primary_metric"],
@@ -1072,3 +1122,52 @@ def evaluate_campaign(manifest, runs):
         ],
         "limits": "Known-task screening; uncertainty samples tasks, not requests or replicas. No general advantage or holdout confirmation.",
     }
+    if ablation:
+        result.update(
+            behavioral_primary=manifest["analysis"]["behavioral_primary"],
+            behavioral_evidence=readback_evidence(conditions, runs),
+            economic_interpretation={
+                "included_plan_quota": "unknown; requires attributable window/bucket observations",
+                "raw_tokens": "diagnostic accounting, not a measurement of subscription allowance",
+                "no_graph_product_baseline": False,
+                "product_savings_confirmed": False,
+            },
+        )
+    return result
+
+
+def readback_evidence(conditions, runs):
+    """Aggregate hash-observation diagnostics; absent/evicted evidence stays unknown."""
+    result = {}
+    for name in conditions:
+        records = [r for r in runs if r["condition"] == name]
+        clients = [r.get("client", {}) for r in records]
+        audits = [c.get("edit_receipt_audit", {}) for c in clients]
+        known = bool(records) and all(
+            isinstance(a, dict)
+            and isinstance(a.get("counts"), dict)
+            and a.get("complete") is True
+            and a.get("post_edit_classification_complete") is True
+            and all(
+                type(a.get("counts", {}).get(key)) is int and a["counts"][key] >= 0
+                for key in ("tool_calls", "post_edit_same_hash_reads", "successful_reads")
+            )
+            and a["counts"]["post_edit_same_hash_reads"] <= a["counts"]["successful_reads"]
+            and type(c.get("ordinary_tool_calls")) is int
+            and c["ordinary_tool_calls"] == a["counts"]["tool_calls"]
+            for a, c in zip(audits, clients, strict=True)
+        )
+        cells = {}
+        for record in records:
+            cells[record["cell_id"]] = record["success"]
+        accepted = sum(cells.values())
+        count = sum(a["counts"]["post_edit_same_hash_reads"] for a in audits) if known else None
+        result[name] = {
+            "same_hash_post_edit_reads": count,
+            "successful_direct_reads": sum(a["counts"]["successful_reads"] for a in audits) if known else None,
+            "accepted_tasks": accepted,
+            "same_hash_post_edit_reads_per_accepted_task": count / accepted if known and accepted else None,
+            "complete_receipt_classification": known,
+            "read_necessity": "unknown",
+        }
+    return result

@@ -103,12 +103,6 @@
   "python_tests": 97,
   "new_model_runs": 0,
   "historical_model_effect_remeasured": false,
-  "changed_files_sha256": {
-    "tool/efficiency_workflow.py": "cd06019653211a47f16dc0c0f677e2a594491d9b23ffe8a78e11c437869b4372",
-    "tool/efficiency_read_audit.py": "345fc877afdf4a76cf4bd37868fcc3e983d7ab8aa220eae3357a956ec059bccb",
-    "tool/test_efficiency_read_audit.py": "ba2c919da647c7f7744aff8daa7271bd8f69cf06b96a82df7fe1b06ecd2db955",
-    "tool/test_workflow_relay.py": "c27e736ff6b8bd18e805c4a67a9e297d0ba9de1676755f4fc36f80e1f57e314a"
-  },
   "log_sha256": {
     "t3-receipt-rust-20261008.log": "41f0d6d88d20508528ec9fdfc775540540b69e1ff3a6da5cbbe7d93e1206332b",
     "t3-receipt-python-final-20261008.log": "6a7275c0543252504cc188a39f3fe2aa1da68cd1e3feb71c6de6f2635deec7fc",
@@ -117,6 +111,142 @@
     "t3-package-smoke-20261008.log": "21b62bf3ed6a4cf0bee93585d185e807209c6c77c8cecd96b8abd18db2947929",
     "t3-package-smoke-fixed-20261008.log": "c1f630a1109d4cd20d10f301b5be108081f05ca92109cad573c22a33f2106c21"
   },
-  "limitations": "T3 acceptance, G5 holdout and T6 model savings remain open; quota unknown. Historical platform results cover unchanged native code, not new client revision.",
-  "development_package_relocated_smoke": "passed_after_writable_cache_environment_fix; first failure preserved"
+  "limitations": "T3 acceptance, G5 holdout and T6 model savings remain open; quota unknown. Product CI covers client commit 74fa450; subsequent diagnostic runner changes have 101 Linux Python tests and no separate cross-platform claim.",
+  "development_package_relocated_smoke": "passed_after_writable_cache_environment_fix; first failure preserved",
+  "diagnostic_runner_validation": {
+    "python_tests": 101,
+    "rust_tests": 93,
+    "new_model_turns": 0,
+    "paired_native_cases": 8,
+    "cross_platform_runner_tests": "not separately verified; campaign executor is Linux",
+    "historical_protocols": "unchanged mandatory no-graph reference and metric definitions",
+    "artifact_sha256": {
+      "tool/efficiency_benchmark.py": "618cf54d664e9e0280c86b27ce7a06834252d7d82c92a0d31838b3ff93370220",
+      "tool/efficiency_comparison.py": "de40f076fb2c18dec0b0998b6c1c23d3d69bfbea0519cd70316650c152c09c51",
+      "tool/test_instruction_ablation.py": "b1fa7401f3b6bdccacb4c147ae6140761587120c19c0f5fa83e11ae0571ee06e",
+      "tool/efficiency_read_audit.py": "6052ee0dd176b9dd0fc74244f184550502df0a1779c1e7e081e5678162369283",
+      "tool/test_efficiency_read_audit.py": "4c60efd176cef13150d9c15b57f40d28b5e422cb8c3edbfe987de11ec4e9590e"
+    },
+    "log_sha256": {
+      "t3-ablation-python-20261008.log": "d5af312367cd38eab0e879a608da9fee3cb8a3376dcbb19b73da0a963ea2e556",
+      "t3-ablation-python-complete-20261008.log": "e1763d7d2354957485d4e924af239b4dbcc818dce3fb31ec6508db9486384034",
+      "t3-ablation-rust-20261008.log": "22f85be22c99f507bc74a0eda113cf9af07d02a36cee23114a6821958fed2fbe"
+    }
+  },
+  "initial_correction_commit": "74fa45041f0faac1ec4ccc1010a29379fd965759",
+  "initial_correction_files_sha256": {
+    "tool/efficiency_workflow.py": "cd06019653211a47f16dc0c0f677e2a594491d9b23ffe8a78e11c437869b4372",
+    "tool/efficiency_read_audit.py": "345fc877afdf4a76cf4bd37868fcc3e983d7ab8aa220eae3357a956ec059bccb",
+    "tool/test_efficiency_read_audit.py": "ba2c919da647c7f7744aff8daa7271bd8f69cf06b96a82df7fe1b06ecd2db955",
+    "tool/test_workflow_relay.py": "c27e736ff6b8bd18e805c4a67a9e297d0ba9de1676755f4fc36f80e1f57e314a"
+  },
+  "product_ci": {
+    "tested_commit": "74fa45041f0faac1ec4ccc1010a29379fd965759",
+    "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37766561218",
+    "jobs": [
+      {
+        "name": "mobile (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "core (macos-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "mobile (ubuntu-24.04)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "mobile (macos-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "benchmark",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "core (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "flutter (macos-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "packages / package (macos-15-intel, macos-x64)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "flutter (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "integration (macos-latest, polyglot)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "flutter (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "core (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "integration (ubuntu-latest, dart)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "integration (macos-latest, dart)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "integration (windows-latest, polyglot)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "integration (windows-latest, dart)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "packages / package (ubuntu-latest, linux-x64)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "integration (ubuntu-latest, polyglot)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "packages / package (macos-latest, macos-arm64)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "packages / package (windows-latest, windows-x64)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "job_count": 20,
+    "conclusion": "success",
+    "skipped_steps": "Conditional skipped steps do not establish coverage; diagnostic runner changes were tested separately on Linux."
+  }
 }

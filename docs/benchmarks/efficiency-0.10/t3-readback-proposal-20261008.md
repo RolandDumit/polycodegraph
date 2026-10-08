@@ -6,6 +6,10 @@ ablation on known fixtures, not a product savings confirmation or G5 holdout.
 
 ## Proposed comparison
 
+Use the separately versioned [instruction-only diagnostic protocol](
+instruction-ablation-protocol-v1.md). Historical comparison-v1/v2 still require
+their no-graph reference; neither their manifests nor their results change.
+
 - Four existing controlled tasks: `signature-1`, `signature-2`, `rename-1`,
   `rename-2`. One old-guide C and one corrected-guide D per task: eight new
   solver turns. Alternate paired order; no exclusions based on results.

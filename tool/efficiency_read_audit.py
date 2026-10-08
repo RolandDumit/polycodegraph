@@ -109,7 +109,8 @@ def audit(
     return {
         "counts": counts,
         "complete": True,
-        "post_edit_classification_complete": counts["evicted_file_identities"] == 0,
+        "post_edit_classification_complete": counts["evicted_file_identities"] == 0
+        and counts["post_edit_unknown_hash_reads"] == 0,
         "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
         "read_necessity": "unknown",
         "model_retention": "unknown",

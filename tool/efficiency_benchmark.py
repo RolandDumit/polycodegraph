@@ -25,6 +25,7 @@ from efficiency_process import DEFAULT_FILE_SIZE_BYTES, file_size_budget
 from efficiency_usage import codex_metadata, requests, verify
 
 PROCESS_CAPTURE_LIMIT = 8 * 1024 * 1024
+COMPARISON_REVISIONS = ("comparison-v1", "comparison-v2", "instruction-ablation-v1")
 ORDERS = ("ABC", "ACB", "BAC", "BCA", "CAB", "CBA")
 COMPONENTS = (
     "input_tokens",
@@ -55,7 +56,7 @@ def write(path: Path, value: dict) -> None:
 def validate_manifest(
     manifest: dict, repository: Path, launch: bool = False
 ) -> list[str]:
-    if manifest.get("protocol_revision") in ("comparison-v1", "comparison-v2"):
+    if manifest.get("protocol_revision") in COMPARISON_REVISIONS:
         from efficiency_comparison import validate
 
         return validate(manifest, repository, launch)
@@ -303,7 +304,7 @@ def bounded_process(
 
 
 def prepare(manifest: dict, repository: Path, work: Path) -> dict:
-    if manifest.get("protocol_revision") in ("comparison-v1", "comparison-v2"):
+    if manifest.get("protocol_revision") in COMPARISON_REVISIONS:
         from efficiency_comparison import prepare_campaign
 
         return prepare_campaign(manifest, repository, work)
@@ -356,7 +357,7 @@ def prepare(manifest: dict, repository: Path, work: Path) -> dict:
 def run(
     manifest: dict, jobs: dict, command: Path, oracle: Path, work: Path
 ) -> list[dict]:
-    if manifest.get("protocol_revision") in ("comparison-v1", "comparison-v2"):
+    if manifest.get("protocol_revision") in COMPARISON_REVISIONS:
         from efficiency_comparison import run_campaign
 
         return run_campaign(manifest, jobs, command, oracle, work)
@@ -532,7 +533,7 @@ def valid_money(value: object) -> bool:
 
 
 def evaluate(manifest: dict, runs: list[dict]) -> dict:
-    if manifest.get("protocol_revision") in ("comparison-v1", "comparison-v2"):
+    if manifest.get("protocol_revision") in COMPARISON_REVISIONS:
         from efficiency_comparison import evaluate_campaign
 
         return evaluate_campaign(manifest, runs)
