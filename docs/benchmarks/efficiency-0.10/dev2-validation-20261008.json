@@ -529,8 +529,21 @@
   "relocated_package": "passed_native_binary_eight_client_modules_and_adjacent_workflow",
   "ci": {
     "run_id": 37757087818,
-    "status": "19 passed; macOS UIKit timed out; same-code failed-job recheck pending",
-    "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37757087818"
+    "status": "success_after_same_code_macOS_mobile_recheck",
+    "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37757087818",
+    "successful_jobs": 20,
+    "tested_program_commit": "2e40eceecce941aa96048c0bf02bd2614b1df55d",
+    "initial_macOS_UIKit_timeout_preserved": true,
+    "SDK": {
+      "android": {
+        "symbols": 5,
+        "edges": 6
+      },
+      "UIKit": {
+        "symbols": 13,
+        "edges": 23
+      }
+    }
   },
   "log_sha256": {
     "rust-final.log": "1b28bfb48fe0c18afd3e7eeaa47b7cef5ee5dba0ea015a9051453f5a7a59bcc7",
@@ -543,7 +556,8 @@
     "native-benchmark/results.private.json": "8a82d49960f1ddf97c1026cc3e6080b4a47758cb07644a89a3d2a6045984032c",
     "package-build-final.log": "de0363ac97c547bbdcc7e84f569c0628d2e28c0736cae6044dca7212be13078c",
     "package-relocated-final.log": "1e6f2527f152063410ca3598134c5405e789a929ede77af1d7b973b376c2de04",
-    "baseline-0.6-build.log": "403c48a1b1c1ac85739a9ad1d43e5f903e916a2dd0d4984500e8b495d085c9b2"
+    "baseline-0.6-build.log": "403c48a1b1c1ac85739a9ad1d43e5f903e916a2dd0d4984500e8b495d085c9b2",
+    "ci-uikit-recheck.private.log": "c874ff8abc97d42950f8e672537ab3ddacf5db5b756dadf48f03b87eaeb6ea8d"
   },
   "limits": [
     "No new paid model comparison; characters are not tokens",

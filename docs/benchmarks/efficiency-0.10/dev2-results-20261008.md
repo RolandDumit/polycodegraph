@@ -36,10 +36,12 @@ adjacent workflow entrypoint. Indexed application code is never executed.
 
 Platform CI for the tested commit is tracked at
 [the dev.2 run](https://github.com/RolandDumit/polycodegraph/actions/runs/37757087818).
-Nineteen platform jobs passed. The macOS UIKit request timed out while waiting
-for compiler-backed indexing; the failed-job recheck on identical source is
-pending. This check does not yet establish UIKit coverage. Pending or skipped
-checks do not establish platform coverage.
+All 20 jobs passed after a same-code recheck of the macOS mobile job. Its
+initial UIKit timeout is preserved; the recheck verified 13 UIKit-fixture
+symbols and 23 edges, and Android verified 5 symbols and 6 edges. No timeout
+or product limit was relaxed. Conditional skipped steps do not establish
+coverage. UIKit took approximately 170 seconds; the TypeScript runtime guards
+below are not a general UIKit latency claim.
 
 An initial native cursor recovery failure exposed missing policy forwarding;
 the corrected relay passes both the unit regression and real continuation smoke.
