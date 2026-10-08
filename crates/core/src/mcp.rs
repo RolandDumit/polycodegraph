@@ -93,9 +93,17 @@ pub fn validate(spec: &Value, a: &Value) -> Result<()> {
     if spec["name"] == "inspect_change" {
         if a.get("intent").is_some() {
             crate::intents::Request::parse(a)?;
-        } else if ["options", "budget", "cursor", "view", "context", "format"]
-            .iter()
-            .any(|key| a.get(key).is_some())
+        } else if [
+            "options",
+            "budget",
+            "cursor",
+            "view",
+            "context",
+            "format",
+            "source_policy",
+        ]
+        .iter()
+        .any(|key| a.get(key).is_some())
         {
             bail!("options/budget/cursor/view/context require intent")
         }

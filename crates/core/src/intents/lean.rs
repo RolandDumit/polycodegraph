@@ -194,6 +194,9 @@ pub fn project(
     if audit.get("details").is_some() {
         result["details"] = audit["details"].clone();
     }
+    if let Some(selection) = audit.get("source_selection") {
+        result["source_selection"] = selection.clone();
+    }
     if provider_incomplete || g.health.diagnostics.values().sum::<usize>() > 0 {
         result["diagnostics"] = audit["diagnostics"].clone();
         result["coverage"] = g.health.coverage.clone();

@@ -265,6 +265,7 @@ fn snippets(
     file: &str,
     evidence: &[Evidence],
     sources: &Sources,
+    source_remaining: &mut usize,
 ) -> Value {
     let Some(source) = sources.get(file) else {
         return json!([]);
@@ -285,13 +286,17 @@ fn snippets(
         };
         used += lines.len();
         let text = lines.join("\n");
-        let limit = c.max_snippet_chars.min(if p.request.view.is_none() {
-            2000
-        } else {
-            c.max_snippet_chars
-        });
+        let limit = c
+            .max_snippet_chars
+            .min(if p.request.view.is_none() {
+                2000
+            } else {
+                c.max_snippet_chars
+            })
+            .min(*source_remaining);
         let truncated = end < desired || text.chars().count() > limit || lines.is_empty();
         let text: String = text.chars().take(limit).collect();
+        *source_remaining = source_remaining.saturating_sub(text.chars().count());
         let mut value = json!({"start_line":w.start,"end_line":w.start+text.split('\n').count()-1,"text":text,"truncated":truncated,"requested_end_line":w.end});
         if p.request.view.is_some() {
             value["precision"] = json!(w.precision);
@@ -340,6 +345,7 @@ fn response(
     evidence: &[Evidence],
     offset: usize,
     identity: (&str, &Value, &Value, &Sources),
+    source_limit: usize,
 ) -> Result<Value> {
     let (health, providers, freshness, sources) = identity;
     let mut symbols = BTreeMap::new();
@@ -374,6 +380,7 @@ fn response(
         }
     }
     let mut file_groups = vec![];
+    let mut source_remaining = source_limit;
     for (file, records) in &groups {
         let sites: Vec<_> = records
             .iter()
@@ -381,7 +388,7 @@ fn response(
             .map(|e| e.edge.line)
             .collect();
         let snippet = if !sites.is_empty() && g.snapshot.files.contains_key(file) {
-            snippets(g, c, p, file, evidence, sources)
+            snippets(g, c, p, file, evidence, sources, &mut source_remaining)
         } else {
             json!([])
         };
@@ -440,6 +447,9 @@ fn response(
     }
     let source_incomplete = file_groups_incomplete(&result["files"]);
     result["source_windows_incomplete"] = json!(source_incomplete);
+    if p.request.source_policy.is_some() || p.request.budget.max_source_chars.is_some() {
+        result["source_selection"] = json!({"policy":p.request.source_policy,"view":p.request.view,"max_source_chars":p.request.budget.max_source_chars,"emitted_source_chars":source_limit-source_remaining,"scope":"source text only; required inventory and metadata remain subject to max_chars","explicit_view_overrides_policy":true});
+    }
     let mut causes = vec![];
     if p.exploration_limited {
         causes.push("traversal_budget");
@@ -571,6 +581,7 @@ pub fn page(
     let cap = p.request.budget.max_collection_items.unwrap_or(usize::MAX);
     count = count.min(cap.saturating_sub(offset));
     let sources = read_sources(g, c, p, &p.evidence[offset..offset + count], metrics)?;
+    let mut source_limit = p.request.budget.max_source_chars.unwrap_or(usize::MAX);
     loop {
         let slice = &p.evidence[offset..offset + count];
         let result = response(
@@ -580,6 +591,7 @@ pub fn page(
             slice,
             offset,
             (health, providers, &freshness, &sources),
+            source_limit,
         )?;
         if fits(p, &result) {
             verify(
@@ -598,6 +610,12 @@ pub fn page(
                 result,
                 (next < p.evidence.len() && next < cap).then_some(next),
             ));
+        }
+        // With an explicit source budget, shrink optional text before reducing
+        // the inventory page. Every omitted slice remains visibly truncated.
+        if p.request.budget.max_source_chars.is_some() && source_limit > 0 {
+            source_limit /= 2;
+            continue;
         }
         if count <= 1 {
             bail!(

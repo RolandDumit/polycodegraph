@@ -772,6 +772,12 @@
               "minimum": 1,
               "maximum": 100000,
               "description": "Cumulative collection record cap; restart with a larger cap if exhausted."
+            },
+            "max_source_chars": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000,
+              "description": "Independent page source-text character budget. Omitted text stays explicitly truncated; required inventory is not sampled."
             }
           }
         },
@@ -802,6 +808,13 @@
             "lean"
           ],
           "description": "Opt-in pcg-lean-1 presentation. Omitted/audit preserves legacy output. Lean is self-contained, uses strict review scopes and separate inventory/verification states."
+        },
+        "source_policy": {
+          "type": "string",
+          "enum": [
+            "intent"
+          ],
+          "description": "Opt-in intent source selection: rename locations, signature contracts, other intents edit context. Explicit view overrides this policy; all required sites remain."
         }
       },
       "required": [

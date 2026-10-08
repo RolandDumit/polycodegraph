@@ -2,7 +2,32 @@
 
 The first tranche implements T0–T2 from the [research plan](token-efficiency-research-plan-0.10.0.md).
 It is opt-in client work, not a released 0.10 version or a measured AI saving.
-The package is marked `0.10.0-dev.2`; server defaults stay unchanged until release gates pass.
+The package is marked `0.10.0-dev.2`. Native defaults remain compatible; the
+selected workflow integration opts into intent source selection. See the
+[development milestones](development-0.10-dev2.md).
+
+## T3: independent source selection
+
+Native `inspect_change` accepts optional `source_policy: intent`. Without an
+explicit `view`, rename selects locations, signature changes select contracts,
+and other intents select edit context. An explicit view always wins, including
+full evidence. Inventory, resolver confidence and distinct offsets are preserved.
+Locations are an inventory; ambiguity, serialization/wire names and actual edits
+can still require direct source reads. Bug diagnosis retains edit-context strings
+and comments; no global comment removal is applied.
+
+Optional `budget.max_source_chars` (0–100,000) caps the sum of emitted source
+text characters per page, independently of inventory. Truncation stays visible;
+hash validation remains unchanged. If the whole response does not fit, optional
+source shrinks before the inventory page. Native omitted options retain old
+behavior. Selected workflow schemas expose the policy and apply it explicitly
+at collection; explicit views remain respected.
+
+The client adapter optionally accepts `max_input_tokens`, `count_tokens` and
+`tokenizer_id`. The caller supplies a tokenizer for the actual destination model;
+the final insertion text must fit before insertion. This counts that text only,
+excluding model request wrappers, schemas and prior history. There is no bundled
+universal tokenizer. Native `max_tokens` remains a characters/4 estimate.
 The full/agent server catalogs, accepted primitive tools, audit/lean formats and
 semantic resolver contracts remain available.
 

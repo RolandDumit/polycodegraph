@@ -30,6 +30,11 @@ pub enum Format {
     Audit,
     Lean,
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SourcePolicy {
+    Intent,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ClientContext {
@@ -48,6 +53,8 @@ pub struct ClientContext {
 pub struct Budget {
     pub max_chars: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_source_chars: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_tokens: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_collection_items: Option<usize>,
@@ -59,6 +66,7 @@ impl Default for Budget {
     fn default() -> Self {
         Self {
             max_chars: 12000,
+            max_source_chars: None,
             max_tokens: None,
             max_collection_items: None,
             max_items: 40,
@@ -160,6 +168,7 @@ pub struct Request {
     pub view: Option<View>,
     pub context: Option<ClientContext>,
     pub format: Option<Format>,
+    pub source_policy: Option<SourcePolicy>,
 }
 impl Request {
     pub fn lean(&self) -> bool {
@@ -171,6 +180,10 @@ impl Request {
             .map(|v| serde_json::from_value(v.clone()))
             .transpose()?;
         let intent: Intent = serde_json::from_value(a["intent"].clone())?;
+        let source_policy: Option<SourcePolicy> = a
+            .get("source_policy")
+            .map(|v| serde_json::from_value(v.clone()))
+            .transpose()?;
         let target = a["target"]
             .as_str()
             .ok_or_else(|| anyhow::anyhow!("target required"))?
@@ -200,6 +213,7 @@ impl Request {
             || !(1..=200).contains(&budget.max_items)
             || !(1..=32).contains(&budget.max_files)
             || !(1..=100000).contains(&budget.max_traversal)
+            || budget.max_source_chars.is_some_and(|n| n > 100000)
             || budget
                 .max_tokens
                 .is_some_and(|n| !(256..=32000).contains(&n))
@@ -326,9 +340,20 @@ impl Request {
             budget,
             depth,
             detail: a["detail"].as_str().map(str::to_owned),
-            view: view.or_else(|| (format == Some(Format::Lean)).then_some(View::EditContext)),
+            view: view.or_else(|| {
+                if source_policy == Some(SourcePolicy::Intent) {
+                    Some(match intent {
+                        Intent::Rename => View::Locations,
+                        Intent::ChangeSignature => View::Contracts,
+                        _ => View::EditContext,
+                    })
+                } else {
+                    (format == Some(Format::Lean)).then_some(View::EditContext)
+                }
+            }),
             context,
             format,
+            source_policy,
         })
     }
 }

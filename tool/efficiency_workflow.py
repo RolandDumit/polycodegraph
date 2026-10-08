@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import copy
 
-AGENT_TOOLS = ("status", "search_symbol", "inspect_change", "snippet", "index_repository")
+AGENT_TOOLS = (
+    "status",
+    "search_symbol",
+    "inspect_change",
+    "snippet",
+    "index_repository",
+)
 WORKFLOW_GUIDE = (
     "Use the known target directly. Collect required sites before editing; preserve full IDs, "
     "offsets, confidence, snapshot and limits. Expand only a concrete missing fact or source. "
@@ -13,7 +19,13 @@ WORKFLOW_GUIDE = (
 )
 
 
-def workflow_surface(catalog: list[dict], profile: str, *, discovery: bool = False, continuation: bool = False) -> dict:
+def workflow_surface(
+    catalog: list[dict],
+    profile: str,
+    *,
+    discovery: bool = False,
+    continuation: bool = False,
+) -> dict:
     """Materialize a task-start surface; register these tools and exactly these instructions.
 
     Full/agent retain the canonical specs. A selected intent uses the canonical name,
@@ -42,6 +54,8 @@ def workflow_surface(catalog: list[dict], profile: str, *, discovery: bool = Fal
     properties["intent"] = {"type": "string", "enum": [profile]}
     properties["format"] = {"type": "string", "enum": ["lean"]}
     properties["options"] = copy.deepcopy(variant["properties"]["options"])
+    if "source_policy" in canonical["properties"]:
+        properties["source_policy"] = copy.deepcopy(canonical["properties"]["source_policy"])
     if continuation:
         properties["cursor"] = copy.deepcopy(canonical["properties"]["cursor"])
         properties["cursor"]["description"] = (
@@ -76,4 +90,7 @@ def workflow_arguments(surface: dict, arguments: dict) -> dict:
         raise ValueError("argument conflicts with selected workflow")
     if set(arguments.get("options", {})) - schema["properties"]["options"]["properties"].keys():
         raise ValueError("option outside selected workflow")
-    return copy.deepcopy(arguments)
+    result = copy.deepcopy(arguments)
+    if "source_policy" in schema["properties"]:
+        result.setdefault("source_policy", "intent")
+    return result

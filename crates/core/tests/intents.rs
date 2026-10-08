@@ -78,6 +78,62 @@ fn request(intent: &str, ext: &str) -> Value {
     json!({"intent":intent,"target":"api","options":options})
 }
 #[test]
+fn intent_source_policy_preserves_all_sites_and_respects_explicit_view() {
+    let (_d, c, g) = fixture("ts");
+    let mut state = State::default();
+    let original = state
+        .prepare(
+            &g,
+            &c,
+            &json!({"intent":"rename","target":"api","format":"lean"}),
+            json!({}),
+        )
+        .unwrap();
+    let locations = state
+        .prepare(
+            &g,
+            &c,
+            &json!({"intent":"rename","target":"api","format":"lean","source_policy":"intent"}),
+            json!({}),
+        )
+        .unwrap();
+    assert_eq!(original["records"], locations["records"]);
+    assert_eq!(locations["sources"], json!([]));
+    assert_eq!(locations["source_selection"]["view"], "locations");
+    let explicit = state.prepare(&g, &c, &json!({"intent":"rename","target":"api","format":"lean","source_policy":"intent","view":"full_evidence"}), json!({})).unwrap();
+    assert_eq!(explicit["records"], original["records"]);
+    assert!(!explicit["sources"].as_array().unwrap().is_empty());
+    let signature = state.prepare(&g, &c, &json!({"intent":"change_signature","target":"api","format":"lean","source_policy":"intent"}), json!({})).unwrap();
+    assert_eq!(signature["source_selection"]["view"], "contracts");
+}
+#[test]
+fn separate_source_budget_keeps_required_inventory_and_visible_truncation() {
+    let (_d, c, g) = fixture("ts");
+    let mut state = State::default();
+    let args = json!({"intent":"rename","target":"api","format":"lean","view":"full_evidence"});
+    let original = state.prepare(&g, &c, &args, json!({})).unwrap();
+    for size in [0, 8, 32] {
+        let mut bounded = args.clone();
+        bounded["budget"] = json!({"max_source_chars":size});
+        let result = state.prepare(&g, &c, &bounded, json!({})).unwrap();
+        assert_eq!(original["records"], result["records"]);
+        assert!(
+            result["source_selection"]["emitted_source_chars"]
+                .as_u64()
+                .unwrap()
+                <= size
+        );
+        assert_eq!(result["source_windows_incomplete"], true);
+        assert_eq!(
+            result["completion"]["required_inventory"],
+            original["completion"]["required_inventory"]
+        );
+    }
+    let mut invalid = args;
+    invalid["budget"] = json!({"max_source_chars":100001});
+    assert!(state.prepare(&g, &c, &invalid, json!({})).is_err());
+}
+#[test]
 fn ten_intents_ten_languages_use_static_evidence_and_preserve_primitives() {
     for ext in [
         "dart", "ts", "js", "java", "go", "py", "rs", "swift", "m", "kt",

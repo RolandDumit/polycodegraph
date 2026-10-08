@@ -61,7 +61,10 @@ class Observer:
         return self.event_sequence
 
     def request_model(
-        self, request_id: str, actual_prompt_schema: str | None = None, actual_instructions: str | None = None
+        self,
+        request_id: str,
+        actual_prompt_schema: str | None = None,
+        actual_instructions: str | None = None,
     ) -> None:
         """Observe a real outgoing request, correlating insertions and materialized surface.
 
@@ -116,7 +119,11 @@ class Observer:
         )
 
     def observe_wire(
-        self, result: dict, tool: str | None = None, arguments: dict | None = None, call_id: int | None = None
+        self,
+        result: dict,
+        tool: str | None = None,
+        arguments: dict | None = None,
+        call_id: int | None = None,
     ) -> None:
         if call_id is None:
             self.mcp_calls += 1
@@ -189,13 +196,21 @@ class Observer:
             for window in source.get("windows", []):
                 self._window(
                     source["file"],
-                    dict(window, phase=source.get("phase", window.get("phase", "current"))),
+                    dict(
+                        window,
+                        phase=source.get("phase", window.get("phase", "current")),
+                    ),
                     value.get("snapshot", {}).get("root_id"),
                     source.get("source_hash"),
                 )
         for file in value.get("files", []):
             for window in file.get("snippets", []):
-                self._window(file["file"], window, value.get("context", {}).get("root_id"), file.get("source_hash"))
+                self._window(
+                    file["file"],
+                    window,
+                    value.get("context", {}).get("root_id"),
+                    file.get("source_hash"),
+                )
         # Primitive snippet and inspect_change(include_snippet) are source too.
         if "file" in value and "text" in value:
             self._window(value["file"], value, value.get("root_id"), value.get("source_hash"))
@@ -221,7 +236,12 @@ class Observer:
             text = compact(result["structuredContent"])
             values.append(result["structuredContent"])
         elif representation == "both":
-            text = compact({"content": result["content"], "structuredContent": result["structuredContent"]})
+            text = compact(
+                {
+                    "content": result["content"],
+                    "structuredContent": result["structuredContent"],
+                }
+            )
             values.append(result["structuredContent"])
             for block in result["content"]:
                 if block.get("type") == "text":
@@ -239,7 +259,12 @@ class Observer:
                 self.context_inventory_verified = False
             else:
                 for window in prompt_windows:
-                    self._window(window["file"], window, window.get("root_id"), window.get("source_hash"))
+                    self._window(
+                        window["file"],
+                        window,
+                        window.get("root_id"),
+                        window.get("source_hash"),
+                    )
         else:
             raise ValueError("actual client response representation must be explicit")
         self.representations.add(representation)
@@ -328,6 +353,9 @@ class LeanAdapter:
         collection_format="pcg-lean-collection-1",
         deadline_call=None,
         defer_insertion=False,
+        max_input_tokens=None,
+        count_tokens=None,
+        tokenizer_id=None,
     ):
         if (
             any(type(value) is not int for value in (max_pages, max_chars, max_wire_bytes))
@@ -353,10 +381,37 @@ class LeanAdapter:
         self.deadline_call = deadline_call
         self.defer_insertion = defer_insertion
         self.pending_insertion = None
+        if max_input_tokens is not None and (
+            type(max_input_tokens) is not int
+            or not 1 <= max_input_tokens <= 1000000
+            or not callable(count_tokens)
+            or not isinstance(tokenizer_id, str)
+            or not 1 <= len(tokenizer_id) <= 128
+        ):
+            raise ValueError("exact insertion budget requires an explicit tokenizer and identity")
+        self.max_input_tokens = max_input_tokens
+        self.count_tokens = count_tokens
+        self.tokenizer_id = tokenizer_id
+
+    def _tokens_fit(self, text: str) -> bool:
+        if self.max_input_tokens is None:
+            return True
+        count = self.count_tokens(text)
+        if type(count) is not int or count < 0:
+            raise ValueError("tokenizer must return a nonnegative integer")
+        return count <= self.max_input_tokens
 
     def _inject(self, result: dict, representation: str, transformed=None, prompt_windows=None) -> str:
+        text = transformed if transformed is not None else result["content"][0]["text"]
+        if not self._tokens_fit(text):
+            raise ValueError("prepared insertion exceeds exact tokenizer budget; nothing inserted")
         if self.defer_insertion:
-            self.pending_insertion = (result, representation, transformed, prompt_windows)
+            self.pending_insertion = (
+                result,
+                representation,
+                transformed,
+                prompt_windows,
+            )
             return transformed if transformed is not None else result["content"][0]["text"]
         return self.observer.inject(result, representation, transformed, prompt_windows)
 
@@ -371,7 +426,12 @@ class LeanAdapter:
         self.call_id = self.observer.begin_call("inspect_change", arguments)
         try:
             if self.deadline_call is not None:
-                return self.deadline_call("inspect_change", arguments, deadline=deadline, cancelled=self.cancelled)
+                return self.deadline_call(
+                    "inspect_change",
+                    arguments,
+                    deadline=deadline,
+                    cancelled=self.cancelled,
+                )
             return self.call("inspect_change", arguments)
         except Exception as error:
             self.observer.errors += 1
@@ -390,15 +450,29 @@ class LeanAdapter:
                 if raw.get("structuredContent") is not None
                 else "".join(c.get("text", "") for c in raw.get("content", []) if c.get("type") == "text")
             )
-            if len(text) > self.max_chars:
+            if len(text) > self.max_chars or not self._tokens_fit(text):
                 inserted = self._inject(
                     {},
                     "transformed",
-                    compact({"complete": False, "limit": "collector_context_budget", "requested_format": "audit"}),
+                    compact(
+                        {
+                            "complete": False,
+                            "limit": "collector_context_budget",
+                            "requested_format": "audit",
+                        }
+                    ),
                     prompt_windows=[],
                 )
-                return {"text": inserted, "complete": False, "reason": "collector_context_budget"}
-            return {"text": self._inject(raw, "text"), "complete": False, "reason": "explicit_audit"}
+                return {
+                    "text": inserted,
+                    "complete": False,
+                    "reason": "collector_context_budget",
+                }
+            return {
+                "text": self._inject(raw, "text"),
+                "complete": False,
+                "reason": "explicit_audit",
+            }
         if not arguments.get("intent") or "context" in arguments or "cursor" in arguments:
             raise ValueError("lean adapter requires intent and owns pagination; no retention context")
         arguments = dict(arguments, format="lean")
@@ -448,7 +522,11 @@ class LeanAdapter:
                         "complete": False,
                         "reason": "collector_error_budget",
                     }
-                return {"text": self._inject(raw, "text"), "complete": False, "reason": "tool_error"}
+                return {
+                    "text": self._inject(raw, "text"),
+                    "complete": False,
+                    "reason": "tool_error",
+                }
             page = raw["structuredContent"]
             if page.get("restart_required"):
                 stopped = "restart_required"
@@ -473,8 +551,15 @@ class LeanAdapter:
                 candidate_chars = len(compact(candidate))
             else:
                 candidate_chars = len(compact({"pages": values + [page]}))
-            if candidate_chars + 512 > self.max_chars:
-                stopped = "collector_context_budget"
+            candidate_text = (
+                compact(candidate)
+                if self.collection_format == "pcg-lean-collection-2"
+                else compact({"pages": values + [page]})
+            )
+            if candidate_chars + 512 > self.max_chars or not self._tokens_fit(candidate_text):
+                stopped = (
+                    "collector_context_budget" if candidate_chars + 512 > self.max_chars else "collector_token_budget"
+                )
                 break
             values.append(page)
             if not page["next_cursor"] or (
@@ -488,7 +573,12 @@ class LeanAdapter:
             stopped is None and bool(values) and values[-1]["completion"]["required_inventory"]["state"] == "complete"
         )
         windows = [
-            dict(window, file=source["file"], root_id=page["snapshot"]["root_id"], source_hash=source["source_hash"])
+            dict(
+                window,
+                file=source["file"],
+                root_id=page["snapshot"]["root_id"],
+                source_hash=source["source_hash"],
+            )
             for page in values
             for source in page["sources"]
             for window in source["windows"]
@@ -506,11 +596,22 @@ class LeanAdapter:
             windows = source_windows(selected)
             text = compact(selected)
         else:
-            text = compact({"format": "pcg-lean-collection-1", "pages": values, "collection": collection})
-        if len(text) > self.max_chars:
+            text = compact(
+                {
+                    "format": "pcg-lean-collection-1",
+                    "pages": values,
+                    "collection": collection,
+                }
+            )
+        if len(text) > self.max_chars or not self._tokens_fit(text):
             complete = False
-            stopped = "collector_context_budget"
-            text = compact({"format": self.collection_format, "collection": {"complete": False, "limit": stopped}})
+            stopped = "collector_context_budget" if len(text) > self.max_chars else "collector_token_budget"
+            text = compact(
+                {
+                    "format": self.collection_format,
+                    "collection": {"complete": False, "limit": stopped},
+                }
+            )
             windows = []
         self.observer.pages += len(values)
         inserted = self._inject({}, "transformed", text, prompt_windows=windows)
