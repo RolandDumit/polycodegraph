@@ -193,6 +193,26 @@
             "callers"
           ],
           "description": "Lexical mode only: bounded direct resolved relations, separate from retrieval confidence."
+        },
+        "group_by": {
+          "type": "string",
+          "enum": [
+            "line",
+            "anchor"
+          ],
+          "description": "Lexical only: group anchors before pagination; line mode preserves individual matches."
+        },
+        "ranking": {
+          "type": "string",
+          "enum": [
+            "overlap",
+            "bm25"
+          ],
+          "description": "Lexical only: default overlap IDF baseline or experimental binary-term BM25 with name/path weighting."
+        },
+        "anchor": {
+          "type": "string",
+          "description": "Lexical only: filter exact anchor ID to page individual match lines."
         }
       },
       "required": [
@@ -272,6 +292,26 @@
             "callers"
           ],
           "description": "Lexical mode only: bounded direct resolved relations, separate from retrieval confidence."
+        },
+        "group_by": {
+          "type": "string",
+          "enum": [
+            "line",
+            "anchor"
+          ],
+          "description": "Lexical only: group anchors before pagination; line mode preserves individual matches."
+        },
+        "ranking": {
+          "type": "string",
+          "enum": [
+            "overlap",
+            "bm25"
+          ],
+          "description": "Lexical only: default overlap IDF baseline or experimental binary-term BM25 with name/path weighting."
+        },
+        "anchor": {
+          "type": "string",
+          "description": "Lexical only: filter exact anchor ID to page individual match lines."
         }
       },
       "required": [

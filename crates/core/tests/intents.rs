@@ -107,6 +107,105 @@ fn intent_source_policy_preserves_all_sites_and_respects_explicit_view() {
     assert_eq!(signature["source_selection"]["view"], "contracts");
 }
 #[test]
+fn lexical_anchor_groups_do_not_let_repeated_lines_hide_other_anchors() {
+    let (d, c, g) = fixture("ts");
+    let text = format!(
+        "function api() {{\n{}\n}}\nfunction caller() {{ throw 'échec réseau'; }}\n",
+        "  throw 'échec réseau';\n".repeat(50)
+    );
+    fs::write(d.path().join("api.ts"), &text).unwrap();
+    let mut snapshot = (*g.snapshot).clone();
+    let record = snapshot.files.get_mut("api.ts").unwrap();
+    record.hash = hash(text);
+    record.nodes.retain(|n| n.name != "testHelper");
+    record.nodes[1].line = 1;
+    record.nodes[1].end = 53;
+    record.nodes[2].line = 54;
+    record.nodes[2].end = 54;
+    let g = Graph::new(snapshot);
+    let args = json!({"query":"échec réseau","mode":"lexical","limit":2});
+    let line = g.call(&c, "search_symbol", &args).unwrap();
+    assert_eq!(line["rows"][0][2], line["rows"][1][2]);
+    let mut grouped = args.clone();
+    grouped["group_by"] = json!("anchor");
+    let anchors = g.call(&c, "search_symbol", &grouped).unwrap();
+    assert_eq!(anchors["rows"].as_array().unwrap().len(), 2);
+    assert_ne!(anchors["rows"][0][2], anchors["rows"][1][2]);
+    assert!(anchors["rows"][0][5].as_u64().unwrap() >= 50);
+    let mut details = args;
+    details["anchor"] = anchors["rows"][0][2].clone();
+    let details = g.call(&c, "search_symbol", &details).unwrap();
+    assert_eq!(details["discovered_total"], anchors["rows"][0][5]);
+    grouped["ranking"] = json!("bm25");
+    let ablation = g.call(&c, "search_symbol", &grouped).unwrap();
+    assert_eq!(ablation, g.call(&c, "search_symbol", &grouped).unwrap());
+    assert_eq!(ablation["discovered_total"], anchors["discovered_total"]);
+    fs::write(d.path().join("api.ts"), "changed source").unwrap();
+    assert!(
+        g.call(&c, "search_symbol", &grouped)
+            .unwrap_err()
+            .to_string()
+            .contains("stale")
+    );
+}
+#[test]
+fn lexical_scope_builds_before_global_caps_and_reports_excluded_files() {
+    let (d, c, g) = fixture("ts");
+    let text = "noise\n".repeat(100001);
+    fs::write(d.path().join("a.ts"), &text).unwrap();
+    let mut snapshot = (*g.snapshot).clone();
+    snapshot.files.insert(
+        "a.ts".into(),
+        FileRecord {
+            file: "a.ts".into(),
+            hash: hash(text),
+            nodes: vec![],
+            edges: vec![],
+            dependencies: vec![],
+            diagnostics: vec![],
+            unresolved_calls: 0,
+            intent: Default::default(),
+        },
+    );
+    let g = Graph::new(snapshot);
+    let global = g
+        .call(
+            &c,
+            "search_symbol",
+            &json!({"query":"wire","mode":"lexical"}),
+        )
+        .unwrap();
+    assert_eq!(global["index"]["incomplete"], true);
+    assert_eq!(global["total"], Value::Null);
+    assert_eq!(global["index"]["excluded_files"]["api.ts"], "line_budget");
+    let scoped = g
+        .call(
+            &c,
+            "search_symbol",
+            &json!({"query":"wire","mode":"lexical","file":"api.ts"}),
+        )
+        .unwrap();
+    assert_eq!(scoped["index"]["incomplete"], false);
+    assert_eq!(scoped["rows"].as_array().unwrap().len(), 1);
+    assert_eq!(scoped["index"]["files"], 1);
+    assert_eq!(scoped["index"]["scope"]["file"], "api.ts");
+    for query in [
+        json!({"query":"wire","mode":"lexical","language":"typescript"}),
+        json!({"query":"wire","mode":"lexical","file":"api.ts"}),
+    ] {
+        g.call(&c, "search_symbol", &query).unwrap();
+    }
+    // File-filter validation rejects traversal before scoped source access.
+    assert!(
+        g.call(
+            &c,
+            "search_symbol",
+            &json!({"query":"wire","mode":"lexical","file":"../api.ts"})
+        )
+        .is_err()
+    );
+}
+#[test]
 fn separate_source_budget_keeps_required_inventory_and_visible_truncation() {
     let (_d, c, g) = fixture("ts");
     let mut state = State::default();

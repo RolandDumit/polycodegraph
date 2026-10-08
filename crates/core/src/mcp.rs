@@ -108,6 +108,14 @@ pub fn validate(spec: &Value, a: &Value) -> Result<()> {
             bail!("options/budget/cursor/view/context require intent")
         }
     }
+    if ["search_symbol", "search"].contains(&spec["name"].as_str().unwrap_or(""))
+        && a["mode"] != "lexical"
+        && ["group_by", "ranking", "anchor"]
+            .iter()
+            .any(|key| a.get(key).is_some())
+    {
+        bail!("group_by/ranking/anchor require mode=lexical");
+    }
     Ok(())
 }
 fn error(id: Value, code: i64, message: &str) -> Value {

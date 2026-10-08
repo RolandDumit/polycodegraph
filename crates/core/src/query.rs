@@ -72,7 +72,7 @@ pub struct Graph {
     pub outgoing: Vec<Vec<usize>>,
     pub dropped: usize,
     pub(crate) accounted_bytes: std::sync::OnceLock<usize>,
-    pub(crate) lexical: std::sync::OnceLock<crate::retrieval::LexicalIndex>,
+    pub(crate) lexical: std::sync::Mutex<BTreeMap<String, Arc<crate::retrieval::LexicalIndex>>>,
     pub(crate) incoming_kinds: HashMap<usize, BTreeMap<String, Vec<usize>>>,
     pub(crate) outgoing_kinds: HashMap<usize, BTreeMap<String, Vec<usize>>>,
     names: HashMap<String, Vec<usize>>,

@@ -28,6 +28,25 @@ The client adapter optionally accepts `max_input_tokens`, `count_tokens` and
 the final insertion text must fit before insertion. This counts that text only,
 excluding model request wrappers, schemas and prior history. There is no bundled
 universal tokenizer. Native `max_tokens` remains a characters/4 estimate.
+
+## T4: bounded seed discovery
+
+Lexical `search_symbol`/`search` constructs the effective file/language scope
+before applying source, line and term caps. The immutable graph owns a bounded
+two-entry scope/config cache; generation/environment replacement discards it.
+Excluded or partly indexed files have bounded reason previews and counts;
+incomplete discovery reports a null total, never proof of absence.
+
+Optional `group_by: anchor` groups matches before pagination, retaining exact
+anchor IDs, a match count and up to three decisive line locations. Default `line`
+keeps per-line results. Use `anchor` with line mode to page all that anchor's
+matches. File-level unanchored matches remain lexical candidates.
+
+An inverted term lookup preserves default overlap-IDF scoring. Optional
+`ranking: bm25` is a binary-term-presence BM25 ablation with name/path weighting;
+it does not claim full term-frequency BM25 or proven end-to-end superiority.
+The overlap baseline remains the default. Retrieval scores never become semantic
+confidence or create graph edges; bounded expansion uses existing resolver edges.
 The full/agent server catalogs, accepted primitive tools, audit/lean formats and
 semantic resolver contracts remain available.
 

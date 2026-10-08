@@ -10,6 +10,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
     io::Read,
+    sync::Arc,
 };
 
 const MAX_BYTES: usize = 8 * 1024 * 1024;
@@ -24,12 +25,16 @@ pub struct LexicalIndex {
     pub incomplete: bool,
     pub work: usize,
     pub term_bytes: usize,
+    postings: BTreeMap<String, Vec<usize>>,
+    excluded: BTreeMap<String, &'static str>,
+    excluded_total: usize,
 }
 struct Document {
     file: String,
     line: usize,
     anchor: Option<String>,
     terms: BTreeSet<String>,
+    fields: BTreeSet<String>,
 }
 fn terms(text: &str) -> BTreeSet<String> {
     let mut output = BTreeSet::new();
@@ -55,13 +60,18 @@ fn terms(text: &str) -> BTreeSet<String> {
     output
 }
 impl LexicalIndex {
-    fn build(g: &Graph, c: &Config) -> Result<Self> {
+    fn build(g: &Graph, c: &Config, prefix: &str, lang: Option<&str>) -> Result<Self> {
         let mut index = Self::default();
         for (file, record) in &g.snapshot.files {
+            if (!prefix.is_empty() && file != prefix && !file.starts_with(&format!("{prefix}/")))
+                || lang.is_some_and(|wanted| language(file) != wanted)
+            {
+                continue;
+            }
             let path = c.safe(file)?;
             let size = fs::metadata(&path)?.len() as usize;
             if size > c.max_file_bytes || index.bytes.saturating_add(size) > MAX_BYTES {
-                index.incomplete = true;
+                index.exclude(file, "source_byte_budget");
                 continue;
             }
             let mut bytes = vec![];
@@ -70,7 +80,7 @@ impl LexicalIndex {
                 .read_to_end(&mut bytes)?;
             if bytes.len() > c.max_file_bytes || index.bytes.saturating_add(bytes.len()) > MAX_BYTES
             {
-                index.incomplete = true;
+                index.exclude(file, "source_byte_budget");
                 continue;
             }
             if hash(&bytes) != record.hash {
@@ -107,7 +117,7 @@ impl LexicalIndex {
                     next += 1;
                 }
                 if index.documents.len() >= MAX_LINES {
-                    index.incomplete = true;
+                    index.exclude(file, "line_budget");
                     break;
                 }
                 let mut tokens = terms(line);
@@ -115,29 +125,44 @@ impl LexicalIndex {
                     continue;
                 }
                 let anchor = active.first().map(|(_, id, _)| (*id).to_owned());
-                tokens.extend(file_terms.iter().cloned());
+                let mut fields = file_terms.clone();
                 if let Some(id) = &anchor {
-                    tokens.extend(terms(id));
+                    fields.extend(terms(id));
                 }
-                let token_bytes = tokens.iter().map(String::len).sum::<usize>();
+                tokens.extend(fields.iter().cloned());
+                let token_bytes = tokens.iter().map(String::len).sum::<usize>()
+                    + fields.iter().map(String::len).sum::<usize>();
                 if index.term_bytes.saturating_add(token_bytes) > MAX_TERM_BYTES {
-                    index.incomplete = true;
+                    index.exclude(file, "term_budget");
                     break;
                 }
                 index.term_bytes += token_bytes;
                 index.work += tokens.len();
                 for token in &tokens {
                     *index.frequencies.entry(token.clone()).or_default() += 1;
+                    index
+                        .postings
+                        .entry(token.clone())
+                        .or_default()
+                        .push(index.documents.len());
                 }
                 index.documents.push(Document {
                     file: file.clone(),
                     line: i + 1,
                     anchor,
                     terms: tokens,
+                    fields,
                 });
             }
         }
         Ok(index)
+    }
+    fn exclude(&mut self, file: &str, reason: &'static str) {
+        self.incomplete = true;
+        self.excluded_total += 1;
+        if self.excluded.len() < 128 {
+            self.excluded.insert(file.to_owned(), reason);
+        }
     }
 }
 pub fn search(g: &Graph, c: &Config, args: &Value) -> Result<Value> {
@@ -154,19 +179,58 @@ pub fn search(g: &Graph, c: &Config, args: &Value) -> Result<Value> {
             "lexical search requires content/identifier terms; use default search for an empty inventory"
         );
     }
-    if g.lexical.get().is_none() {
-        let index = LexicalIndex::build(g, c)?;
-        let _ = g.lexical.set(index);
-    }
-    let index = g.lexical.get().expect("lexical index initialized");
     let prefix = args["file"].as_str().unwrap_or("").trim_end_matches('/');
     if !prefix.is_empty() {
         crate::intents::validate_path(c, prefix)?;
     }
+    let lang = args["language"].as_str();
+    let key = json!([prefix, lang, c.fingerprint()?]).to_string();
+    let cached = g
+        .lexical
+        .lock()
+        .map_err(|_| anyhow::anyhow!("lexical cache unavailable"))?
+        .get(&key)
+        .cloned();
+    let index = if let Some(index) = cached {
+        index
+    } else {
+        // No shared lock while reading/hashing source. Snapshot owns invalidation.
+        let built = Arc::new(LexicalIndex::build(g, c, prefix, lang)?);
+        let mut cache = g
+            .lexical
+            .lock()
+            .map_err(|_| anyhow::anyhow!("lexical cache unavailable"))?;
+        if cache.len() >= 2 && !cache.contains_key(&key) {
+            cache.pop_first();
+        }
+        Arc::clone(cache.entry(key).or_insert(built))
+    };
+    let bm25 = args["ranking"] == "bm25";
+    let grouped = args["group_by"] == "anchor";
     let exact = g.resolve(query).ok().map(|i| g.nodes[i].id.as_str());
-    let mut ranked: Vec<_> = index
-        .documents
+    let mut candidates = BTreeSet::new();
+    for term in &wanted {
+        candidates.extend(index.postings.get(term).into_iter().flatten().copied());
+    }
+    if let Some(id) = exact {
+        candidates.extend(
+            index
+                .documents
+                .iter()
+                .enumerate()
+                .filter_map(|(i, d)| (d.anchor.as_deref() == Some(id)).then_some(i)),
+        );
+    }
+    let average = index.documents.iter().map(|d| d.terms.len()).sum::<usize>() as f64
+        / index.documents.len().max(1) as f64;
+    let mut ranked: Vec<_> = candidates
         .iter()
+        .map(|i| &index.documents[*i])
+        .filter(|d| {
+            args["anchor"]
+                .as_str()
+                .is_none_or(|id| d.anchor.as_deref() == Some(id))
+        })
         .filter(|d| {
             prefix.is_empty() || d.file == prefix || d.file.starts_with(&format!("{prefix}/"))
         })
@@ -199,6 +263,15 @@ pub fn search(g: &Graph, c: &Config, args: &Value) -> Result<Value> {
             let score: f64 = matched
                 .iter()
                 .map(|term| {
+                    if bm25 {
+                        let n = index.documents.len() as f64;
+                        let df = index.frequencies[*term] as f64;
+                        let idf = (1. + (n - df + 0.5) / (df + 0.5)).ln();
+                        let normalization =
+                            1.2 * (0.25 + 0.75 * d.terms.len() as f64 / average.max(1.));
+                        return idf * 2.2 / (1. + normalization)
+                            * if d.fields.contains(*term) { 2. } else { 1. };
+                    }
                     ((index.documents.len() + 1) as f64 / (index.frequencies[*term] + 1) as f64)
                         .ln()
                         + 1.
@@ -220,6 +293,27 @@ pub fn search(g: &Graph, c: &Config, args: &Value) -> Result<Value> {
             .then_with(|| a.file.cmp(&b.file))
             .then(a.line.cmp(&b.line))
     });
+    let mut matches = BTreeMap::<String, Vec<usize>>::new();
+    for (d, _) in &ranked {
+        matches
+            .entry(
+                d.anchor
+                    .clone()
+                    .unwrap_or_else(|| format!("{}::file", d.file)),
+            )
+            .or_default()
+            .push(d.line);
+    }
+    if grouped {
+        let mut seen = BTreeSet::new();
+        ranked.retain(|(d, _)| {
+            seen.insert(
+                d.anchor
+                    .clone()
+                    .unwrap_or_else(|| format!("{}::file", d.file)),
+            )
+        });
+    }
     let total = ranked.len();
     let offset = args["offset"].as_u64().unwrap_or(0) as usize;
     let limit = (args["limit"].as_u64().unwrap_or(10) as usize).min(c.max_results);
@@ -271,18 +365,49 @@ pub fn search(g: &Graph, c: &Config, args: &Value) -> Result<Value> {
     let rows: Vec<_> = selected
         .iter()
         .map(|(d, score)| {
-            json!([
+            let mut row = json!([
                 d.file,
                 d.line,
                 d.anchor,
                 score,
                 "lexical_candidate; no new resolved relation"
-            ])
+            ]);
+            if grouped {
+                let lines = &matches[&d
+                    .anchor
+                    .clone()
+                    .unwrap_or_else(|| format!("{}::file", d.file))];
+                row.as_array_mut().expect("row").extend([
+                    json!(lines.len()),
+                    json!(lines.iter().take(3).collect::<Vec<_>>()),
+                ]);
+            }
+            row
         })
         .collect();
-    Ok(
-        json!({"mode":"lexical","generation":g.snapshot.generation,"columns":["file","line","anchor_id","retrieval_score","confidence"],"rows":rows,"offset":offset,"total":if index.incomplete{Value::Null}else{json!(total)},"discovered_total":total,"next_offset":if offset+selected.len()<total{json!(offset+selected.len())}else{Value::Null},"collection_complete":!index.incomplete && offset+selected.len()>=total,"index":{"files":index.files,"source_bytes":index.bytes,"max_bytes":MAX_BYTES,"max_lines":MAX_LINES,"max_term_bytes":MAX_TERM_BYTES,"term_bytes":index.term_bytes,"build_work":index.work,"incomplete":index.incomplete,"ranking":"line-document term overlap weighted by inverse document frequency; deterministic lexical baseline, not embeddings/BM25"},"expansion":{"mode":mode,"steps":steps.min(40),"incomplete":steps>40,"relations":edges.into_values().collect::<Vec<_>>(),"confidence":"existing provider semantic evidence only"},"limits":["Lexical score is retrieval relevance, not semantic confidence; no match proves absence of behavior","Use snippet for source and inspect_change with anchor_id for required structural inventories"]}),
-    )
+    let mut result = json!({"mode":"lexical","generation":g.snapshot.generation,"columns":["file","line","anchor_id","retrieval_score","confidence"],"rows":rows,"offset":offset,"total":if index.incomplete{Value::Null}else{json!(total)},"discovered_total":total,"next_offset":if offset+selected.len()<total{json!(offset+selected.len())}else{Value::Null},"collection_complete":!index.incomplete && offset+selected.len()>=total,"index":{"files":index.files,"source_bytes":index.bytes,"max_bytes":MAX_BYTES,"max_lines":MAX_LINES,"max_term_bytes":MAX_TERM_BYTES,"term_bytes":index.term_bytes,"build_work":index.work,"incomplete":index.incomplete,"ranking":"line-document term overlap weighted by inverse document frequency; deterministic lexical baseline, not embeddings/BM25"},"expansion":{"mode":mode,"steps":steps.min(40),"incomplete":steps>40,"relations":edges.into_values().collect::<Vec<_>>(),"confidence":"existing provider semantic evidence only"},"limits":["Lexical score is retrieval relevance, not semantic confidence; no match proves absence of behavior","Use snippet for source and inspect_change with anchor_id for required structural inventories"]});
+    result["group_by"] = json!(if grouped { "anchor" } else { "line" });
+    result["index"]["scope"] = json!({"file":prefix,"language":lang});
+    result["index"]["excluded_files"] = json!(index.excluded);
+    result["index"]["excluded_total"] = json!(index.excluded_total);
+    result["index"]["excluded_omitted"] =
+        json!(index.excluded_total.saturating_sub(index.excluded.len()));
+    result["index"]["cache_capacity"] = json!(2);
+    if bm25 {
+        result["index"]["ranking"] = json!(
+            "bm25 binary term presence, k1=1.2 b=0.75; name/path fields weight 2; experimental lexical score, not confidence"
+        );
+    }
+    if grouped {
+        result["columns"]
+            .as_array_mut()
+            .expect("columns")
+            .extend([json!("match_count"), json!("match_lines")]);
+        result["match_details"] = json!(
+            "Repeat mode=lexical, group_by=line with the same query/file/ranking and anchor_id as anchor; paginate offset. Unanchored file matches use the file filter without anchor."
+        );
+    }
+    Ok(result)
 }
 #[cfg(test)]
 mod tests {
