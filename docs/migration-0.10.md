@@ -297,6 +297,9 @@ Rollback: use ordinary server full/agent MCP, audit/lean directly, or the existi
 binding. These modules are packaged together in `clients/`; no runtime is installed
 into Codex or any other client by the server. End-to-end usage and real model use
 of the treatment were recorded in the dev.2 screening; the same-code macOS UIKit
-recheck passed. Refactoring rereads, independent holdout confirmation and model
-retention savings remain open; see the
-[T3 follow-up](benchmarks/efficiency-0.10/t3-followup-20261008.md).
+recheck passed. The targeted [refactoring diagnostic](
+benchmarks/efficiency-0.10/t3-readback-results-20261008.md) passes on four known
+tasks, reducing post-edit reads without asserting included-plan savings.
+[Independent holdout](benchmarks/efficiency-0.10/g5-holdout-proposal-20261008.md)
+and [T6 model-context verification](
+benchmarks/efficiency-0.10/t6-model-verification-20261008.md) remain open.

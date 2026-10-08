@@ -89,4 +89,14 @@ source-read audit; all static outcomes pass, aggregate savings do not.
 
 The [T3 readback follow-up](efficiency-0.10/t3-followup-20261008.md) records a
 targeted client correction and re-audit of existing receipts. No new model
-effect or completed acceptance gate is claimed.
+effect was claimed at that preparation stage. Its subsequently authorized
+[eight-turn diagnostic](efficiency-0.10/t3-readback-results-20261008.md) passes
+the narrow readback criterion: all static outcomes accepted, fewer direct reads,
+lower total tokens but higher uncached input. Included-plan savings are unknown.
+
+[G5 holdout preparation](efficiency-0.10/g5-holdout-proposal-20261008.md) records
+new untuned source structures, task-level sizing, replication, independent
+oracles and an execution-disabled budget proposal. [T6 verification](
+efficiency-0.10/t6-model-verification-20261008.md) records the installed client's
+missing retained-set contract and the required model experiment. These are
+prepared gates, not completed model evidence.

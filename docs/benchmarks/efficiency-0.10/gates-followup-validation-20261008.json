@@ -1,0 +1,35 @@
+{
+  "cargo_xtask_check": {
+    "status": "passed",
+    "rust_tests": 93
+  },
+  "python": {
+    "status": "passed",
+    "tests": 104
+  },
+  "configured_python_lint": "passed",
+  "git_diff_check": "passed",
+  "g5_preflight": {
+    "configurations": 24,
+    "model_turns": 0,
+    "native_targets_and_review_baselines": "passed",
+    "no_graph_registration_and_ordinary_host": "passed",
+    "static_positive_negative_oracles": "passed"
+  },
+  "t6_schema_audit": {
+    "model_turns": 0,
+    "retained_context_contract": "unsupported by inspected integration"
+  },
+  "logs_sha256": {
+    "gates-followup-rust-20261008.log": "36ca01aad4ff7a3934a7e826723dc9c5624a2138e852f09349e0386286e877d5",
+    "gates-followup-python-20261008.log": "1cb42c4260533d9e67328e26ab7bb64ce7153a681468f1017e4934bd9f0f9848",
+    "g5-report-tests-20261008.log": "7d59a8fbca92ef540f42b6883247c3844892d23f501b6cf2621d0e535813fb81"
+  },
+  "unchanged_runtime": {
+    "native_binary_sha256": "8b0cbf56bd3cc71e1289a4521ece25422e3ec5fcdab23456dd7b5d0338143874",
+    "client_commit": "74fa45041f0faac1ec4ccc1010a29379fd965759",
+    "platform_CI": "https://github.com/RolandDumit/polycodegraph/actions/runs/37766561218",
+    "passed_jobs": 20
+  },
+  "limitations": "New corpus/report tools have Linux local validation only. Prior platform evidence applies to unchanged shipped runtime/client; no separate platform claim for these measurement additions. Stable release identity checks remain open."
+}

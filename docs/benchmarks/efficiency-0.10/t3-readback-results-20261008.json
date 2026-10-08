@@ -1,0 +1,1781 @@
+{
+  "campaign_id": "t3-readback-010-20261008",
+  "protocol_revision": "instruction-ablation-v1",
+  "manifest_sha256": "25ab8a6e37e4ca5dd7cb973389ef3546961ad5a7d1d8d58fc2f33a408034ad68",
+  "source_commit": "ca722c77a9fc56e9eaf90f9d8726e539f0690b32",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "client": "Codex app-server 0.159.2",
+  "scope": "Four known static TypeScript refactoring fixtures; old/new receipt guidance only. No no-graph control, runtime execution or independent holdout.",
+  "native_binary_sha256": "8b0cbf56bd3cc71e1289a4521ece25422e3ec5fcdab23456dd7b5d0338143874",
+  "budget": {
+    "max_runs": 8,
+    "max_uncached_input_tokens": 250000,
+    "actual_uncached_input_tokens": 238580,
+    "granularity": "after_attempt",
+    "overshoot": false,
+    "authorization": "Direct user Procedi on 2026-10-08 following the eight-turn 250000 uncached-input T3 proposal."
+  },
+  "runs": [
+    {
+      "task_id": "signature-1",
+      "condition": "C",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 71862.41389300267,
+      "duration_oracle_ms": 64.02832300227601,
+      "usage": {
+        "input_tokens": 151969,
+        "uncached_input_tokens": 36129,
+        "cached_input_tokens": 115840,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1294,
+        "reasoning_output_tokens": 132,
+        "total_tokens": 153263
+      },
+      "model_requests": 9,
+      "client": {
+        "graph_mcp_calls": 3,
+        "model_graph_mcp_calls": 2,
+        "all_tool_calls": 64,
+        "ordinary_tool_calls": 61,
+        "native_intent_requests": 3,
+        "pages": 2,
+        "errors": 2,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+        "graph_harness_sha256": "401f6a0fc21893590565ad28d0bb93f80d43ce32ebb09bb3f7ec395406746c0d",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "native_audit",
+            "text_blocks": 1,
+            "structured_content": false
+          },
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 61,
+            "failed_tool_calls": 1,
+            "successful_reads": 40,
+            "successful_changed_writes": 19,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 19,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "D",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 43576.45196199883,
+      "duration_oracle_ms": 63.91528499079868,
+      "usage": {
+        "input_tokens": 108036,
+        "uncached_input_tokens": 40196,
+        "cached_input_tokens": 67840,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 841,
+        "reasoning_output_tokens": 168,
+        "total_tokens": 108877
+      },
+      "model_requests": 7,
+      "client": {
+        "graph_mcp_calls": 3,
+        "model_graph_mcp_calls": 2,
+        "all_tool_calls": 45,
+        "ordinary_tool_calls": 42,
+        "native_intent_requests": 3,
+        "pages": 2,
+        "errors": 3,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+        "graph_harness_sha256": "1929f3520c0a7132b6e47be2c1fff91768bdbacbb79954bcfcdd4fa2e4201fd6",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "native_audit",
+            "text_blocks": 1,
+            "structured_content": false
+          },
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 42,
+            "failed_tool_calls": 2,
+            "successful_reads": 19,
+            "successful_changed_writes": 19,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 0,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "D",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 50183.94391000038,
+      "duration_oracle_ms": 63.99530699127354,
+      "usage": {
+        "input_tokens": 132966,
+        "uncached_input_tokens": 38886,
+        "cached_input_tokens": 94080,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 977,
+        "reasoning_output_tokens": 140,
+        "total_tokens": 133943
+      },
+      "model_requests": 8,
+      "client": {
+        "graph_mcp_calls": 3,
+        "model_graph_mcp_calls": 2,
+        "all_tool_calls": 52,
+        "ordinary_tool_calls": 49,
+        "native_intent_requests": 3,
+        "pages": 2,
+        "errors": 2,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+        "graph_harness_sha256": "1929f3520c0a7132b6e47be2c1fff91768bdbacbb79954bcfcdd4fa2e4201fd6",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "native_audit",
+            "text_blocks": 1,
+            "structured_content": false
+          },
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 49,
+            "failed_tool_calls": 1,
+            "successful_reads": 22,
+            "successful_changed_writes": 22,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 0,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "C",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 50735.46100499516,
+      "duration_oracle_ms": 64.21985599445179,
+      "usage": {
+        "input_tokens": 152095,
+        "uncached_input_tokens": 24479,
+        "cached_input_tokens": 127616,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1110,
+        "reasoning_output_tokens": 152,
+        "total_tokens": 153205
+      },
+      "model_requests": 9,
+      "client": {
+        "graph_mcp_calls": 3,
+        "model_graph_mcp_calls": 2,
+        "all_tool_calls": 74,
+        "ordinary_tool_calls": 71,
+        "native_intent_requests": 3,
+        "pages": 2,
+        "errors": 2,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "eae821be41ee38225b43cb4b5ca13f0d842fdaa88c77a2f8dac4085d7450560d",
+        "graph_harness_sha256": "401f6a0fc21893590565ad28d0bb93f80d43ce32ebb09bb3f7ec395406746c0d",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "native_audit",
+            "text_blocks": 1,
+            "structured_content": false
+          },
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 71,
+            "failed_tool_calls": 1,
+            "successful_reads": 46,
+            "successful_changed_writes": 22,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 22,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "C",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 57191.43038398761,
+      "duration_oracle_ms": 63.95708899071906,
+      "usage": {
+        "input_tokens": 138298,
+        "uncached_input_tokens": 23482,
+        "cached_input_tokens": 114816,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1539,
+        "reasoning_output_tokens": 332,
+        "total_tokens": 139837
+      },
+      "model_requests": 8,
+      "client": {
+        "graph_mcp_calls": 2,
+        "model_graph_mcp_calls": 1,
+        "all_tool_calls": 66,
+        "ordinary_tool_calls": 64,
+        "native_intent_requests": 2,
+        "pages": 2,
+        "errors": 1,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+        "graph_harness_sha256": "401f6a0fc21893590565ad28d0bb93f80d43ce32ebb09bb3f7ec395406746c0d",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 64,
+            "failed_tool_calls": 1,
+            "successful_reads": 40,
+            "successful_changed_writes": 19,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 19,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "rename-1",
+      "condition": "D",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 45078.514358989196,
+      "duration_oracle_ms": 64.06085399794392,
+      "usage": {
+        "input_tokens": 138054,
+        "uncached_input_tokens": 23238,
+        "cached_input_tokens": 114816,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 882,
+        "reasoning_output_tokens": 183,
+        "total_tokens": 138936
+      },
+      "model_requests": 8,
+      "client": {
+        "graph_mcp_calls": 2,
+        "model_graph_mcp_calls": 1,
+        "all_tool_calls": 46,
+        "ordinary_tool_calls": 44,
+        "native_intent_requests": 2,
+        "pages": 2,
+        "errors": 1,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+        "graph_harness_sha256": "1929f3520c0a7132b6e47be2c1fff91768bdbacbb79954bcfcdd4fa2e4201fd6",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 44,
+            "failed_tool_calls": 1,
+            "successful_reads": 20,
+            "successful_changed_writes": 19,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 0,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "D",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 53490.67218900018,
+      "duration_oracle_ms": 64.00581399793737,
+      "usage": {
+        "input_tokens": 142867,
+        "uncached_input_tokens": 24979,
+        "cached_input_tokens": 117888,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1114,
+        "reasoning_output_tokens": 378,
+        "total_tokens": 143981
+      },
+      "model_requests": 8,
+      "client": {
+        "graph_mcp_calls": 3,
+        "model_graph_mcp_calls": 1,
+        "all_tool_calls": 58,
+        "ordinary_tool_calls": 55,
+        "native_intent_requests": 3,
+        "pages": 3,
+        "errors": 1,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+        "graph_harness_sha256": "1929f3520c0a7132b6e47be2c1fff91768bdbacbb79954bcfcdd4fa2e4201fd6",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 55,
+            "failed_tool_calls": 1,
+            "successful_reads": 26,
+            "successful_changed_writes": 25,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 0,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    },
+    {
+      "task_id": "rename-2",
+      "condition": "C",
+      "replica": 1,
+      "attempt": 1,
+      "status": "completed",
+      "success": true,
+      "reason_code": "exact_static_sources_and_findings_verified",
+      "duration_solver_ms": 61751.16423999134,
+      "duration_oracle_ms": 63.95377799344715,
+      "usage": {
+        "input_tokens": 174647,
+        "uncached_input_tokens": 27191,
+        "cached_input_tokens": 147456,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 1551,
+        "reasoning_output_tokens": 132,
+        "total_tokens": 176198
+      },
+      "model_requests": 9,
+      "client": {
+        "graph_mcp_calls": 3,
+        "model_graph_mcp_calls": 1,
+        "all_tool_calls": 88,
+        "ordinary_tool_calls": 85,
+        "native_intent_requests": 3,
+        "pages": 3,
+        "errors": 3,
+        "external_retries": 0,
+        "provider_transport_retries": null,
+        "compactions": 0,
+        "graph_artifacts_visible": true,
+        "graph_surface_sha256": "e87c083e3e4d2aa5e5553f0345d4bba2a87c7dd92f727c80040f260cfb77fdb3",
+        "graph_harness_sha256": "401f6a0fc21893590565ad28d0bb93f80d43ce32ebb09bb3f7ec395406746c0d",
+        "context_identity_complete": false,
+        "model_prompt_insertion": null,
+        "registered_tools": 1,
+        "representations": [
+          {
+            "format": "pcg-lean-collection-2",
+            "text_blocks": 1,
+            "structured_content": false
+          }
+        ],
+        "tool_requirements_met": true,
+        "forbidden_tool_calls": [],
+        "edit_receipt_audit": {
+          "counts": {
+            "tool_calls": 85,
+            "failed_tool_calls": 3,
+            "successful_reads": 52,
+            "successful_changed_writes": 25,
+            "reads_with_unknown_identity": 0,
+            "post_edit_same_hash_reads": 25,
+            "post_edit_changed_hash_reads": 0,
+            "post_edit_unknown_hash_reads": 0,
+            "evicted_file_identities": 0,
+            "untracked_reads_after_eviction": 0
+          },
+          "complete": true,
+          "post_edit_classification_complete": true,
+          "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+          "read_necessity": "unknown",
+          "model_retention": "unknown",
+          "edit_correctness": "unknown; use an independent oracle/project checks"
+        }
+      },
+      "isolation": {
+        "verified": true,
+        "mechanism": "outer allowlisted namespace and named filesystem denies; solver has only bounded read/search tools",
+        "verifier_sha256": "0082679047e9a2240260bced1a72ed457a57e7948c6e671eef8aed0a61603b8c",
+        "exit": 0,
+        "probe_artifact_sha256": "23d32d06c5a380c72fc4e01a7f3bf622ea8778694bf76e19fa93896c5e7b63bb"
+      }
+    }
+  ],
+  "evaluation": {
+    "protocol_revision": "instruction-ablation-v1",
+    "status": "complete",
+    "primary_metric": "total_tokens_per_accepted_task",
+    "decision": "DIAGNOSTIC_ONLY",
+    "executed_cells": 8,
+    "planned_cells": 8,
+    "attempts": 8,
+    "consumption_evidence": {
+      "comparable": true,
+      "errors": []
+    },
+    "isolation_evidence": {
+      "verified": true,
+      "errors": []
+    },
+    "quality_evidence": {
+      "verified": true,
+      "errors": []
+    },
+    "attribution_evidence": {
+      "complete": false,
+      "errors": [
+        "t3-readback-010-20261008/signature-1/r1/C",
+        "t3-readback-010-20261008/signature-1/r1/D",
+        "t3-readback-010-20261008/signature-2/r1/D",
+        "t3-readback-010-20261008/signature-2/r1/C",
+        "t3-readback-010-20261008/rename-1/r1/C",
+        "t3-readback-010-20261008/rename-1/r1/D",
+        "t3-readback-010-20261008/rename-2/r1/D",
+        "t3-readback-010-20261008/rename-2/r1/C"
+      ]
+    },
+    "aggregates": {
+      "C": {
+        "executed_cells": 4,
+        "attempts": 4,
+        "accepted_cells": 4,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 617009,
+          "uncached_input_tokens": 111281,
+          "cached_input_tokens": 505728,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 5494,
+          "reasoning_output_tokens": 748,
+          "total_tokens": 622503
+        },
+        "observed_uncached_subtotal": 111281,
+        "primary_per_accepted_task": 155625.75,
+        "total_tokens_per_accepted_task": 155625.75,
+        "uncached_input_per_accepted_task": 27820.25,
+        "consumption_per_executed_cell": {
+          "input_tokens": 154252.25,
+          "uncached_input_tokens": 27820.25,
+          "cached_input_tokens": 126432.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 1373.5,
+          "reasoning_output_tokens": 187.0,
+          "total_tokens": 155625.75
+        },
+        "model_requests": 35,
+        "client_counters": {
+          "graph_mcp_calls": 11,
+          "other_mcp_calls": null,
+          "all_tool_calls": 292,
+          "pages": 9,
+          "errors": 8,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 241540.46952197677,
+        "duration_oracle_ms": 256.159045980894,
+        "graph_used_cells": 4,
+        "graph_avoided_cells": 0
+      },
+      "D": {
+        "executed_cells": 4,
+        "attempts": 4,
+        "accepted_cells": 4,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 521923,
+          "uncached_input_tokens": 127299,
+          "cached_input_tokens": 394624,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 3814,
+          "reasoning_output_tokens": 869,
+          "total_tokens": 525737
+        },
+        "observed_uncached_subtotal": 127299,
+        "primary_per_accepted_task": 131434.25,
+        "total_tokens_per_accepted_task": 131434.25,
+        "uncached_input_per_accepted_task": 31824.75,
+        "consumption_per_executed_cell": {
+          "input_tokens": 130480.75,
+          "uncached_input_tokens": 31824.75,
+          "cached_input_tokens": 98656.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 953.5,
+          "reasoning_output_tokens": 217.25,
+          "total_tokens": 131434.25
+        },
+        "model_requests": 31,
+        "client_counters": {
+          "graph_mcp_calls": 11,
+          "other_mcp_calls": null,
+          "all_tool_calls": 201,
+          "pages": 9,
+          "errors": 7,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 192329.58241998858,
+        "duration_oracle_ms": 255.9772599779535,
+        "graph_used_cells": 4,
+        "graph_avoided_cells": 0
+      }
+    },
+    "per_task": {
+      "signature-1": {
+        "C": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 151969,
+            "uncached_input_tokens": 36129,
+            "cached_input_tokens": 115840,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1294,
+            "reasoning_output_tokens": 132,
+            "total_tokens": 153263
+          },
+          "observed_uncached_subtotal": 36129,
+          "primary_per_accepted_task": 153263.0,
+          "total_tokens_per_accepted_task": 153263.0,
+          "uncached_input_per_accepted_task": 36129.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 151969.0,
+            "uncached_input_tokens": 36129.0,
+            "cached_input_tokens": 115840.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1294.0,
+            "reasoning_output_tokens": 132.0,
+            "total_tokens": 153263.0
+          },
+          "model_requests": 9,
+          "client_counters": {
+            "graph_mcp_calls": 3,
+            "other_mcp_calls": null,
+            "all_tool_calls": 64,
+            "pages": 2,
+            "errors": 2,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 71862.41389300267,
+          "duration_oracle_ms": 64.02832300227601,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        },
+        "D": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 108036,
+            "uncached_input_tokens": 40196,
+            "cached_input_tokens": 67840,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 841,
+            "reasoning_output_tokens": 168,
+            "total_tokens": 108877
+          },
+          "observed_uncached_subtotal": 40196,
+          "primary_per_accepted_task": 108877.0,
+          "total_tokens_per_accepted_task": 108877.0,
+          "uncached_input_per_accepted_task": 40196.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 108036.0,
+            "uncached_input_tokens": 40196.0,
+            "cached_input_tokens": 67840.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 841.0,
+            "reasoning_output_tokens": 168.0,
+            "total_tokens": 108877.0
+          },
+          "model_requests": 7,
+          "client_counters": {
+            "graph_mcp_calls": 3,
+            "other_mcp_calls": null,
+            "all_tool_calls": 45,
+            "pages": 2,
+            "errors": 3,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 43576.45196199883,
+          "duration_oracle_ms": 63.91528499079868,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        }
+      },
+      "signature-2": {
+        "C": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 152095,
+            "uncached_input_tokens": 24479,
+            "cached_input_tokens": 127616,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1110,
+            "reasoning_output_tokens": 152,
+            "total_tokens": 153205
+          },
+          "observed_uncached_subtotal": 24479,
+          "primary_per_accepted_task": 153205.0,
+          "total_tokens_per_accepted_task": 153205.0,
+          "uncached_input_per_accepted_task": 24479.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 152095.0,
+            "uncached_input_tokens": 24479.0,
+            "cached_input_tokens": 127616.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1110.0,
+            "reasoning_output_tokens": 152.0,
+            "total_tokens": 153205.0
+          },
+          "model_requests": 9,
+          "client_counters": {
+            "graph_mcp_calls": 3,
+            "other_mcp_calls": null,
+            "all_tool_calls": 74,
+            "pages": 2,
+            "errors": 2,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 50735.46100499516,
+          "duration_oracle_ms": 64.21985599445179,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        },
+        "D": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 132966,
+            "uncached_input_tokens": 38886,
+            "cached_input_tokens": 94080,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 977,
+            "reasoning_output_tokens": 140,
+            "total_tokens": 133943
+          },
+          "observed_uncached_subtotal": 38886,
+          "primary_per_accepted_task": 133943.0,
+          "total_tokens_per_accepted_task": 133943.0,
+          "uncached_input_per_accepted_task": 38886.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 132966.0,
+            "uncached_input_tokens": 38886.0,
+            "cached_input_tokens": 94080.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 977.0,
+            "reasoning_output_tokens": 140.0,
+            "total_tokens": 133943.0
+          },
+          "model_requests": 8,
+          "client_counters": {
+            "graph_mcp_calls": 3,
+            "other_mcp_calls": null,
+            "all_tool_calls": 52,
+            "pages": 2,
+            "errors": 2,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 50183.94391000038,
+          "duration_oracle_ms": 63.99530699127354,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        }
+      },
+      "rename-1": {
+        "C": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 138298,
+            "uncached_input_tokens": 23482,
+            "cached_input_tokens": 114816,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1539,
+            "reasoning_output_tokens": 332,
+            "total_tokens": 139837
+          },
+          "observed_uncached_subtotal": 23482,
+          "primary_per_accepted_task": 139837.0,
+          "total_tokens_per_accepted_task": 139837.0,
+          "uncached_input_per_accepted_task": 23482.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 138298.0,
+            "uncached_input_tokens": 23482.0,
+            "cached_input_tokens": 114816.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1539.0,
+            "reasoning_output_tokens": 332.0,
+            "total_tokens": 139837.0
+          },
+          "model_requests": 8,
+          "client_counters": {
+            "graph_mcp_calls": 2,
+            "other_mcp_calls": null,
+            "all_tool_calls": 66,
+            "pages": 2,
+            "errors": 1,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 57191.43038398761,
+          "duration_oracle_ms": 63.95708899071906,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        },
+        "D": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 138054,
+            "uncached_input_tokens": 23238,
+            "cached_input_tokens": 114816,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 882,
+            "reasoning_output_tokens": 183,
+            "total_tokens": 138936
+          },
+          "observed_uncached_subtotal": 23238,
+          "primary_per_accepted_task": 138936.0,
+          "total_tokens_per_accepted_task": 138936.0,
+          "uncached_input_per_accepted_task": 23238.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 138054.0,
+            "uncached_input_tokens": 23238.0,
+            "cached_input_tokens": 114816.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 882.0,
+            "reasoning_output_tokens": 183.0,
+            "total_tokens": 138936.0
+          },
+          "model_requests": 8,
+          "client_counters": {
+            "graph_mcp_calls": 2,
+            "other_mcp_calls": null,
+            "all_tool_calls": 46,
+            "pages": 2,
+            "errors": 1,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 45078.514358989196,
+          "duration_oracle_ms": 64.06085399794392,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        }
+      },
+      "rename-2": {
+        "C": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 174647,
+            "uncached_input_tokens": 27191,
+            "cached_input_tokens": 147456,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1551,
+            "reasoning_output_tokens": 132,
+            "total_tokens": 176198
+          },
+          "observed_uncached_subtotal": 27191,
+          "primary_per_accepted_task": 176198.0,
+          "total_tokens_per_accepted_task": 176198.0,
+          "uncached_input_per_accepted_task": 27191.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 174647.0,
+            "uncached_input_tokens": 27191.0,
+            "cached_input_tokens": 147456.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1551.0,
+            "reasoning_output_tokens": 132.0,
+            "total_tokens": 176198.0
+          },
+          "model_requests": 9,
+          "client_counters": {
+            "graph_mcp_calls": 3,
+            "other_mcp_calls": null,
+            "all_tool_calls": 88,
+            "pages": 3,
+            "errors": 3,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 61751.16423999134,
+          "duration_oracle_ms": 63.95377799344715,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        },
+        "D": {
+          "executed_cells": 1,
+          "attempts": 1,
+          "accepted_cells": 1,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 142867,
+            "uncached_input_tokens": 24979,
+            "cached_input_tokens": 117888,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1114,
+            "reasoning_output_tokens": 378,
+            "total_tokens": 143981
+          },
+          "observed_uncached_subtotal": 24979,
+          "primary_per_accepted_task": 143981.0,
+          "total_tokens_per_accepted_task": 143981.0,
+          "uncached_input_per_accepted_task": 24979.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 142867.0,
+            "uncached_input_tokens": 24979.0,
+            "cached_input_tokens": 117888.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1114.0,
+            "reasoning_output_tokens": 378.0,
+            "total_tokens": 143981.0
+          },
+          "model_requests": 8,
+          "client_counters": {
+            "graph_mcp_calls": 3,
+            "other_mcp_calls": null,
+            "all_tool_calls": 58,
+            "pages": 3,
+            "errors": 1,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 53490.67218900018,
+          "duration_oracle_ms": 64.00581399793737,
+          "graph_used_cells": 1,
+          "graph_avoided_cells": 0
+        }
+      }
+    },
+    "per_class": {
+      "ambiguous_rename": {
+        "C": {
+          "executed_cells": 2,
+          "attempts": 2,
+          "accepted_cells": 2,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 312945,
+            "uncached_input_tokens": 50673,
+            "cached_input_tokens": 262272,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 3090,
+            "reasoning_output_tokens": 464,
+            "total_tokens": 316035
+          },
+          "observed_uncached_subtotal": 50673,
+          "primary_per_accepted_task": 158017.5,
+          "total_tokens_per_accepted_task": 158017.5,
+          "uncached_input_per_accepted_task": 25336.5,
+          "consumption_per_executed_cell": {
+            "input_tokens": 156472.5,
+            "uncached_input_tokens": 25336.5,
+            "cached_input_tokens": 131136.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1545.0,
+            "reasoning_output_tokens": 232.0,
+            "total_tokens": 158017.5
+          },
+          "model_requests": 17,
+          "client_counters": {
+            "graph_mcp_calls": 5,
+            "other_mcp_calls": null,
+            "all_tool_calls": 154,
+            "pages": 5,
+            "errors": 4,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 118942.59462397895,
+          "duration_oracle_ms": 127.9108669841662,
+          "graph_used_cells": 2,
+          "graph_avoided_cells": 0
+        },
+        "D": {
+          "executed_cells": 2,
+          "attempts": 2,
+          "accepted_cells": 2,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 280921,
+            "uncached_input_tokens": 48217,
+            "cached_input_tokens": 232704,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1996,
+            "reasoning_output_tokens": 561,
+            "total_tokens": 282917
+          },
+          "observed_uncached_subtotal": 48217,
+          "primary_per_accepted_task": 141458.5,
+          "total_tokens_per_accepted_task": 141458.5,
+          "uncached_input_per_accepted_task": 24108.5,
+          "consumption_per_executed_cell": {
+            "input_tokens": 140460.5,
+            "uncached_input_tokens": 24108.5,
+            "cached_input_tokens": 116352.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 998.0,
+            "reasoning_output_tokens": 280.5,
+            "total_tokens": 141458.5
+          },
+          "model_requests": 16,
+          "client_counters": {
+            "graph_mcp_calls": 5,
+            "other_mcp_calls": null,
+            "all_tool_calls": 104,
+            "pages": 5,
+            "errors": 2,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 98569.18654798937,
+          "duration_oracle_ms": 128.0666679958813,
+          "graph_used_cells": 2,
+          "graph_avoided_cells": 0
+        }
+      },
+      "public_signature": {
+        "C": {
+          "executed_cells": 2,
+          "attempts": 2,
+          "accepted_cells": 2,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 304064,
+            "uncached_input_tokens": 60608,
+            "cached_input_tokens": 243456,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 2404,
+            "reasoning_output_tokens": 284,
+            "total_tokens": 306468
+          },
+          "observed_uncached_subtotal": 60608,
+          "primary_per_accepted_task": 153234.0,
+          "total_tokens_per_accepted_task": 153234.0,
+          "uncached_input_per_accepted_task": 30304.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 152032.0,
+            "uncached_input_tokens": 30304.0,
+            "cached_input_tokens": 121728.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 1202.0,
+            "reasoning_output_tokens": 142.0,
+            "total_tokens": 153234.0
+          },
+          "model_requests": 18,
+          "client_counters": {
+            "graph_mcp_calls": 6,
+            "other_mcp_calls": null,
+            "all_tool_calls": 138,
+            "pages": 4,
+            "errors": 4,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 122597.87489799783,
+          "duration_oracle_ms": 128.2481789967278,
+          "graph_used_cells": 2,
+          "graph_avoided_cells": 0
+        },
+        "D": {
+          "executed_cells": 2,
+          "attempts": 2,
+          "accepted_cells": 2,
+          "success_rate": 1.0,
+          "components": {
+            "input_tokens": 241002,
+            "uncached_input_tokens": 79082,
+            "cached_input_tokens": 161920,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 1818,
+            "reasoning_output_tokens": 308,
+            "total_tokens": 242820
+          },
+          "observed_uncached_subtotal": 79082,
+          "primary_per_accepted_task": 121410.0,
+          "total_tokens_per_accepted_task": 121410.0,
+          "uncached_input_per_accepted_task": 39541.0,
+          "consumption_per_executed_cell": {
+            "input_tokens": 120501.0,
+            "uncached_input_tokens": 39541.0,
+            "cached_input_tokens": 80960.0,
+            "cache_creation_input_tokens": 0.0,
+            "output_tokens": 909.0,
+            "reasoning_output_tokens": 154.0,
+            "total_tokens": 121410.0
+          },
+          "model_requests": 15,
+          "client_counters": {
+            "graph_mcp_calls": 6,
+            "other_mcp_calls": null,
+            "all_tool_calls": 97,
+            "pages": 4,
+            "errors": 5,
+            "retries": null,
+            "expansions": null,
+            "compactions": 0
+          },
+          "monetary_cost": null,
+          "usage_errors": [],
+          "duration_solver_ms": 93760.39587199921,
+          "duration_oracle_ms": 127.91059198207222,
+          "graph_used_cells": 2,
+          "graph_avoided_cells": 0
+        }
+      }
+    },
+    "per_cell": [
+      {
+        "task_id": "signature-1",
+        "replica": 1,
+        "condition": "C",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 151969,
+          "uncached_input_tokens": 36129,
+          "cached_input_tokens": 115840,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1294,
+          "reasoning_output_tokens": 132,
+          "total_tokens": 153263
+        },
+        "observed_uncached_subtotal": 36129,
+        "primary_per_accepted_task": 153263.0,
+        "total_tokens_per_accepted_task": 153263.0,
+        "uncached_input_per_accepted_task": 36129.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 151969.0,
+          "uncached_input_tokens": 36129.0,
+          "cached_input_tokens": 115840.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 1294.0,
+          "reasoning_output_tokens": 132.0,
+          "total_tokens": 153263.0
+        },
+        "model_requests": 9,
+        "client_counters": {
+          "graph_mcp_calls": 3,
+          "other_mcp_calls": null,
+          "all_tool_calls": 64,
+          "pages": 2,
+          "errors": 2,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 71862.41389300267,
+        "duration_oracle_ms": 64.02832300227601,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "signature-1",
+        "replica": 1,
+        "condition": "D",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 108036,
+          "uncached_input_tokens": 40196,
+          "cached_input_tokens": 67840,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 841,
+          "reasoning_output_tokens": 168,
+          "total_tokens": 108877
+        },
+        "observed_uncached_subtotal": 40196,
+        "primary_per_accepted_task": 108877.0,
+        "total_tokens_per_accepted_task": 108877.0,
+        "uncached_input_per_accepted_task": 40196.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 108036.0,
+          "uncached_input_tokens": 40196.0,
+          "cached_input_tokens": 67840.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 841.0,
+          "reasoning_output_tokens": 168.0,
+          "total_tokens": 108877.0
+        },
+        "model_requests": 7,
+        "client_counters": {
+          "graph_mcp_calls": 3,
+          "other_mcp_calls": null,
+          "all_tool_calls": 45,
+          "pages": 2,
+          "errors": 3,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 43576.45196199883,
+        "duration_oracle_ms": 63.91528499079868,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "signature-2",
+        "replica": 1,
+        "condition": "D",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 132966,
+          "uncached_input_tokens": 38886,
+          "cached_input_tokens": 94080,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 977,
+          "reasoning_output_tokens": 140,
+          "total_tokens": 133943
+        },
+        "observed_uncached_subtotal": 38886,
+        "primary_per_accepted_task": 133943.0,
+        "total_tokens_per_accepted_task": 133943.0,
+        "uncached_input_per_accepted_task": 38886.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 132966.0,
+          "uncached_input_tokens": 38886.0,
+          "cached_input_tokens": 94080.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 977.0,
+          "reasoning_output_tokens": 140.0,
+          "total_tokens": 133943.0
+        },
+        "model_requests": 8,
+        "client_counters": {
+          "graph_mcp_calls": 3,
+          "other_mcp_calls": null,
+          "all_tool_calls": 52,
+          "pages": 2,
+          "errors": 2,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 50183.94391000038,
+        "duration_oracle_ms": 63.99530699127354,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "signature-2",
+        "replica": 1,
+        "condition": "C",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 152095,
+          "uncached_input_tokens": 24479,
+          "cached_input_tokens": 127616,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1110,
+          "reasoning_output_tokens": 152,
+          "total_tokens": 153205
+        },
+        "observed_uncached_subtotal": 24479,
+        "primary_per_accepted_task": 153205.0,
+        "total_tokens_per_accepted_task": 153205.0,
+        "uncached_input_per_accepted_task": 24479.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 152095.0,
+          "uncached_input_tokens": 24479.0,
+          "cached_input_tokens": 127616.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 1110.0,
+          "reasoning_output_tokens": 152.0,
+          "total_tokens": 153205.0
+        },
+        "model_requests": 9,
+        "client_counters": {
+          "graph_mcp_calls": 3,
+          "other_mcp_calls": null,
+          "all_tool_calls": 74,
+          "pages": 2,
+          "errors": 2,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 50735.46100499516,
+        "duration_oracle_ms": 64.21985599445179,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "rename-1",
+        "replica": 1,
+        "condition": "C",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 138298,
+          "uncached_input_tokens": 23482,
+          "cached_input_tokens": 114816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1539,
+          "reasoning_output_tokens": 332,
+          "total_tokens": 139837
+        },
+        "observed_uncached_subtotal": 23482,
+        "primary_per_accepted_task": 139837.0,
+        "total_tokens_per_accepted_task": 139837.0,
+        "uncached_input_per_accepted_task": 23482.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 138298.0,
+          "uncached_input_tokens": 23482.0,
+          "cached_input_tokens": 114816.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 1539.0,
+          "reasoning_output_tokens": 332.0,
+          "total_tokens": 139837.0
+        },
+        "model_requests": 8,
+        "client_counters": {
+          "graph_mcp_calls": 2,
+          "other_mcp_calls": null,
+          "all_tool_calls": 66,
+          "pages": 2,
+          "errors": 1,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 57191.43038398761,
+        "duration_oracle_ms": 63.95708899071906,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "rename-1",
+        "replica": 1,
+        "condition": "D",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 138054,
+          "uncached_input_tokens": 23238,
+          "cached_input_tokens": 114816,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 882,
+          "reasoning_output_tokens": 183,
+          "total_tokens": 138936
+        },
+        "observed_uncached_subtotal": 23238,
+        "primary_per_accepted_task": 138936.0,
+        "total_tokens_per_accepted_task": 138936.0,
+        "uncached_input_per_accepted_task": 23238.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 138054.0,
+          "uncached_input_tokens": 23238.0,
+          "cached_input_tokens": 114816.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 882.0,
+          "reasoning_output_tokens": 183.0,
+          "total_tokens": 138936.0
+        },
+        "model_requests": 8,
+        "client_counters": {
+          "graph_mcp_calls": 2,
+          "other_mcp_calls": null,
+          "all_tool_calls": 46,
+          "pages": 2,
+          "errors": 1,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 45078.514358989196,
+        "duration_oracle_ms": 64.06085399794392,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "rename-2",
+        "replica": 1,
+        "condition": "D",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 142867,
+          "uncached_input_tokens": 24979,
+          "cached_input_tokens": 117888,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1114,
+          "reasoning_output_tokens": 378,
+          "total_tokens": 143981
+        },
+        "observed_uncached_subtotal": 24979,
+        "primary_per_accepted_task": 143981.0,
+        "total_tokens_per_accepted_task": 143981.0,
+        "uncached_input_per_accepted_task": 24979.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 142867.0,
+          "uncached_input_tokens": 24979.0,
+          "cached_input_tokens": 117888.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 1114.0,
+          "reasoning_output_tokens": 378.0,
+          "total_tokens": 143981.0
+        },
+        "model_requests": 8,
+        "client_counters": {
+          "graph_mcp_calls": 3,
+          "other_mcp_calls": null,
+          "all_tool_calls": 58,
+          "pages": 3,
+          "errors": 1,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 53490.67218900018,
+        "duration_oracle_ms": 64.00581399793737,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      },
+      {
+        "task_id": "rename-2",
+        "replica": 1,
+        "condition": "C",
+        "phase": "P2a",
+        "executed_cells": 1,
+        "attempts": 1,
+        "accepted_cells": 1,
+        "success_rate": 1.0,
+        "components": {
+          "input_tokens": 174647,
+          "uncached_input_tokens": 27191,
+          "cached_input_tokens": 147456,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 1551,
+          "reasoning_output_tokens": 132,
+          "total_tokens": 176198
+        },
+        "observed_uncached_subtotal": 27191,
+        "primary_per_accepted_task": 176198.0,
+        "total_tokens_per_accepted_task": 176198.0,
+        "uncached_input_per_accepted_task": 27191.0,
+        "consumption_per_executed_cell": {
+          "input_tokens": 174647.0,
+          "uncached_input_tokens": 27191.0,
+          "cached_input_tokens": 147456.0,
+          "cache_creation_input_tokens": 0.0,
+          "output_tokens": 1551.0,
+          "reasoning_output_tokens": 132.0,
+          "total_tokens": 176198.0
+        },
+        "model_requests": 9,
+        "client_counters": {
+          "graph_mcp_calls": 3,
+          "other_mcp_calls": null,
+          "all_tool_calls": 88,
+          "pages": 3,
+          "errors": 3,
+          "retries": null,
+          "expansions": null,
+          "compactions": 0
+        },
+        "monetary_cost": null,
+        "usage_errors": [],
+        "duration_solver_ms": 61751.16423999134,
+        "duration_oracle_ms": 63.95377799344715,
+        "graph_used_cells": 1,
+        "graph_avoided_cells": 0
+      }
+    ],
+    "comparisons": {
+      "D/C": {
+        "ratio": 0.8445533595822028,
+        "uncertainty": {
+          "status": "exploratory",
+          "sampling_unit": "paired_task_all_replicas",
+          "resamples": 2000,
+          "interval95": [
+            0.7513515629843033,
+            0.9413807748414075
+          ],
+          "interval90": [
+            0.7674899305228844,
+            0.9311941632939988
+          ]
+        }
+      }
+    },
+    "local_guard_alert": null,
+    "failed_attempts": [],
+    "limits": "Known-task screening; uncertainty samples tasks, not requests or replicas. No general advantage or holdout confirmation.",
+    "behavioral_primary": "same_hash_post_edit_reads_per_accepted_task",
+    "behavioral_evidence": {
+      "C": {
+        "same_hash_post_edit_reads": 85,
+        "successful_direct_reads": 178,
+        "accepted_tasks": 4,
+        "same_hash_post_edit_reads_per_accepted_task": 21.25,
+        "complete_receipt_classification": true,
+        "read_necessity": "unknown"
+      },
+      "D": {
+        "same_hash_post_edit_reads": 0,
+        "successful_direct_reads": 87,
+        "accepted_tasks": 4,
+        "same_hash_post_edit_reads_per_accepted_task": 0.0,
+        "complete_receipt_classification": true,
+        "read_necessity": "unknown"
+      }
+    },
+    "economic_interpretation": {
+      "included_plan_quota": "unknown; requires attributable window/bucket observations",
+      "raw_tokens": "diagnostic accounting, not a measurement of subscription allowance",
+      "no_graph_product_baseline": false,
+      "product_savings_confirmed": false
+    }
+  },
+  "behavioral_decision": {
+    "criterion": "All static outcomes accepted, fewer same-hash post-edit reads in both signature pairs, and no aggregate direct-read increase across four candidate tasks.",
+    "passed": true
+  },
+  "token_changes": {
+    "total_tokens": -0.1554466404177972,
+    "uncached_input_tokens": 0.14394191281530544,
+    "cached_input_tokens": -0.2196912174133131,
+    "output_tokens": -0.3057881325081907
+  },
+  "credentials_remaining": 0,
+  "provider_prompt_insertion": null,
+  "included_plan_consumption": null,
+  "economic_cost": null,
+  "external_solver_retries": 0,
+  "preparation_ai_turns": 0,
+  "judge_ai_turns": 0,
+  "private_journal_sha256": "1c377f45a52eab6b80bff67783dd78983cc6277949f66e5dbef14e16cd6a69d0"
+}

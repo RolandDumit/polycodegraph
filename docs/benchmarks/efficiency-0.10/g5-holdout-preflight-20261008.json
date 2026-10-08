@@ -1,0 +1,247 @@
+{
+  "model_turns": 0,
+  "execution_enabled": false,
+  "task_count": 12,
+  "proposed_replicas_per_condition": 2,
+  "proposed_solver_turns": 48,
+  "checks": [
+    {
+      "task_id": "holdout-local-object",
+      "profile": "local",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-local-array",
+      "profile": "local",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-rename-reexport",
+      "profile": "rename",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-rename-static",
+      "profile": "rename",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-signature-arguments",
+      "profile": "change_signature",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-signature-forwarding",
+      "profile": "change_signature",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-bug-conjunction",
+      "profile": "trace_flow",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-bug-arithmetic",
+      "profile": "trace_flow",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-flow-diamond",
+      "profile": "trace_flow",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-flow-recursion",
+      "profile": "trace_flow",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-review-endpoint",
+      "profile": "review_change",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-review-relocation",
+      "profile": "review_change",
+      "registered_tools": 1,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": true,
+      "model_turns": 0
+    }
+  ],
+  "fixture_source_disjoint_from_screening_except_tsconfig": true,
+  "corpus_generator_sha256": "b728c8cdee204ee8e4a877daee92c6c1d6794b1cec714fc7bb06fe998eee077c",
+  "private_corpus_manifest_sha256": "c5b1ab76e147e97f3f0c3168ce270fe882145917dae52f8fda9f9b82233ef439",
+  "preflight_sha256": "caebc253c96d5884ccd7f76722ae479143217abc1adb11f382734d992ce710e9",
+  "sizing": {
+    "method": "normal log-ratio approximation; variance borrowed from known screening",
+    "screening_task_count": 12,
+    "paired_log_ratio_sample_sd": 0.37916657310107643,
+    "desired_multiplicative_half_width": 1.3,
+    "minimum_independent_tasks_approximation": 9,
+    "balanced_authored_holdout_tasks": 12,
+    "replicas_per_condition": 2,
+    "solver_turns": 48,
+    "expected_uncached_input_from_screening_mean": 1113938.0,
+    "zero_failure_one_sided95_bound_by_task": 0.22092219194555585,
+    "limitations": "Task heterogeneity and nonrandom authored sampling limit this approximation. Replicas are not independent tasks. This is not power for a savings threshold or paired quality noninferiority."
+  },
+  "limits": "Native targets and static positive/negative oracles only. No runtime verification, AI preparation or paid solver launch.",
+  "no_graph_checks": [
+    {
+      "task_id": "holdout-local-object",
+      "profile": "local",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-local-array",
+      "profile": "local",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-rename-reexport",
+      "profile": "rename",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-rename-static",
+      "profile": "rename",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-signature-arguments",
+      "profile": "change_signature",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-signature-forwarding",
+      "profile": "change_signature",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-bug-conjunction",
+      "profile": "trace_flow",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-bug-arithmetic",
+      "profile": "trace_flow",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-flow-diamond",
+      "profile": "trace_flow",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-flow-recursion",
+      "profile": "trace_flow",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-review-endpoint",
+      "profile": "review_change",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    },
+    {
+      "task_id": "holdout-review-relocation",
+      "profile": "review_change",
+      "registered_tools": 0,
+      "isolation": true,
+      "oracle_positive_and_negative": true,
+      "native_target_verified": false,
+      "model_turns": 0
+    }
+  ],
+  "no_graph_preflight_sha256": "948e852137b479bc891df39da4fea59303f62969374052efc583aac341042c99",
+  "solver_configurations_verified": 24
+}

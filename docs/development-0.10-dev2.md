@@ -48,3 +48,17 @@ The [T3 follow-up](benchmarks/efficiency-0.10/t3-followup-20261008.md) adds targ
 edit-receipt guidance and a bounded audit of the existing post-edit read hashes.
 Deterministic checks pass; its behavioral effect needs a separately authorized
 diagnostic ablation. Historical acceptance and savings gates remain unchanged.
+
+That [eight-turn diagnostic](benchmarks/efficiency-0.10/t3-readback-results-20261008.md)
+is now complete under a separate authorization: all static outcomes pass,
+same-hash post-edit reads decrease from 85 to zero, and direct reads from 178 to
+87. The correction passes its narrow refactoring criterion. Total tokens fall
+15.5% versus the old guide; uncached input increases 14.4%. Included-plan savings
+remain unknown. There is no fresh A control or general source-policy claim.
+
+[G5 preparation](benchmarks/efficiency-0.10/g5-holdout-proposal-20261008.md) has
+twelve new untuned authored tasks with native and independent-oracle preflight,
+two proposed replicas and a new budget request. [T6's installed-client audit](
+benchmarks/efficiency-0.10/t6-model-verification-20261008.md) identifies the missing
+exact retained-context boundary. Both model gates remain open; neither has an
+AI allocation from the completed T3 diagnostic.
