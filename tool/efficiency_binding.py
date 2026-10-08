@@ -32,6 +32,13 @@ class AsyncLeanBinding:
         self.budgets = budgets
         self.active = False
 
+    def compaction(self) -> None:
+        """Reset both observed accounting and explicit source retention epochs."""
+        self.observer.ledger.compaction()
+        retention = self.budgets.get("retention")
+        if retention is not None:
+            retention.compaction()
+
     async def collect(self, arguments: dict, insert: Callable[[str], None] | None = None) -> dict:
         """Collect then insert exactly one text; cancellation never inserts partial old context."""
         if self.active:
@@ -88,6 +95,7 @@ class AsyncLeanBinding:
                 raise
             if insert is not None:
                 try:
+                    result["text"] = adapter.insertion_text()
                     returned = insert(result["text"])
                     if returned is not None:
                         if inspect.iscoroutine(returned):

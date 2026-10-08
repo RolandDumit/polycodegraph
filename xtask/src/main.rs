@@ -75,6 +75,7 @@ fn main() -> Result<()> {
                 "efficiency_binding.py",
                 "efficiency_transport.py",
                 "efficiency_mcp.py",
+                "efficiency_retention.py",
             ] {
                 std::fs::copy(root.join("tool").join(name), clients.join(name))?;
             }

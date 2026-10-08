@@ -13,6 +13,7 @@ import time
 
 from efficiency_collection import CollectionConflict, select_collection, source_windows
 from efficiency_ledger import ContextLedger, source_key
+from efficiency_retention import RetainedContext
 
 __all__ = ["ContextLedger", "LeanAdapter", "Observer", "source_key"]
 
@@ -356,6 +357,7 @@ class LeanAdapter:
         max_input_tokens=None,
         count_tokens=None,
         tokenizer_id=None,
+        retention=None,
     ):
         if (
             any(type(value) is not int for value in (max_pages, max_chars, max_wire_bytes))
@@ -392,6 +394,11 @@ class LeanAdapter:
         self.max_input_tokens = max_input_tokens
         self.count_tokens = count_tokens
         self.tokenizer_id = tokenizer_id
+        if retention is not None and (not isinstance(retention, RetainedContext) or not defer_insertion):
+            raise ValueError("retention requires a binding-owned deferred insertion boundary")
+        self.retention = retention
+        self.pending_retention = None
+        self.fallback_insertion = None
 
     def _tokens_fit(self, text: str) -> bool:
         if self.max_input_tokens is None:
@@ -403,6 +410,17 @@ class LeanAdapter:
 
     def _inject(self, result: dict, representation: str, transformed=None, prompt_windows=None) -> str:
         text = transformed if transformed is not None else result["content"][0]["text"]
+        if self.retention is not None and transformed is not None:
+            self.fallback_insertion = (result, representation, transformed, prompt_windows)
+            value = json.loads(text)
+            if value.get("format") in ("pcg-lean-collection-1", "pcg-lean-collection-2") and source_windows(value):
+                projected = self.retention.prepare(value)
+                candidate = compact(projected)
+                if len(candidate) <= self.max_chars and self._tokens_fit(candidate):
+                    text = transformed = candidate
+                    prompt_windows = source_windows(projected)
+                    if "retention" in projected:
+                        self.pending_retention = projected
         if not self._tokens_fit(text):
             raise ValueError("prepared insertion exceeds exact tokenizer budget; nothing inserted")
         if self.defer_insertion:
@@ -415,11 +433,29 @@ class LeanAdapter:
             return transformed if transformed is not None else result["content"][0]["text"]
         return self.observer.inject(result, representation, transformed, prompt_windows)
 
+    def insertion_text(self) -> str:
+        """Rehydrate if retention changed while the async collection was prepared."""
+        if self.pending_insertion is None:
+            raise ValueError("no prepared insertion")
+        if self.pending_retention is not None and not self.retention.valid(self.pending_retention):
+            self.pending_insertion = self.fallback_insertion
+            self.pending_retention = None
+        result, _, transformed, _ = self.pending_insertion
+        return transformed if transformed is not None else result["content"][0]["text"]
+
     def commit_insertion(self) -> None:
         """Record a deferred representation only after the actual insertion succeeded."""
         if self.pending_insertion is None:
             raise ValueError("no prepared insertion")
         self.observer.inject(*self.pending_insertion)
+        if self.pending_retention is not None:
+            self.retention.committed(self.pending_retention)
+            self.observer._event(
+                "retention_committed",
+                retention_epoch=self.retention.epoch,
+                referenced_windows=self.pending_retention["retention"]["referenced_windows"],
+            )
+            self.pending_retention = None
         self.pending_insertion = None
 
     def _call(self, arguments: dict, deadline: float) -> dict:

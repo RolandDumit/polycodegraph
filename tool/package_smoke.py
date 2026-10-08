@@ -60,8 +60,9 @@ with tempfile.TemporaryDirectory(prefix="installed package spaces ") as temp:
                     "from efficiency_workflow import workflow_surface; "
                     "from efficiency_mcp import WorkflowRelay; "
                     "from efficiency_transport import NativeTransport; "
+                    "from efficiency_retention import RetainedContext; "
                     "assert LeanAdapter and Observer and AsyncLeanBinding and fuse_pages and workflow_surface"
-                    " and WorkflowRelay and NativeTransport"
+                    " and WorkflowRelay and NativeTransport and RetainedContext"
                 ),
                 str(install / "clients"),
             ],

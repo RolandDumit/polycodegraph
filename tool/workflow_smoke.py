@@ -128,6 +128,7 @@ def run(binary: Path, config: Path | None, bridge: Path, output: Path | None = N
                     "efficiency_binding.py",
                     "efficiency_transport.py",
                     "efficiency_mcp.py",
+                    "efficiency_retention.py",
                 )
             },
         }

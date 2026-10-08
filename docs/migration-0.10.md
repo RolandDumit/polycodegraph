@@ -61,6 +61,30 @@ The existing conservative required-inventory completion is unchanged. Exhausted
 pagination does not repair global coverage: explicit recovery guidance recommends
 reporting the limit or inspecting relevant diagnostics, rather than repeating
 pages. Root/generation/health/environment/source/baseline validation is unchanged.
+
+## T6: explicit retained source
+
+`AsyncLeanBinding(..., retention=RetainedContext())` enables a binding-owned
+projection. After successful insertion, the client may call
+`retention.acknowledge(epoch, window_ids)` with its complete retained set from the
+actual model context. Offers are bounded to 256 hashes; protocol output, a log,
+prepared text or failed insertion do not establish acknowledgement. No raw source
+or model-generated summary is stored by this object.
+
+Only exact, current, nontruncated source windows may become shorter references.
+Inventory and provenance remain intact. Root/generation/health/environment,
+source hash and review baseline prevent cross-identity reuse. Call
+`binding.compaction()` whenever context is compacted or discarded: it resets
+both source accounting and retention. New epochs
+rehydrate full text. The binding checks acknowledgements again immediately before
+insertion and falls back to its self-contained prepared text if they changed.
+
+References require that full text is still in the client-confirmed context;
+they are not standalone source. Omit `retention` for self-contained output.
+The generic MCP relay leaves retention disabled because it cannot observe client
+context. First-offer metadata, compaction rehydration, cache effects and subsequent
+reads must all be included in a later end-to-end measurement; these deterministic
+projections do not establish paid model-token savings.
 The full/agent server catalogs, accepted primitive tools, audit/lean formats and
 semantic resolver contracts remain available.
 
