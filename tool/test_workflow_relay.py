@@ -15,6 +15,7 @@ from unittest.mock import AsyncMock, patch
 from efficiency_benchmark import bounded_process
 from efficiency_mcp import WorkflowRelay, read_frame, serve
 from efficiency_transport import REQUEST_BYTES, NativeTransport, RpcError, parse_frame
+from efficiency_workflow import EDIT_RECEIPT_GUIDE
 from test_efficiency010 import CATALOG, page, wire
 
 
@@ -23,6 +24,31 @@ def frames(*values: dict) -> io.BytesIO:
 
 
 class Relay(unittest.IsolatedAsyncioTestCase):
+    async def test_edit_receipt_guidance_reaches_only_refactoring_initialization(self):
+        for profile in ("rename", "change_signature", "review_change", "trace_flow"):
+            backend = AsyncMock()
+            backend.request.side_effect = [
+                {"serverInfo": {"name": "native"}},
+                {"tools": CATALOG},
+            ]
+            relay = WorkflowRelay(Path("native"), Path("root"), None, profile)
+            with patch.object(NativeTransport, "start", return_value=backend):
+                initial = await relay.handle(
+                    "initialize",
+                    {
+                        "protocolVersion": "2025-11-25",
+                        "capabilities": {},
+                        "clientInfo": {},
+                    },
+                )
+            self.assertEqual(
+                EDIT_RECEIPT_GUIDE in initial["instructions"],
+                profile in ("rename", "change_signature"),
+            )
+            await relay.notify("notifications/initialized")
+            self.assertEqual(len((await relay.handle("tools/list", {}))["tools"]), 1)
+            await relay.close()
+
     async def test_cursor_recovery_forwards_the_same_effective_source_policy(self):
         backend = AsyncMock()
         backend.request.side_effect = [

@@ -72,6 +72,10 @@ After edits, the next graph query applies the configured freshness policy; avoid
 an additional index when that already meets the task's needs. Explicit scans are
 still appropriate for sensitive impact or after prepared dependencies change;
 use force:true when external artifacts changed without a tracked lock/config edit.
+Use exact hash-checked source and successful edit receipts already returned.
+Read back a changed file for a concrete missing fact, truncation, a failed edit
+or changed source identity; avoid a full readback of every edited file by habit.
+Write receipts establish that the edit happened, not that it is correct.
 Complete the project's authorized compiler/static analysis/tests. Empty static
 results do not establish absence of consumers/tests/effects. Inspect dynamic calls,
 callbacks, reflection, macros, FFI and runtime routing at declared boundaries.

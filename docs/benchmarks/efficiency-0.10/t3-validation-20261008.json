@@ -1,0 +1,122 @@
+{
+  "native_workflow": {
+    "model_runs": 0,
+    "provider_usage": null,
+    "provider_prompt_insertion": null,
+    "binary_sha256": "8b0cbf56bd3cc71e1289a4521ece25422e3ec5fcdab23456dd7b5d0338143874",
+    "bridge_sha256": "9d11a1718e52b50a043a0d6d85d91b3b8be886502cccf2f6afb7f5fe6b0d8b7b",
+    "python_version": "3.14.7",
+    "client_modules_sha256": {
+      "efficiency_client.py": "060ca1bf167f40639e5cd57be05350161fdde0f316f505f50837a0632c9e3c01",
+      "efficiency_collection.py": "d02797f03dda1f949146689a7256a5ac2bd34bc93354f4ca3c014c59dbe539f9",
+      "efficiency_ledger.py": "4a789e37cfc5d6a1dadb42258b33c761eeddb29599ff8ebcb6cddc76e73f61e9",
+      "efficiency_workflow.py": "cd06019653211a47f16dc0c0f677e2a594491d9b23ffe8a78e11c437869b4372",
+      "efficiency_binding.py": "8707909416776a4468e9d7bb3cb444e1db7a91aff102298b96bc59b6bc948442",
+      "efficiency_transport.py": "c93d3b80af7c0d062c5083b88a9e13caadda734a9aa52220cff72d898d0ad11e",
+      "efficiency_mcp.py": "9d11a1718e52b50a043a0d6d85d91b3b8be886502cccf2f6afb7f5fe6b0d8b7b",
+      "efficiency_retention.py": "a90f108f4ee779fb0666a51b095293953fba5a44bcf5f37a9acd590433a24875"
+    },
+    "local": {
+      "tools": 0,
+      "instructions": 0,
+      "native_binary_required": false
+    },
+    "full": {
+      "tools": 16,
+      "direct_result_preserved": true,
+      "original_guide": true,
+      "schema_chars": 17629,
+      "schema_bytes": 17629,
+      "schema_sha256": "998b580ca23bd5b2511c49b1df0c7e2a387222bc8be8822c8eb1c0b40349ee77",
+      "guide_chars": 358,
+      "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+    },
+    "agent": {
+      "tools": 5,
+      "direct_result_preserved": true,
+      "original_guide": true,
+      "schema_chars": 10539,
+      "schema_bytes": 10539,
+      "schema_sha256": "faa8d54235d8b5379cd09977f33d8443d235adaf77cd9aa74b9cddb576f5bce1",
+      "guide_chars": 358,
+      "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+    },
+    "rename": {
+      "schema_chars": 3869,
+      "schema_bytes": 3869,
+      "schema_sha256": "c5f18264a874ecfda6bfc7607f96fa944f02cb238774647a12bcb0c94a49bec7",
+      "guide_chars": 795,
+      "guide_sha256": "51a8420807c41dfadf10144f02c05e9e51e8033d35188ac68451af6bb1c5c83b",
+      "advertised_tools": 2,
+      "raw_pages": 21,
+      "selected_format": "pcg-lean-collection-2",
+      "one_text": true,
+      "inventory_equal": true,
+      "source_equal": true,
+      "selected_source_windows": 2,
+      "foreign_options_rejected": true
+    },
+    "telemetry": {
+      "private_hashed_receipt": true,
+      "mcp_calls": 22,
+      "prompt_insertion_claimed": false,
+      "rejected_workflow_error_counted": true
+    },
+    "move_symbol": {
+      "schema_chars": 2319,
+      "schema_bytes": 2319,
+      "schema_sha256": "d3c0931b3b2406ff12dc190e18125abcff8463d4762d6f07a3fc40da715c42b7",
+      "guide_chars": 514,
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "canonical_tool": true,
+      "typed_workflow": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    },
+    "trace_flow": {
+      "schema_chars": 2344,
+      "schema_bytes": 2344,
+      "schema_sha256": "9e4c6e89ba364354c8f5bbc2a8a570afa87d6cb882a62b346f91f87f18b8110d",
+      "guide_chars": 514,
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "canonical_tool": true,
+      "typed_workflow": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    },
+    "continuation": {
+      "limit_visible": true,
+      "canonical_cursor_recovery": true,
+      "page_offset": 20,
+      "inventory_equal": true
+    },
+    "review_change": {
+      "baseline_reused_same_session": true,
+      "watcher_reconciliation_retries": 0,
+      "watcher_wait_max_seconds": 5,
+      "source_edit_observed": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    }
+  },
+  "rust_tests": 93,
+  "python_tests": 97,
+  "new_model_runs": 0,
+  "historical_model_effect_remeasured": false,
+  "changed_files_sha256": {
+    "tool/efficiency_workflow.py": "cd06019653211a47f16dc0c0f677e2a594491d9b23ffe8a78e11c437869b4372",
+    "tool/efficiency_read_audit.py": "345fc877afdf4a76cf4bd37868fcc3e983d7ab8aa220eae3357a956ec059bccb",
+    "tool/test_efficiency_read_audit.py": "ba2c919da647c7f7744aff8daa7271bd8f69cf06b96a82df7fe1b06ecd2db955",
+    "tool/test_workflow_relay.py": "c27e736ff6b8bd18e805c4a67a9e297d0ba9de1676755f4fc36f80e1f57e314a"
+  },
+  "log_sha256": {
+    "t3-receipt-rust-20261008.log": "41f0d6d88d20508528ec9fdfc775540540b69e1ff3a6da5cbbe7d93e1206332b",
+    "t3-receipt-python-final-20261008.log": "6a7275c0543252504cc188a39f3fe2aa1da68cd1e3feb71c6de6f2635deec7fc",
+    "t3-workflow-final-20261008.log": "8b5d7f2f48ceaabf66b4109a2a626a04bd5843c1e94bd51edc988e2d5a12f857",
+    "t3-package-build-20261008.log": "de0363ac97c547bbdcc7e84f569c0628d2e28c0736cae6044dca7212be13078c",
+    "t3-package-smoke-20261008.log": "21b62bf3ed6a4cf0bee93585d185e807209c6c77c8cecd96b8abd18db2947929",
+    "t3-package-smoke-fixed-20261008.log": "c1f630a1109d4cd20d10f301b5be108081f05ca92109cad573c22a33f2106c21"
+  },
+  "limitations": "T3 acceptance, G5 holdout and T6 model savings remain open; quota unknown. Historical platform results cover unchanged native code, not new client revision.",
+  "development_package_relocated_smoke": "passed_after_writable_cache_environment_fix; first failure preserved"
+}

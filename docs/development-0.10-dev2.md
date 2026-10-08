@@ -4,6 +4,13 @@ Continue on `codex/0.10-token-efficiency`. The annotated `v0.10.0-dev.1`
 tag freezes commit `90eec266f05755e98f60def8d26c7ba5f968592c` and its
 T0–T2 screening evidence. Historical manifests and measurements remain unchanged.
 
+The user clarified the product goal on 2026-10-08: extend the included Codex
+subscription allowance. Future experiments follow the
+[plan consumption policy](codex-plan-consumption.md), distinguishing observed
+quota, rate-weighted credit equivalents and raw tokens. The completed dev.2
+screening retains its original primary; no subscription-quota savings were
+measured and no new AI budget is implied.
+
 The user clarified on 2026-10-08 that the target of at most 15% additional
 total tokens relative to A belongs to 1.0. The historical screening savings gate
 failed; it is not reclassified as passing. Stable 0.10 requires completing the
@@ -36,3 +43,8 @@ is complete: all static outcomes pass, total tokens are +55.9% versus A, and T3
 read counts increase. Independent confirmation, T4 discovery benefit and T6
 end-to-end compaction savings remain unmeasured. The annotated dev.2 tag is
 published; no stable tag has been created.
+
+The [T3 follow-up](benchmarks/efficiency-0.10/t3-followup-20261008.md) adds targeted
+edit-receipt guidance and a bounded audit of the existing post-edit read hashes.
+Deterministic checks pass; its behavioral effect needs a separately authorized
+diagnostic ablation. Historical acceptance and savings gates remain unchanged.

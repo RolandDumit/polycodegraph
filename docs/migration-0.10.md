@@ -295,5 +295,8 @@ not automatically retry, increase caps or claim compiler/test verification.
 Rollback: use ordinary server full/agent MCP, audit/lean directly, or the existing
 `LeanAdapter` collection-1 default. Fused use requires `deadline_call` or the async
 binding. These modules are packaged together in `clients/`; no runtime is installed
-into Codex or any other client by the server. End-to-end usage, real model use of
-the treatment, rereads, holdout and macOS UIKit remain separate release gates.
+into Codex or any other client by the server. End-to-end usage and real model use
+of the treatment were recorded in the dev.2 screening; the same-code macOS UIKit
+recheck passed. Refactoring rereads, independent holdout confirmation and model
+retention savings remain open; see the
+[T3 follow-up](benchmarks/efficiency-0.10/t3-followup-20261008.md).

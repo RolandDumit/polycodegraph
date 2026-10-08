@@ -1,0 +1,100 @@
+{
+  "model_runs": 0,
+  "new_solver_turns": 0,
+  "source_campaign": "dev2-screening-20261008-launch2",
+  "runs": [
+    {
+      "task_id": "signature-1",
+      "condition": "A",
+      "receipt_sha256": "b86d5711045864eb6f6aef12f5b620c5f811df661606f358a31652fb558b2348",
+      "counts": {
+        "tool_calls": 48,
+        "failed_tool_calls": 1,
+        "successful_reads": 22,
+        "successful_changed_writes": 19,
+        "reads_with_unknown_identity": 0,
+        "post_edit_same_hash_reads": 1,
+        "post_edit_changed_hash_reads": 0,
+        "post_edit_unknown_hash_reads": 0,
+        "evicted_file_identities": 0,
+        "untracked_reads_after_eviction": 0
+      },
+      "complete": true,
+      "post_edit_classification_complete": true,
+      "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+      "read_necessity": "unknown",
+      "model_retention": "unknown",
+      "edit_correctness": "unknown; use an independent oracle/project checks"
+    },
+    {
+      "task_id": "signature-1",
+      "condition": "D",
+      "receipt_sha256": "e4844388c43b0382de196e987381c520048fa20e8334f7ddefc5614bd9f83b27",
+      "counts": {
+        "tool_calls": 63,
+        "failed_tool_calls": 1,
+        "successful_reads": 40,
+        "successful_changed_writes": 19,
+        "reads_with_unknown_identity": 0,
+        "post_edit_same_hash_reads": 19,
+        "post_edit_changed_hash_reads": 0,
+        "post_edit_unknown_hash_reads": 0,
+        "evicted_file_identities": 0,
+        "untracked_reads_after_eviction": 0
+      },
+      "complete": true,
+      "post_edit_classification_complete": true,
+      "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+      "read_necessity": "unknown",
+      "model_retention": "unknown",
+      "edit_correctness": "unknown; use an independent oracle/project checks"
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "A",
+      "receipt_sha256": "113692878563e887c2f6c4278d845c2eeb188e7d6ad523021818d227a9d7d032",
+      "counts": {
+        "tool_calls": 55,
+        "failed_tool_calls": 2,
+        "successful_reads": 25,
+        "successful_changed_writes": 22,
+        "reads_with_unknown_identity": 0,
+        "post_edit_same_hash_reads": 1,
+        "post_edit_changed_hash_reads": 0,
+        "post_edit_unknown_hash_reads": 0,
+        "evicted_file_identities": 0,
+        "untracked_reads_after_eviction": 0
+      },
+      "complete": true,
+      "post_edit_classification_complete": true,
+      "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+      "read_necessity": "unknown",
+      "model_retention": "unknown",
+      "edit_correctness": "unknown; use an independent oracle/project checks"
+    },
+    {
+      "task_id": "signature-2",
+      "condition": "D",
+      "receipt_sha256": "816208234d55ce02081c8fc1264e1ed2304f2c35b883fca4cf96b5507ba193cc",
+      "counts": {
+        "tool_calls": 71,
+        "failed_tool_calls": 1,
+        "successful_reads": 46,
+        "successful_changed_writes": 22,
+        "reads_with_unknown_identity": 0,
+        "post_edit_same_hash_reads": 22,
+        "post_edit_changed_hash_reads": 0,
+        "post_edit_unknown_hash_reads": 0,
+        "evicted_file_identities": 0,
+        "untracked_reads_after_eviction": 0
+      },
+      "complete": true,
+      "post_edit_classification_complete": true,
+      "measurement": "ordinary tool call counts and exact source receipt identities; not model tokens",
+      "read_necessity": "unknown",
+      "model_retention": "unknown",
+      "edit_correctness": "unknown; use an independent oracle/project checks"
+    }
+  ],
+  "interpretation": "Equal post-write receipt hashes are observations, not proof of unnecessary reads or correctness. Historical campaign and its gates are unchanged."
+}

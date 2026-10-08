@@ -20,6 +20,20 @@ WORKFLOW_GUIDE = (
     "collect locations first to avoid duplicate source. Follow the repository checks."
 )
 
+EDIT_RECEIPT_GUIDE = (
+    " Use exact hash-checked source and successful edit receipts already returned. "
+    "Reread only for a missing fact, truncation, a failed edit or changed source; "
+    "avoid a full readback of every edited file. Receipts confirm writes, not correctness; "
+    "still run the authorized project checks."
+)
+
+
+def workflow_guide(profile: str) -> str:
+    """Add edit verification guidance only to the affected refactoring surfaces."""
+    return WORKFLOW_GUIDE + (
+        EDIT_RECEIPT_GUIDE if profile in ("rename", "change_signature") else ""
+    )
+
 
 def workflow_surface(
     catalog: list[dict],
@@ -73,7 +87,7 @@ def workflow_surface(
     tools = [spec]
     if discovery:
         tools.insert(0, copy.deepcopy(by_name["search_symbol"]))
-    return {"profile": profile, "tools": tools, "instructions": WORKFLOW_GUIDE}
+    return {"profile": profile, "tools": tools, "instructions": workflow_guide(profile)}
 
 
 def workflow_arguments(surface: dict, arguments: dict) -> dict:

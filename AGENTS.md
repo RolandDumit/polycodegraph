@@ -10,5 +10,6 @@ The CLI/MCP/index/query core is Rust. Read docs/architecture.md and docs/protoco
 - Never execute indexed application code, project plugins, package scripts, build hooks or code generation. Keep subprocess budgets, path confinement and symlink rejection.
 - stdout is protocol-only during serve. Diagnostics go to stderr. Preserve cancellation, framing/queue limits and EOF draining.
 - Update configuration/docs/provider contracts when behavior changes. Record actual benchmarks, tests, skipped checks and limitations. Keep caches, binaries, SDK paths and environments out of Git.
+- Codex subscription efficiency work follows [docs/codex-plan-consumption.md](docs/codex-plan-consumption.md): prioritize attributable included-plan allowance per accepted task; label weighted credits as a proxy and raw tokens as diagnostics. Preserve historical metrics/gates; unknown quota stays unknown. New metrics need a new preregistered protocol, and this policy grants no AI budget.
 
 - Intent changes require `tool/intent_smoke.py` for the affected language groups, primitive differential checks against 0.6 and the deterministic rename evidence gate. Include every page/expansion/schema cost; never report characters as measured model tokens. Review baselines and cursor expiry/root/health are part of the contract.

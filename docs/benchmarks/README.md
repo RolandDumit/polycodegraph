@@ -1,5 +1,10 @@
 # Performance evidence for 0.5.0
 
+Future subscription-efficiency work follows the
+[Codex plan consumption policy](../codex-plan-consumption.md): observed allowance
+per accepted task is the goal; weighted credits are a labelled proxy, and raw
+tokens are diagnostics. Historical experiment primaries and gates remain frozen.
+
 Later evidence: [0.9 release validation](../releases/v0.9.0.md),
 [post-0.8 deterministic experiments](efficiency-post-0.8/decision.md), and
 [comparison preparation without AI execution](comparison-20261006-01/report.md).
@@ -81,3 +86,7 @@ separate pilot, not a revision of the historical fixture protocols.
 The [dev.2 model screening](efficiency-0.10/dev2-screening-report-20261008.md)
 records the separately authorized 24-turn campaign, actual provider costs and
 source-read audit; all static outcomes pass, aggregate savings do not.
+
+The [T3 readback follow-up](efficiency-0.10/t3-followup-20261008.md) records a
+targeted client correction and re-audit of existing receipts. No new model
+effect or completed acceptance gate is claimed.
