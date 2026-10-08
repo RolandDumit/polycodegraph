@@ -61,6 +61,14 @@ explicit cursor recovery returns one native lean page in the same session.
 Ordinary native full/agent serving keeps its existing response representation.
 Relay receipts observe prepared protocol output, not provider prompt insertion.
 
+0.10-dev.2 adds optional intent `source_policy: intent` and independent
+`budget.max_source_chars`; explicit views prevail and required sites are not
+sampled. Opt-in lean policy results carry conservative `task_coverage`.
+Lexical search supports `group_by: anchor|line`, `ranking: overlap|bm25` and an
+exact `anchor` match filter. Scope is applied before index caps; excluded files
+remain explicit and incomplete totals unknown. Defaults preserve line/overlap
+search. Client retention is binding-owned, never inferred from MCP transmission.
+
 Standard `params._meta` is accepted independently of tool arguments, including optional
 string/number progressToken and vendor metadata. The server may omit progress
 notifications; this does not require a client envelope adapter. tools/list returns one

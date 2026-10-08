@@ -5,6 +5,11 @@ identity to lean snapshots and optional lossless client collection fusion.
 Inventory/source/verification distinctions, cursor and baseline contracts below
 remain applicable; fused completion is never a compiler or runtime proof.
 
+0.10-dev.2 adds opt-in intent source policy and independent page source budgets,
+plus conservative local/task coverage. Required sites retain their identities and
+confidence. See [the source, discovery and retention contract](migration-0.10.md)
+for explicit view overrides, unknown coverage and binding-owned rehydration.
+
 Version 0.9 adds opt-in `format: lean` (`pcg-lean-1`) with separate
 required inventory, optional context and unexecuted compiler/test verification.
 Legacy/audit rendering remains the default. Lean capture implies exact strict

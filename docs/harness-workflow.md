@@ -13,7 +13,7 @@ entrypoint with a fixed `--profile` and optional `--discovery`; see the
 
 The graph guide materialized by `workflow_surface` is:
 
-> Use the known target directly. Collect required sites before editing; preserve full IDs, offsets, confidence, snapshot and limits. Expand only a concrete missing fact or source. Static completion is not compiler/test verification. Review needs an exact baseline before editing and the same scope afterward. Follow the repository checks.
+> Use the known target directly. Collect required sites before editing; preserve full IDs, offsets, confidence, snapshot and limits. Expand only a concrete missing fact or source. Static completion is not compiler/test verification. Review needs an exact baseline before editing and the same scope afterward. Omit view to use the intent source policy; request full_evidence only for a concrete missing context. If reading a whole file, collect locations first to avoid duplicate source. Follow the repository checks.
 
 Register only that task's surface. For fused collections, decode dictionary
 indexes through their complete ID tables; preserve every required site and all
