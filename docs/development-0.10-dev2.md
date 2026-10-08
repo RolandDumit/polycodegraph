@@ -28,3 +28,8 @@ be enabled in a generic MCP relay that cannot observe retained client context.
 
 Create `v0.10.0-dev.2` only at a verified checkpoint. Publish stable `v0.10.0`
 after final validation and release notes; no stable tag is created during work.
+
+Implementation and current verification are recorded in the
+[dev.2 report](benchmarks/efficiency-0.10/dev2-results-20261008.md). T3–T6 have
+code and deterministic regression coverage; their end-to-end AI acceptance is
+separate and remains unmeasured for this candidate.

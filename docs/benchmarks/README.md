@@ -5,6 +5,10 @@ Later evidence: [0.9 release validation](../releases/v0.9.0.md),
 [comparison preparation without AI execution](comparison-20261006-01/report.md).
 These dated experiments retain their identities and unmeasured economic gates.
 
+[0.10-dev.2 tranche and validation](efficiency-0.10/dev2-results-20261008.md)
+records T3–T6 implementation, current deterministic evidence, source/retention
+character measurements and the separate unmeasured AI acceptance criteria.
+
 [0.10 first-tranche implementation](efficiency-0.10/report.md) records T0–T2
 client integration, lossless native replay, artifact identities and the separate
 preregistered continuation. It is the frozen pre-AI snapshot.

@@ -1,0 +1,565 @@
+{
+  "version": "0.10.0-dev.2",
+  "tested_program_commit": "2e40eceecce941aa96048c0bf02bd2614b1df55d",
+  "candidate_binary_sha256": "8b0cbf56bd3cc71e1289a4521ece25422e3ec5fcdab23456dd7b5d0338143874",
+  "model_runs": 0,
+  "rust_tests": 93,
+  "python_tests": 90,
+  "lint": "passed_modified_client_and_new_smoke_modules",
+  "native_mixed_fixtures": {
+    "languages": {
+      "dart": 5,
+      "go": 4,
+      "java": 5,
+      "javascript": 3,
+      "kotlin": 3,
+      "objectivec": 5,
+      "python": 5,
+      "rust": 4,
+      "swift": 4,
+      "typescript": 4
+    },
+    "symbols": 200,
+    "edges": 438,
+    "verified": [
+      {
+        "extension": ".dart",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".kt",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".m",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".swift",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".go",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".java",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".ts",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".js",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".py",
+        "intents": 10,
+        "fused_workflows": 10
+      },
+      {
+        "extension": ".rs",
+        "intents": 10,
+        "fused_workflows": 10
+      }
+    ]
+  },
+  "primitive_baseline": {
+    "tag": "v0.6.0",
+    "commit": "fff953388d089ae89ab0b260fec05a8326c02b69",
+    "binary_sha256": "b9b1be15abad37eb4231ca6677cd75d90b2ed09385104dabe24d7ab73791fcd0",
+    "same_current_provider_assets": true
+  },
+  "workflow": {
+    "model_runs": 0,
+    "provider_usage": null,
+    "provider_prompt_insertion": null,
+    "binary_sha256": "8b0cbf56bd3cc71e1289a4521ece25422e3ec5fcdab23456dd7b5d0338143874",
+    "bridge_sha256": "9d11a1718e52b50a043a0d6d85d91b3b8be886502cccf2f6afb7f5fe6b0d8b7b",
+    "python_version": "3.14.7",
+    "client_modules_sha256": {
+      "efficiency_client.py": "060ca1bf167f40639e5cd57be05350161fdde0f316f505f50837a0632c9e3c01",
+      "efficiency_collection.py": "d02797f03dda1f949146689a7256a5ac2bd34bc93354f4ca3c014c59dbe539f9",
+      "efficiency_ledger.py": "4a789e37cfc5d6a1dadb42258b33c761eeddb29599ff8ebcb6cddc76e73f61e9",
+      "efficiency_workflow.py": "8eb5ac8a35eed40bce2dd697ca5b232c086d97a27db1674c5ed6be6e5770c7ce",
+      "efficiency_binding.py": "8707909416776a4468e9d7bb3cb444e1db7a91aff102298b96bc59b6bc948442",
+      "efficiency_transport.py": "c93d3b80af7c0d062c5083b88a9e13caadda734a9aa52220cff72d898d0ad11e",
+      "efficiency_mcp.py": "9d11a1718e52b50a043a0d6d85d91b3b8be886502cccf2f6afb7f5fe6b0d8b7b",
+      "efficiency_retention.py": "a90f108f4ee779fb0666a51b095293953fba5a44bcf5f37a9acd590433a24875"
+    },
+    "local": {
+      "tools": 0,
+      "instructions": 0,
+      "native_binary_required": false
+    },
+    "full": {
+      "tools": 16,
+      "direct_result_preserved": true,
+      "original_guide": true,
+      "schema_chars": 17629,
+      "schema_bytes": 17629,
+      "schema_sha256": "998b580ca23bd5b2511c49b1df0c7e2a387222bc8be8822c8eb1c0b40349ee77",
+      "guide_chars": 358,
+      "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+    },
+    "agent": {
+      "tools": 5,
+      "direct_result_preserved": true,
+      "original_guide": true,
+      "schema_chars": 10539,
+      "schema_bytes": 10539,
+      "schema_sha256": "faa8d54235d8b5379cd09977f33d8443d235adaf77cd9aa74b9cddb576f5bce1",
+      "guide_chars": 358,
+      "guide_sha256": "1805d43ac94a01574f1b5e9c8c4222f06de2bcd5c31287e45bdbf1428f4d87e4"
+    },
+    "rename": {
+      "schema_chars": 3869,
+      "schema_bytes": 3869,
+      "schema_sha256": "c5f18264a874ecfda6bfc7607f96fa944f02cb238774647a12bcb0c94a49bec7",
+      "guide_chars": 514,
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "advertised_tools": 2,
+      "raw_pages": 21,
+      "selected_format": "pcg-lean-collection-2",
+      "one_text": true,
+      "inventory_equal": true,
+      "source_equal": true,
+      "selected_source_windows": 2,
+      "foreign_options_rejected": true
+    },
+    "telemetry": {
+      "private_hashed_receipt": true,
+      "mcp_calls": 22,
+      "prompt_insertion_claimed": false,
+      "rejected_workflow_error_counted": true
+    },
+    "move_symbol": {
+      "schema_chars": 2319,
+      "schema_bytes": 2319,
+      "schema_sha256": "d3c0931b3b2406ff12dc190e18125abcff8463d4762d6f07a3fc40da715c42b7",
+      "guide_chars": 514,
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "canonical_tool": true,
+      "typed_workflow": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    },
+    "trace_flow": {
+      "schema_chars": 2344,
+      "schema_bytes": 2344,
+      "schema_sha256": "9e4c6e89ba364354c8f5bbc2a8a570afa87d6cb882a62b346f91f87f18b8110d",
+      "guide_chars": 514,
+      "guide_sha256": "74a6bc99303c7628a7395f9f7fa0acd32a2e9f51feb6e5e25f0c41260b9c5f85",
+      "canonical_tool": true,
+      "typed_workflow": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    },
+    "continuation": {
+      "limit_visible": true,
+      "canonical_cursor_recovery": true,
+      "page_offset": 20,
+      "inventory_equal": true
+    },
+    "review_change": {
+      "baseline_reused_same_session": true,
+      "watcher_reconciliation_retries": 0,
+      "watcher_wait_max_seconds": 5,
+      "source_edit_observed": true,
+      "complete": true,
+      "selected_format": "pcg-lean-collection-1"
+    }
+  },
+  "post08": {
+    "binary_sha256": "8b0cbf56bd3cc71e1289a4521ece25422e3ec5fcdab23456dd7b5d0338143874",
+    "model_runs": 0,
+    "provider": "TypeScript compiler API",
+    "measurement": "one compact JSON result representation; not provider tokens or model input",
+    "relocation": {
+      "before_reference_sites": 100,
+      "after_reference_sites": 100,
+      "sections": {
+        "removed_relations": 0,
+        "added_relations": 0,
+        "source_changes": 1
+      },
+      "response": {
+        "pages": 1,
+        "unicode_characters": 3683,
+        "utf8_bytes": 3683,
+        "records": 1
+      },
+      "query_ms": 432.1429670089856,
+      "classification": [
+        {
+          "file": "sample.ts",
+          "unchanged": 0,
+          "relocated": 202,
+          "uncertain_mapping": 0,
+          "removed_multiplicity": 0,
+          "added_multiplicity": 0,
+          "mapping_limit": null
+        }
+      ],
+      "lean_response": {
+        "pages": 1,
+        "unicode_characters": 2605,
+        "utf8_bytes": 2605,
+        "records": 1
+      }
+    },
+    "schema_unicode_characters": 18997,
+    "schema_sha256": "585aff31de67a64d4a7beca584134c6a977bfd6426bef83f4b6fc7f0b23c7e22",
+    "strict_scope": {
+      "typo_rejected": true
+    },
+    "projection": {
+      "rename": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 29935,
+          "utf8_bytes": 29935,
+          "records": 201
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6221,
+          "utf8_bytes": 6221,
+          "records": 201
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 201,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "edit"
+        }
+      },
+      "change_signature": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 32828,
+          "utf8_bytes": 32828,
+          "records": 201
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6390,
+          "utf8_bytes": 6390,
+          "records": 201
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 201,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "edit"
+        }
+      },
+      "explain_symbol": {
+        "audit": {
+          "pages": 2,
+          "unicode_characters": 30279,
+          "utf8_bytes": 30279,
+          "records": 202
+        },
+        "lean": {
+          "pages": 2,
+          "unicode_characters": 6423,
+          "utf8_bytes": 6423,
+          "records": 202
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 1,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "complete",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "none"
+        }
+      },
+      "trace_flow": {
+        "audit": {
+          "pages": 1,
+          "unicode_characters": 2803,
+          "utf8_bytes": 2803,
+          "records": 1
+        },
+        "lean": {
+          "pages": 1,
+          "unicode_characters": 1916,
+          "utf8_bytes": 1916,
+          "records": 1
+        },
+        "same_sites_confidence_and_multiplicity": true,
+        "completion": {
+          "required_inventory": {
+            "state": "complete",
+            "known_count": 1,
+            "remaining_known": 0,
+            "exploration_incomplete": false,
+            "provider_incomplete": false
+          },
+          "optional_context": "not_requested",
+          "verification": {
+            "compiler": "not_run",
+            "tests": "not_run",
+            "static_semantics_only": true
+          },
+          "next_required_action": "none"
+        }
+      }
+    },
+    "adapter": {
+      "client": "efficiency_client.LeanAdapter/1, native stdio client; no model attached",
+      "complete": true,
+      "boundary": {
+        "actual_schema_sha256": null,
+        "loaded_graph_instructions_sha256": null,
+        "response_representation": [
+          "transformed"
+        ],
+        "model_requests": 0,
+        "mcp_calls": 11,
+        "external_reads": 0,
+        "new_context_chars": 1530,
+        "repeated_context_chars": 139,
+        "rehydrated_context_chars": 0,
+        "pages": 11,
+        "expansions": 0,
+        "compactions": 0,
+        "errors": 0,
+        "retries": 0,
+        "wire_bytes": 64962,
+        "injected_bytes": 30740,
+        "wire_measurement_scope": "compact MCP result serialization; excludes JSON-RPC framing and transport whitespace",
+        "injected_chars": 30740,
+        "insertion_boundary_complete": true,
+        "wire_duplicate_objects": 11,
+        "unidentified_context_chars": 0,
+        "context_identity_complete": true,
+        "source_ledger_entries": 12,
+        "source_ledger_omitted": 0,
+        "ledger_entries": 200,
+        "ledger_omitted_entries": 0,
+        "boundary_events": 24,
+        "boundary_events_omitted": 0,
+        "boundary_accounting_complete": true,
+        "binding_mode": null,
+        "collection_mode": "pcg-lean-collection-1",
+        "measurement_scope": "source windows and partial line overlaps at explicit client insertion; characters are not model usage"
+      },
+      "automatic_pages": 11,
+      "codex_client_insertion": "not_run"
+    },
+    "fused_collection": {
+      "corpus": {
+        "rename": {
+          "raw_pages": 11,
+          "collection_1_chars": 30637,
+          "selected_chars": 11148,
+          "selected_format": "pcg-lean-collection-2",
+          "inventory_equal": true,
+          "raw_windows": 12,
+          "merged_windows": 2
+        },
+        "change_signature": {
+          "raw_pages": 11,
+          "collection_1_chars": 31571,
+          "selected_chars": 12513,
+          "selected_format": "pcg-lean-collection-2",
+          "inventory_equal": true,
+          "raw_windows": 12,
+          "merged_windows": 2
+        },
+        "explain_symbol": {
+          "raw_pages": 11,
+          "collection_1_chars": 29359,
+          "selected_chars": 11071,
+          "selected_format": "pcg-lean-collection-2",
+          "inventory_equal": true,
+          "raw_windows": 13,
+          "merged_windows": 3
+        },
+        "trace_flow": {
+          "raw_pages": 1,
+          "collection_1_chars": 2254,
+          "selected_chars": 2254,
+          "selected_format": "pcg-lean-collection-1",
+          "inventory_equal": true,
+          "raw_windows": 1,
+          "merged_windows": 1
+        }
+      },
+      "native_deadline": true,
+      "boundary": {
+        "actual_schema_sha256": null,
+        "loaded_graph_instructions_sha256": null,
+        "response_representation": [
+          "transformed"
+        ],
+        "model_requests": 0,
+        "mcp_calls": 11,
+        "external_reads": 0,
+        "new_context_chars": 1530,
+        "repeated_context_chars": 0,
+        "rehydrated_context_chars": 0,
+        "pages": 11,
+        "expansions": 0,
+        "compactions": 0,
+        "errors": 0,
+        "retries": 0,
+        "wire_bytes": 64962,
+        "injected_bytes": 11229,
+        "wire_measurement_scope": "compact MCP result serialization; excludes JSON-RPC framing and transport whitespace",
+        "injected_chars": 11229,
+        "insertion_boundary_complete": true,
+        "wire_duplicate_objects": 11,
+        "unidentified_context_chars": 0,
+        "context_identity_complete": true,
+        "source_ledger_entries": 2,
+        "source_ledger_omitted": 0,
+        "ledger_entries": 200,
+        "ledger_omitted_entries": 0,
+        "boundary_events": 24,
+        "boundary_events_omitted": 0,
+        "boundary_accounting_complete": true,
+        "binding_mode": null,
+        "collection_mode": "pcg-lean-collection-2",
+        "measurement_scope": "source windows and partial line overlaps at explicit client insertion; characters are not model usage"
+      },
+      "provider_insertion": "unknown",
+      "model_runs": 0
+    },
+    "workflow_surfaces": {
+      "local": {
+        "tools": 0,
+        "schema_chars": 2,
+        "instructions_chars": 0
+      },
+      "full": {
+        "tools": 16,
+        "schema_chars": 17629,
+        "instructions_chars": 514
+      },
+      "agent": {
+        "tools": 5,
+        "schema_chars": 10539,
+        "instructions_chars": 514
+      },
+      "rename": {
+        "tools": 1,
+        "schema_chars": 2200,
+        "instructions_chars": 514
+      },
+      "change_signature": {
+        "tools": 1,
+        "schema_chars": 2668,
+        "instructions_chars": 514
+      },
+      "review_change": {
+        "tools": 1,
+        "schema_chars": 2657,
+        "instructions_chars": 514
+      }
+    },
+    "signature_review": {
+      "same_symbol_id": true,
+      "contract_classification_retained": true,
+      "source_change_visible": true,
+      "classification": "contract_or_initializer"
+    },
+    "agent_surface": {
+      "advertised_tools": [
+        "index_repository",
+        "status",
+        "search_symbol",
+        "snippet",
+        "inspect_change"
+      ],
+      "advanced_intent_invoked": true,
+      "metadata_accepted": true,
+      "error_recovery": true,
+      "schema_sha256": "ff8b09115b9848884546178f0187c77d43c1cdfe60dcf3a4aa10b1f9621e0f4d",
+      "schema_unicode_characters": 11341,
+      "initialization_instructions_sha256": "fa9547f974e88494014614e72a1dd2d6c3d9a4f75a054a7955f02d92973e65ad",
+      "native_reconnect": true,
+      "codex_tool_registration": "not_run"
+    }
+  },
+  "relocated_package": "passed_native_binary_eight_client_modules_and_adjacent_workflow",
+  "ci": {
+    "run_id": 37757087818,
+    "status": "19 passed; macOS UIKit timed out; same-code failed-job recheck pending",
+    "url": "https://github.com/RolandDumit/polycodegraph/actions/runs/37757087818"
+  },
+  "log_sha256": {
+    "rust-final.log": "1b28bfb48fe0c18afd3e7eeaa47b7cef5ee5dba0ea015a9051453f5a7a59bcc7",
+    "python-final.log": "1dad5bd39efed4c769d783a2af7473527a9247f823c57c7018c61dc73c526c7a",
+    "lint-final.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "intent-mixed-frozen06.log": "eb78790d7e669aadb6d49fbc97340b994a4bad16eb85930d5dc194bea54880ed",
+    "workflow.json": "3ec3452d9593e96943385addb2c8e1cb06285386f0b3316a02da52c3343e16eb",
+    "post08.json": "e8e3d528e5375f5747b75e930e0e5219fe1acb3a5f16974d5ab9917c7f47e6a1",
+    "policy-retention.json": "9f02a5f4e033997d3a69d7f8e68b5298ea3d0d81129378ef0307a09e706c9a42",
+    "native-benchmark/results.private.json": "8a82d49960f1ddf97c1026cc3e6080b4a47758cb07644a89a3d2a6045984032c",
+    "package-build-final.log": "de0363ac97c547bbdcc7e84f569c0628d2e28c0736cae6044dca7212be13078c",
+    "package-relocated-final.log": "1e6f2527f152063410ca3598134c5405e789a929ede77af1d7b973b376c2de04",
+    "baseline-0.6-build.log": "403c48a1b1c1ac85739a9ad1d43e5f903e916a2dd0d4984500e8b495d085c9b2"
+  },
+  "limits": [
+    "No new paid model comparison; characters are not tokens",
+    "Known controlled fixture scope, not runtime quality proof",
+    "Retention disabled for generic MCP; actual model context confirmation required",
+    "Earlier failed/superseded checks do not count as verified coverage"
+  ],
+  "implemented_commits": {
+    "development": "ea9f31a",
+    "T3": "977397d",
+    "T4": "27c261b",
+    "T5": "5329a6c",
+    "T6": "0bbf629",
+    "cursor_recovery": "80ba7bb",
+    "compact_coverage_and_portable_fixture": "21782e2",
+    "legacy_baseline_retention": "2e40ece"
+  },
+  "new_screening_authorization": "approved 2026-10-08: 24 new A/D runs, 1,000,000 additional uncached input tokens; after-run control with final overshoot accepted; no external retries/preparation/judges; not independent G5"
+}

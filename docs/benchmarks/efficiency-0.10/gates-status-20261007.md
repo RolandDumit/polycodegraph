@@ -1,5 +1,9 @@
 # 0.10 gate continuation, 2026-10-07
 
+This dated status describes dev.1 and its screening. Subsequent milestone
+clarification and T3–T6 work are recorded separately in
+[the dev.2 report](dev2-results-20261008.md); the historical G3 result is unchanged.
+
 The T0–T2 development implementation was pushed as `0.10.0-dev.1` on
 `codex/0.10-token-efficiency`, source commit
 `52802dda7440c89715f7b5016c5dab176973fa80`. This is a development branch;
