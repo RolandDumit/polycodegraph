@@ -47,6 +47,20 @@ An inverted term lookup preserves default overlap-IDF scoring. Optional
 it does not claim full term-frequency BM25 or proven end-to-end superiority.
 The overlap baseline remains the default. Retrieval scores never become semantic
 confidence or create graph edges; bounded expansion uses existing resolver edges.
+
+## T5: task coverage and global limits
+
+Opt-in intent source policy also exposes `task_coverage` in lean output. It
+separates delivered known inventory, bounded traversed-file previews and local
+diagnostic/unresolved/provider limits from global health. An error observed in
+a traversed file is relevant; an error elsewhere has unknown relevance, because
+dependency/resolution effects cannot be excluded from its path alone.
+
+Task coverage remains unknown when no provider-backed proof covers the question.
+The existing conservative required-inventory completion is unchanged. Exhausted
+pagination does not repair global coverage: explicit recovery guidance recommends
+reporting the limit or inspecting relevant diagnostics, rather than repeating
+pages. Root/generation/health/environment/source/baseline validation is unchanged.
 The full/agent server catalogs, accepted primitive tools, audit/lean formats and
 semantic resolver contracts remain available.
 

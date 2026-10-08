@@ -233,6 +233,66 @@ fn separate_source_budget_keeps_required_inventory_and_visible_truncation() {
     assert!(state.prepare(&g, &c, &invalid, json!({})).is_err());
 }
 #[test]
+fn task_coverage_reports_relevant_and_unrelated_errors_without_promoting_completion() {
+    let (_d, c, g) = fixture("ts");
+    let args = json!({"intent":"rename","target":"api","format":"lean","source_policy":"intent"});
+    for local in [false, true] {
+        let mut snapshot = (*g.snapshot).clone();
+        let diagnostic =
+            json!({"severity":"error","code":"provider_failure","message":"coverage unknown"});
+        if local {
+            snapshot
+                .files
+                .get_mut("api.ts")
+                .unwrap()
+                .diagnostics
+                .push(diagnostic);
+        } else {
+            let mut other = snapshot.files["api.ts"].clone();
+            other.file = "other.py".into();
+            other.nodes.clear();
+            other.edges.clear();
+            other.diagnostics.push(diagnostic);
+            snapshot.files.insert("other.py".into(), other);
+        }
+        let graph = Graph::new(snapshot);
+        let result = State::default()
+            .prepare(&graph, &c, &args, json!({}))
+            .unwrap();
+        assert_eq!(
+            result["completion"]["required_inventory"]["state"],
+            "incomplete"
+        );
+        assert_eq!(result["task_coverage"]["state"], "unknown");
+        assert_eq!(
+            result["task_coverage"]["global_limit_relevance"],
+            if local { "relevant" } else { "unknown" }
+        );
+        assert_eq!(
+            result["task_coverage"]["known_inventory"]["all_known_required_delivered"],
+            true
+        );
+        assert_eq!(
+            result["task_coverage"]["recovery"]["more_pages_deliver_known_required"],
+            false
+        );
+        assert!(!result["diagnostics"].is_null());
+    }
+    let mut unavailable = c.clone();
+    unavailable.node_path = "pcg-test-nonexistent-node-runtime".into();
+    let unknown = State::default()
+        .prepare(&g, &unavailable, &args, json!({}))
+        .unwrap();
+    assert_eq!(
+        unknown["task_coverage"]["local_limits"]["unavailable_providers"],
+        json!(["typescript"])
+    );
+    assert_eq!(
+        unknown["completion"]["required_inventory"]["state"],
+        "incomplete"
+    );
+}
+#[test]
 fn ten_intents_ten_languages_use_static_evidence_and_preserve_primitives() {
     for ext in [
         "dart", "ts", "js", "java", "go", "py", "rs", "swift", "m", "kt",
