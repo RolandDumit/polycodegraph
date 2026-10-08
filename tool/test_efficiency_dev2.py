@@ -156,3 +156,16 @@ class Retention(unittest.IsolatedAsyncioTestCase):
         adapter.commit_insertion()
         self.assertFalse(context.offered)
         self.assertEqual(normalized_inventory(first), normalized_inventory(restored))
+
+    async def test_legacy_collection_retention_is_bound_to_actual_review_baseline(self):
+        value = {"format": "pcg-lean-collection-1", "pages": [page(text="source " * 400)]}
+        context = RetainedContext()
+        args = {"options": {"baseline": "before-a"}}
+        first = context.prepare(value, args)
+        context.committed(first)
+        context.acknowledge(context.epoch, first["retention"]["offered_windows"])
+        repeated = context.prepare(value, args)
+        self.assertEqual(repeated["retention"]["referenced_windows"], 1)
+        different = context.prepare(value, {"options": {"baseline": "before-b"}})
+        self.assertEqual(different["retention"]["referenced_windows"], 0)
+        self.assertIn("text", source_windows(different)[0])

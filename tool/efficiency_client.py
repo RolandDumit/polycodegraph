@@ -399,6 +399,7 @@ class LeanAdapter:
         self.retention = retention
         self.pending_retention = None
         self.fallback_insertion = None
+        self.retention_request = None
 
     def _tokens_fit(self, text: str) -> bool:
         if self.max_input_tokens is None:
@@ -414,7 +415,7 @@ class LeanAdapter:
             self.fallback_insertion = (result, representation, transformed, prompt_windows)
             value = json.loads(text)
             if value.get("format") in ("pcg-lean-collection-1", "pcg-lean-collection-2") and source_windows(value):
-                projected = self.retention.prepare(value)
+                projected = self.retention.prepare(value, self.retention_request)
                 candidate = compact(projected)
                 if len(candidate) <= self.max_chars and self._tokens_fit(candidate):
                     text = transformed = candidate
@@ -513,6 +514,7 @@ class LeanAdapter:
             raise ValueError("lean adapter requires intent and owns pagination; no retention context")
         arguments = dict(arguments, format="lean")
         request = dict(arguments)
+        self.retention_request = request
         want_optional = arguments.get("options", {}).get("include_tests") is True
         values = []
         identity = None

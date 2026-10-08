@@ -86,7 +86,7 @@ class RetainedContext:
         )
 
     @_synchronized
-    def prepare(self, value: dict) -> dict:
+    def prepare(self, value: dict, request: dict | None = None) -> dict:
         """Produce a smaller reference projection when explicit acknowledgements permit."""
         result = copy.deepcopy(value)
         pages = result.get("pages", []) if result.get("format") == "pcg-lean-collection-1" else [result]
@@ -99,7 +99,10 @@ class RetainedContext:
             for k in ("root_id", "generation", "health_fingerprint", "environment_fingerprint")
         ):
             return result
-        baseline = result.get("request", {}).get("options", {}).get("baseline")
+        effective_request = request if request is not None else result.get("request", {})
+        baseline = effective_request.get("options", {}).get("baseline")
+        if baseline is None:
+            baseline = [page.get("facts", {}).get("baseline") for page in pages]
         identity = _compact([snapshot, baseline])
         if self.identity is not None and self.identity != identity:
             self.compaction()
