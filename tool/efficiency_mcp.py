@@ -163,7 +163,7 @@ class WorkflowRelay:
 
             if name == "inspect_change" and self.collection != "direct" and "cursor" in arguments:
                 try:
-                    workflow_arguments(self.surface, arguments)
+                    arguments = workflow_arguments(self.surface, arguments)
                 except (ValueError, TypeError) as error:
                     return self._tool_error(str(error))
                 call_id = self.observer.begin_call(name, arguments)

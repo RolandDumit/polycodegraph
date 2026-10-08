@@ -23,6 +23,24 @@ def frames(*values: dict) -> io.BytesIO:
 
 
 class Relay(unittest.IsolatedAsyncioTestCase):
+    async def test_cursor_recovery_forwards_the_same_effective_source_policy(self):
+        backend = AsyncMock()
+        backend.request.side_effect = [
+            {"serverInfo": {"name": "native"}},
+            {"tools": CATALOG},
+            wire(page(offset=1)),
+        ]
+        relay = WorkflowRelay(Path("native"), Path("root"), None, "rename")
+        with patch.object(NativeTransport, "start", return_value=backend):
+            await relay.handle("initialize", {"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {}})
+        await relay.notify("notifications/initialized")
+        arguments = {"target": "t", "intent": "rename", "format": "lean", "cursor": "c" * 64}
+        await relay.handle("tools/call", {"name": "inspect_change", "arguments": arguments})
+        forwarded = backend.request.await_args.args[1]["arguments"]
+        self.assertEqual(forwarded["source_policy"], "intent")
+        self.assertEqual(forwarded["cursor"], arguments["cursor"])
+        self.assertNotIn("source_policy", arguments)
+
     async def test_local_has_no_native_process_or_initialization_guide(self):
         relay = WorkflowRelay(Path("nonexistent"), Path("nonexistent"), None, "local")
         with patch.object(NativeTransport, "start", new_callable=AsyncMock) as start:
